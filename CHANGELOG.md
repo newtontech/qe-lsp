@@ -1,5 +1,18 @@
 # Change Log
 
+## [0.1.1] - 2026-03-03
+
+### Fixed
+- Fixed critical infinite loop bug in parser when parsing numbers, identifiers, and whitespace
+- Fixed boolean value parsing for .true., .false., .true, .false
+- Fixed scientific notation handling for Fortran-style numbers (1d-10, 2e5)
+- Fixed all server tests to properly mock LSP server instances
+
+### Improvements
+- Achieved 100% test coverage (127 tests)
+- Added test helper function for easier server testing
+- Improved parser robustness for edge cases
+
 ## [0.1.0] - 2026-03-02
 
 ### Added
@@ -22,4 +35,3 @@
 - Code follows PEP 8 and modern Python best practices
 - Type hints throughout the codebase
 - Comprehensive test coverage
-
