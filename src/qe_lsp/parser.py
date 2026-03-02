@@ -109,7 +109,7 @@ class QELexer:
 
     def skip_whitespace(self) -> None:
         """Skip whitespace characters except newlines."""
-        while self.peek() in ' \t\r':
+        while (ch := self.peek()) and ch in ' \t\r':
             self.advance()
 
     def skip_comment(self) -> None:
@@ -140,11 +140,10 @@ class QELexer:
         # Handle leading sign
         if self.peek() in '+-':
             value += self.advance()
-        while self.peek().isdigit() or self.peek() in '.eEdD':
-            char = self.peek()
+        while (ch := self.peek()) and (ch.isdigit() or ch in '.eEdD'):
             value += self.advance()
             # Handle exponent sign
-            if char.lower() == 'e' and self.peek() in '+-':
+            if ch.lower() in 'ed' and self.peek() in '+-':
                 value += self.advance()
         # Handle Fortran scientific notation (1d-10, 2e5)
         value = value.lower().replace('d', 'e')
@@ -156,6 +155,17 @@ class QELexer:
         start_col = self.column
         value = ''
         
+        # Check for boolean values starting with . (e.g., .true., .false.)
+        if self.peek() == '.':
+            # Try to read a boolean
+            bool_val = ''
+            while (ch := self.peek()) and (ch.isalpha() or ch == '.'):
+                bool_val += self.advance()
+            if bool_val.lower() in ('.true.', '.false.', '.true', '.false'):
+                return Token(TokenType.BOOLEAN, bool_val.lower(), start_line, start_col)
+            # Not a boolean, return what we have as parameter
+            return Token(TokenType.PARAMETER, bool_val, start_line, start_col)
+        
         # Check if this is a namelist starting with &
         is_namelist = False
         if self.peek() == '&':
@@ -163,7 +173,7 @@ class QELexer:
             is_namelist = True
         
         # Read the identifier
-        while self.peek().isalnum() or self.peek() in '_-':
+        while (ch := self.peek()) and (ch.isalnum() or ch in '_-'):
             value += self.advance()
 
         # Handle empty identifier
@@ -171,7 +181,7 @@ class QELexer:
             return Token(TokenType.PARAMETER, value, start_line, start_col)
 
         # Check for boolean values (must check before namelist)
-        if value.lower() in ('.true.', '.false.', 't', 'f', '.true', '.false'):
+        if value.lower() in ('t', 'f'):
             return Token(TokenType.BOOLEAN, value.lower(), start_line, start_col)
 
         # Check for namelist
@@ -223,6 +233,11 @@ class QELexer:
 
             # Handle identifiers and keywords
             if self.peek().isalpha():
+                self.tokens.append(self.read_identifier())
+                continue
+
+            # Handle boolean values starting with .
+            if self.peek() == '.':
                 self.tokens.append(self.read_identifier())
                 continue
 

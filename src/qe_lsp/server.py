@@ -283,6 +283,11 @@ def diagnostic(params):
 def document_symbol(params):
     return _document_symbol_handler(params)
 
+# Helper for testing - get server instance
+def _get_server_for_testing():
+    """Get the server instance for testing purposes."""
+    return _get_server()
+
 
 def main() -> None:
     """Start the language server."""
