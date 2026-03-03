@@ -1,5 +1,22 @@
 # Change Log
 
+## [0.1.4] - 2026-03-03
+
+### Added
+- Added comprehensive test coverage improvements (test_coverage.py):
+  - Tests for __init__.py edge cases (__getattr__ invalid attribute)
+  - Parser edge case tests (lexer errors, boolean parsing, number formats)
+  - Data module tests (parameter/card documentation edge cases)
+  - Server edge case tests (empty documents, position handling)
+  - Advanced parser feature tests (complex inputs, scientific notation)
+  - Required parameter validation tests
+
+### Improvements
+- Test coverage improved from 91% to 96% (176 tests)
+- Added 35 new tests covering edge cases and error paths
+- Better error handling verification in parser
+- Enhanced LSP server robustness testing
+
 ## [0.1.3] - 2026-03-03
 
 ### Added
