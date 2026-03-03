@@ -204,8 +204,7 @@ class TestServerBranches:
     @patch("qe_lsp.server._get_server")
     def test_hover_returns_none_for_non_special_word(self, mock_get_server):
         """Test hover returns None when word is not special (line 177->185)."""
-        from qe_lsp.server import _hover_handler
-        from lsprotocol.types import Position
+        from qe_lsp.server import hover
         
         srv = MagicMock()
         srv.workspace.get_text_document.return_value = MagicMock(source="randomword")
@@ -213,9 +212,9 @@ class TestServerBranches:
         
         params = MagicMock()
         params.text_document.uri = "test://test.in"
-        params.position = Position(line=0, character=0)
+        params.position = MagicMock(line=0, character=0)
         
-        result = _hover_handler(params)
+        result = hover(params)
         # Should return None for unknown word
         assert result is None
 
