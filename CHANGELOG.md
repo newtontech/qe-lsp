@@ -1,5 +1,24 @@
 # Change Log
 
+## [0.1.6] - 2026-03-04
+
+### Added
+- Added final branch coverage tests (test_branches.py):
+  - Parser edge cases: empty parens, unclosed parens, empty identifiers
+  - Card data parsing with various token types
+  - Namelist parsing without value assignment
+  - Error handling branches for missing control/system namelists
+  - Module import tests for lazy loading
+
+### Fixed
+- Fixed test suite issues in test_branches.py
+- Removed broken test case with incorrect mock setup
+
+### Improvements
+- Test coverage improved from 96% to 96.83% (228 tests)
+- All 228 tests now passing
+- Comprehensive branch coverage for parser edge cases
+
 ## [0.1.5] - 2026-03-04
 
 ### Fixed
