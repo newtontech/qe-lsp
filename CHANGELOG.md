@@ -1,5 +1,26 @@
 # Change Log
 
+## [0.1.3] - 2026-03-03
+
+### Added
+- Extended QE card support with additional cards:
+  - PSEUDOPOTENTIALS, SPIN_CONSTRAINTS, HUBBARD, HUBBARD_CARD
+  - EXTERNALEFIELD, FREE_CHARGE, ATOMIC_COORDS
+  - CLIMBING_IMAGES, CONSTRAINTS_INFO, PENALTY_INFO
+- Added comprehensive card documentation:
+  - OCCUPATIONS card with format specification
+  - ATOMIC_FORCES card for external forces
+  - CONSTRAINTS card for ionic constraints
+  - ATOMIC_VELOCITIES card for MD simulations
+  - HUBBARD card for DFT+U calculations
+  - EXTERNALEFIELD card for electric fields
+- Improved K_POINTS documentation with automatic/crystal format details
+
+### Improvements
+- Enhanced parser to recognize more QE input file cards
+- Better documentation coverage for LSP hover tooltips
+- Test suite stability maintained (141 tests passing, 91% coverage)
+
 ## [0.1.2] - 2026-03-03
 
 ### Added

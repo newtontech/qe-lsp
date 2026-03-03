@@ -92,6 +92,17 @@ class QELexer:
         "CONSTRAINTS",
         "COLLECTIVE_VARS",
         "ATOMIC_VELOCITIES",
+        # Additional QE cards
+        "PSEUDOPOTENTIALS",
+        "SPIN_CONSTRAINTS",
+        "HUBBARD",
+        "HUBBARD_CARD",
+        "EXTERNALEFIELD",
+        "FREE_CHARGE",
+        "ATOMIC_COORDS",
+        "CLIMBING_IMAGES",
+        "CONSTRAINTS_INFO",
+        "PENALTY_INFO",
     }
 
     def __init__(self, text: str):

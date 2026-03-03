@@ -290,7 +290,9 @@ CARD_DOCS: dict[str, dict[str, str]] = {
     },
     "K_POINTS": {
         "description": "Defines the k-point grid.",
-        "format": """K_POINTS { automatic | gamma | crystal }""",
+        "format": """K_POINTS { automatic | gamma | crystal }
+  For automatic: nk1 nk2 nk3 0 0 0
+  For crystal/tpiba: nks followed by k-points""",
     },
     "CELL_PARAMETERS": {
         "description": "Defines the unit cell vectors.",
@@ -298,6 +300,36 @@ CARD_DOCS: dict[str, dict[str, str]] = {
   v1(1) v1(2) v1(3)
   v2(1) v2(2) v2(3)
   v3(1) v3(2) v3(3)""",
+    },
+    "OCCUPATIONS": {
+        "description": "Defines fixed occupations for bands.",
+        "format": """OCCUPATIONS
+  occ(1) occ(2) ... occ(nbnd)""",
+    },
+    "ATOMIC_FORCES": {
+        "description": "Defines external forces on atoms.",
+        "format": """ATOMIC_FORCES
+  label  fx  fy  fz""",
+    },
+    "CONSTRAINTS": {
+        "description": "Defines constraints on ionic coordinates.",
+        "format": """CONSTRAINTS
+  atom_index  constraint_type  parameters""",
+    },
+    "ATOMIC_VELOCITIES": {
+        "description": "Defines initial velocities for molecular dynamics.",
+        "format": """ATOMIC_VELOCITIES
+  label  vx  vy  vz""",
+    },
+    "HUBBARD": {
+        "description": "Defines Hubbard U parameters for DFT+U calculations.",
+        "format": """HUBBARD { ortho-atomic | pseudo | atomic }
+  atom_label  Hubbard_U  Hubbard_alpha""",
+    },
+    "EXTERNALEFIELD": {
+        "description": "Defines an external electric field.",
+        "format": """EXTERNALEFIELD
+  ex  ey  ez""",
     },
 }
 
