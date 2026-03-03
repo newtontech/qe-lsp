@@ -43,11 +43,6 @@ def _get_server() -> "LanguageServer":
     return _server_instance
 
 
-# Export server for backward compatibility (lazy)
-
-# server property removed - use _get_server() instead
-    return _get_server()
-
 
 def _get_word_at_position(doc: "Document", position: Position) -> tuple[str, Range]:
     """Get the word at the given position."""
