@@ -1,6 +1,5 @@
 """Tests for Quantum ESPRESSO input file parser."""
 
-import pytest
 from qe_lsp.parser import (
     Token,
     TokenType,

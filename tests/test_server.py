@@ -1,6 +1,5 @@
 """Tests for Quantum ESPRESSO LSP server."""
 
-import pytest
 from unittest.mock import MagicMock, patch
 
 from qe_lsp.server import (

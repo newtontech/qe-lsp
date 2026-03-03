@@ -1,6 +1,5 @@
 """Basic tests for qe-lsp."""
 
-import pytest
 
 
 def test_package_imports():

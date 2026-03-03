@@ -1,6 +1,5 @@
 """Tests for data module."""
 
-import pytest
 
 from qe_lsp.data import (
     ALL_PARAMS,
