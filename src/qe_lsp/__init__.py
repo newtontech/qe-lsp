@@ -1,4 +1,5 @@
 """qe-lsp - Language Server Protocol for Quantum ESPRESSO"""
+
 __version__ = "0.1.0"
 
 from qe_lsp.parser import (
@@ -13,6 +14,8 @@ from qe_lsp.parser import (
     Token,
     TokenType,
 )
+from typing import Any
+
 from qe_lsp.data import (
     get_param_doc,
     get_card_doc,
@@ -25,15 +28,19 @@ get_parameter_doc = get_param_doc
 QEInput = QEInputFile
 parse = parse_qe_input
 
+
 # Lazy import for server/main to avoid pygls initialization issues
-def __getattr__(name):
+def __getattr__(name: str) -> Any:
     if name == "server":
         from qe_lsp.server import _get_server
+
         return _get_server()
     elif name == "main":
         from qe_lsp.server import main
+
         return main
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 __all__ = [
     "__version__",

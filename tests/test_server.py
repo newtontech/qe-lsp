@@ -71,15 +71,13 @@ class TestQEServer:
 class TestCompletion:
     """Test completion feature."""
 
-    @patch('qe_lsp.server._get_server')
+    @patch("qe_lsp.server._get_server")
     def test_completion_in_namelist(self, mock_get_server):
         """Test completion inside namelist."""
         srv = MagicMock()
-        srv.workspace.get_text_document.return_value = MagicMock(
-            source="""&control
+        srv.workspace.get_text_document.return_value = MagicMock(source="""&control
 calc
-/"""
-        )
+/""")
         mock_get_server.return_value = srv
 
         params = MagicMock()
@@ -89,13 +87,11 @@ calc
         result = completion(params)
         assert result is not None
 
-    @patch('qe_lsp.server._get_server')
+    @patch("qe_lsp.server._get_server")
     def test_completion_outside_namelist(self, mock_get_server):
         """Test completion outside namelist."""
         srv = MagicMock()
-        srv.workspace.get_text_document.return_value = MagicMock(
-            source="con"
-        )
+        srv.workspace.get_text_document.return_value = MagicMock(source="con")
         mock_get_server.return_value = srv
 
         params = MagicMock()
@@ -109,15 +105,13 @@ calc
 class TestHover:
     """Test hover feature."""
 
-    @patch('qe_lsp.server._get_server')
+    @patch("qe_lsp.server._get_server")
     def test_hover_on_parameter(self, mock_get_server):
         """Test hover on parameter."""
         srv = MagicMock()
-        srv.workspace.get_text_document.return_value = MagicMock(
-            source="""&control
+        srv.workspace.get_text_document.return_value = MagicMock(source="""&control
 calculation = 'scf'
-/"""
-        )
+/""")
         mock_get_server.return_value = srv
 
         params = MagicMock()
@@ -126,15 +120,13 @@ calculation = 'scf'
 
         result = hover(params)
         # Hover should work even without doc (returns None)
-        assert result is None or hasattr(result, 'contents')
+        assert result is None or hasattr(result, "contents")
 
-    @patch('qe_lsp.server._get_server')
+    @patch("qe_lsp.server._get_server")
     def test_hover_empty_word(self, mock_get_server):
         """Test hover with empty word."""
         srv = MagicMock()
-        srv.workspace.get_text_document.return_value = MagicMock(
-            source="\\n"
-        )
+        srv.workspace.get_text_document.return_value = MagicMock(source="\\n")
         mock_get_server.return_value = srv
 
         params = MagicMock()
@@ -148,12 +140,11 @@ calculation = 'scf'
 class TestDiagnostic:
     """Test diagnostic feature."""
 
-    @patch('qe_lsp.server._get_server')
+    @patch("qe_lsp.server._get_server")
     def test_diagnostic_valid_input(self, mock_get_server):
         """Test diagnostic with valid input."""
         srv = MagicMock()
-        srv.workspace.get_text_document.return_value = MagicMock(
-            source="""&control
+        srv.workspace.get_text_document.return_value = MagicMock(source="""&control
 /
 &system
 ibrav = 1
@@ -162,8 +153,7 @@ ntyp = 1
 ecutwfc = 30
 /
 &electrons
-/"""
-        )
+/""")
         mock_get_server.return_value = srv
 
         params = MagicMock()
@@ -172,13 +162,11 @@ ecutwfc = 30
         result = diagnostic(params)
         assert isinstance(result, list)
 
-    @patch('qe_lsp.server._get_server')
+    @patch("qe_lsp.server._get_server")
     def test_diagnostic_missing_namelist(self, mock_get_server):
         """Test diagnostic with missing namelist."""
         srv = MagicMock()
-        srv.workspace.get_text_document.return_value = MagicMock(
-            source="&control\\n/"
-        )
+        srv.workspace.get_text_document.return_value = MagicMock(source="&control\\n/")
         mock_get_server.return_value = srv
 
         params = MagicMock()
@@ -192,20 +180,18 @@ ecutwfc = 30
 class TestDocumentSymbol:
     """Test document symbol feature."""
 
-    @patch('qe_lsp.server._get_server')
+    @patch("qe_lsp.server._get_server")
     def test_document_symbol(self, mock_get_server):
         """Test document symbol extraction."""
         srv = MagicMock()
-        srv.workspace.get_text_document.return_value = MagicMock(
-            source="""&control
+        srv.workspace.get_text_document.return_value = MagicMock(source="""&control
 calculation = 'scf'
 /
 &system
 ibrav = 1
 /
 &electrons
-/"""
-        )
+/""")
         mock_get_server.return_value = srv
 
         params = MagicMock()
@@ -220,7 +206,7 @@ ibrav = 1
 class TestMain:
     """Test main entry point."""
 
-    @patch('qe_lsp.server._get_server')
+    @patch("qe_lsp.server._get_server")
     def test_main(self, mock_get_server):
         """Test main function."""
         mock_server = MagicMock()

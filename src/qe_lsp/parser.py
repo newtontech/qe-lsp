@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 class TokenType(Enum):
     """Token types for QE input files."""
+
     NAMELIST_START = auto()
     NAMELIST_END = auto()
     CARD_NAME = auto()
@@ -27,6 +28,7 @@ class TokenType(Enum):
 @dataclass
 class Token:
     """Represents a token in the input file."""
+
     type: TokenType
     value: str
     line: int
@@ -36,6 +38,7 @@ class Token:
 @dataclass
 class Namelist:
     """Represents a QE namelist (e.g., &control, &system)."""
+
     name: str
     parameters: Dict[str, Any] = field(default_factory=dict)
     line_start: int = 0
@@ -45,6 +48,7 @@ class Namelist:
 @dataclass
 class Card:
     """Represents a QE card (e.g., ATOMIC_SPECIES, K_POINTS)."""
+
     name: str
     options: Optional[str] = None
     data: List[List[str]] = field(default_factory=list)
@@ -55,6 +59,7 @@ class Card:
 @dataclass
 class QEInputFile:
     """Represents a parsed QE input file."""
+
     namelists: Dict[str, Namelist] = field(default_factory=dict)
     cards: Dict[str, Card] = field(default_factory=dict)
     errors: List[Dict[str, Any]] = field(default_factory=list)
@@ -65,15 +70,28 @@ class QELexer:
 
     # Common QE namelists
     NAMELISTS = {
-        'control', 'system', 'electrons', 'ions', 'cell',
-        'press_ai', 'wannier', 'inputph', 'inputpp'
+        "control",
+        "system",
+        "electrons",
+        "ions",
+        "cell",
+        "press_ai",
+        "wannier",
+        "inputph",
+        "inputpp",
     }
 
     # Common QE cards
     CARDS = {
-        'ATOMIC_SPECIES', 'ATOMIC_POSITIONS', 'K_POINTS',
-        'CELL_PARAMETERS', 'OCCUPATIONS', 'ATOMIC_FORCES',
-        'CONSTRAINTS', 'COLLECTIVE_VARS', 'ATOMIC_VELOCITIES'
+        "ATOMIC_SPECIES",
+        "ATOMIC_POSITIONS",
+        "K_POINTS",
+        "CELL_PARAMETERS",
+        "OCCUPATIONS",
+        "ATOMIC_FORCES",
+        "CONSTRAINTS",
+        "COLLECTIVE_VARS",
+        "ATOMIC_VELOCITIES",
     }
 
     def __init__(self, text: str):
@@ -90,10 +108,10 @@ class QELexer:
     def advance(self) -> str:
         """Advance to the next character."""
         if self.pos >= len(self.text):
-            return ''
+            return ""
         char = self.text[self.pos]
         self.pos += 1
-        if char == '\n':
+        if char == "\n":
             self.line += 1
             self.column = 1
         else:
@@ -104,18 +122,18 @@ class QELexer:
         """Peek at the current or future character without advancing."""
         pos = self.pos + offset
         if pos >= len(self.text):
-            return ''
+            return ""
         return self.text[pos]
 
     def skip_whitespace(self) -> None:
         """Skip whitespace characters except newlines."""
-        while (ch := self.peek()) and ch in ' \t\r':
+        while (ch := self.peek()) and ch in " \t\r":
             self.advance()
 
     def skip_comment(self) -> None:
         """Skip a comment line."""
-        if self.peek() == '!':
-            while self.peek() not in '\n' and self.peek():
+        if self.peek() == "!":
+            while self.peek() not in "\n" and self.peek():
                 self.advance()
 
     def read_string(self) -> Token:
@@ -123,9 +141,9 @@ class QELexer:
         start_line = self.line
         start_col = self.column
         quote = self.advance()  # opening quote
-        value = ''
+        value = ""
         while self.peek() != quote and self.peek():
-            if self.peek() == '\\':
+            if self.peek() == "\\":
                 self.advance()
             value += self.advance()
         if self.peek() == quote:
@@ -136,44 +154,44 @@ class QELexer:
         """Read a number (integer or float)."""
         start_line = self.line
         start_col = self.column
-        value = ''
+        value = ""
         # Handle leading sign
-        if self.peek() in '+-':
+        if self.peek() in "+-":
             value += self.advance()
-        while (ch := self.peek()) and (ch.isdigit() or ch in '.eEdD'):
+        while (ch := self.peek()) and (ch.isdigit() or ch in ".eEdD"):
             value += self.advance()
             # Handle exponent sign
-            if ch.lower() in 'ed' and self.peek() in '+-':
+            if ch.lower() in "ed" and self.peek() in "+-":
                 value += self.advance()
         # Handle Fortran scientific notation (1d-10, 2e5)
-        value = value.lower().replace('d', 'e')
+        value = value.lower().replace("d", "e")
         return Token(TokenType.NUMBER, value, start_line, start_col)
 
     def read_identifier(self) -> Token:
         """Read an identifier or keyword."""
         start_line = self.line
         start_col = self.column
-        value = ''
-        
+        value = ""
+
         # Check for boolean values starting with . (e.g., .true., .false.)
-        if self.peek() == '.':
+        if self.peek() == ".":
             # Try to read a boolean
-            bool_val = ''
-            while (ch := self.peek()) and (ch.isalpha() or ch == '.'):
+            bool_val = ""
+            while (ch := self.peek()) and (ch.isalpha() or ch == "."):
                 bool_val += self.advance()
-            if bool_val.lower() in ('.true.', '.false.', '.true', '.false'):
+            if bool_val.lower() in (".true.", ".false.", ".true", ".false"):
                 return Token(TokenType.BOOLEAN, bool_val.lower(), start_line, start_col)
             # Not a boolean, return what we have as parameter
             return Token(TokenType.PARAMETER, bool_val, start_line, start_col)
-        
+
         # Check if this is a namelist starting with &
         is_namelist = False
-        if self.peek() == '&':
+        if self.peek() == "&":
             value += self.advance()  # consume '&'
             is_namelist = True
-        
+
         # Read the identifier
-        while (ch := self.peek()) and (ch.isalnum() or ch in '_-'):
+        while (ch := self.peek()) and (ch.isalnum() or ch in "_-"):
             value += self.advance()
 
         # Handle empty identifier
@@ -181,7 +199,7 @@ class QELexer:
             return Token(TokenType.PARAMETER, value, start_line, start_col)
 
         # Check for boolean values (must check before namelist)
-        if value.lower() in ('t', 'f'):
+        if value.lower() in ("t", "f"):
             return Token(TokenType.BOOLEAN, value.lower(), start_line, start_col)
 
         # Check for namelist
@@ -200,34 +218,34 @@ class QELexer:
             self.skip_whitespace()
 
             # Handle comments
-            if self.peek() == '!':
+            if self.peek() == "!":
                 self.skip_comment()
                 continue
 
             # Handle newlines
-            if self.peek() == '\n':
-                self.tokens.append(Token(TokenType.NEWLINE, '\n', self.line, self.column))
+            if self.peek() == "\n":
+                self.tokens.append(Token(TokenType.NEWLINE, "\n", self.line, self.column))
                 self.advance()
                 continue
 
             # Handle end of namelist
-            if self.peek() == '/':
-                self.tokens.append(Token(TokenType.NAMELIST_END, '/', self.line, self.column))
+            if self.peek() == "/":
+                self.tokens.append(Token(TokenType.NAMELIST_END, "/", self.line, self.column))
                 self.advance()
                 continue
 
             # Handle strings
-            if self.peek() in '"\'':
+            if self.peek() in "\"'":
                 self.tokens.append(self.read_string())
                 continue
 
             # Handle numbers (including those starting with . like .5)
-            if self.peek().isdigit() or (self.peek() == '.' and self.peek(1).isdigit()):
+            if self.peek().isdigit() or (self.peek() == "." and self.peek(1).isdigit()):
                 self.tokens.append(self.read_number())
                 continue
 
             # Handle namelists starting with &
-            if self.peek() == '&':
+            if self.peek() == "&":
                 self.tokens.append(self.read_identifier())
                 continue
 
@@ -237,37 +255,37 @@ class QELexer:
                 continue
 
             # Handle boolean values starting with .
-            if self.peek() == '.':
+            if self.peek() == ".":
                 self.tokens.append(self.read_identifier())
                 continue
 
             # Handle operators and punctuation
-            if self.peek() == '=':
-                self.tokens.append(Token(TokenType.VALUE, '=', self.line, self.column))
+            if self.peek() == "=":
+                self.tokens.append(Token(TokenType.VALUE, "=", self.line, self.column))
                 self.advance()
                 continue
 
-            if self.peek() == ',':
+            if self.peek() == ",":
                 self.advance()
                 continue
 
-            if self.peek() == '(':
+            if self.peek() == "(":
                 # Handle array indices like celldm(1)
                 self.advance()
-                while self.peek() and self.peek() != ')':
+                while self.peek() and self.peek() != ")":
                     self.advance()
-                if self.peek() == ')':
+                if self.peek() == ")":
                     self.advance()
                 continue
 
-            if self.peek() == ')':
+            if self.peek() == ")":
                 self.advance()
                 continue
 
             # Skip unknown characters
             self.advance()
 
-        self.tokens.append(Token(TokenType.EOF, '', self.line, self.column))
+        self.tokens.append(Token(TokenType.EOF, "", self.line, self.column))
         return self.tokens
 
 
@@ -276,30 +294,30 @@ class QEParser:
 
     # Required parameters for each namelist
     REQUIRED_PARAMS = {
-        'control': ['calculation', 'prefix', 'outdir'],
-        'system': ['ibrav', 'nat', 'ntyp', 'ecutwfc'],
+        "control": ["calculation", "prefix", "outdir"],
+        "system": ["ibrav", "nat", "ntyp", "ecutwfc"],
     }
 
     # Parameter documentation
     PARAM_DOCS = {
-        'calculation': 'Type of calculation: scf, nscf, bands, relax, md, vc-relax, vc-md',
-        'prefix': 'Prefix for input/output files',
-        'outdir': 'Directory for temporary files',
-        'ibrav': 'Bravais lattice index (0-14)',
-        'nat': 'Number of atoms in the unit cell',
-        'ntyp': 'Number of types of atoms',
-        'ecutwfc': 'Kinetic energy cutoff for wavefunctions (Ry)',
-        'ecutrho': 'Kinetic energy cutoff for charge density (Ry)',
-        'conv_thr': 'Convergence threshold for SCF (Ry)',
-        'diagonalization': 'Diagonalization method: david, cg, ppcg',
-        'mixing_mode': 'Mixing mode: plain, TF, local-TF',
-        'mixing_beta': 'Mixing factor for self-consistency',
-        'electron_maxstep': 'Maximum number of SCF iterations',
-        'nspin': 'Spin polarization: 1 (no), 2 (yes), 4 (non-collinear)',
-        'starting_magnetization': 'Starting magnetic moment',
-        'occupations': 'Occupation function: smearing, fixed, from_input',
-        'smearing': 'Smearing method: gaussian, methfessel-paxton, marzari-vanderbilt, fermi-dirac',
-        'degauss': 'Gaussian spreading (Ry)',
+        "calculation": "Type of calculation: scf, nscf, bands, relax, md, vc-relax, vc-md",
+        "prefix": "Prefix for input/output files",
+        "outdir": "Directory for temporary files",
+        "ibrav": "Bravais lattice index (0-14)",
+        "nat": "Number of atoms in the unit cell",
+        "ntyp": "Number of types of atoms",
+        "ecutwfc": "Kinetic energy cutoff for wavefunctions (Ry)",
+        "ecutrho": "Kinetic energy cutoff for charge density (Ry)",
+        "conv_thr": "Convergence threshold for SCF (Ry)",
+        "diagonalization": "Diagonalization method: david, cg, ppcg",
+        "mixing_mode": "Mixing mode: plain, TF, local-TF",
+        "mixing_beta": "Mixing factor for self-consistency",
+        "electron_maxstep": "Maximum number of SCF iterations",
+        "nspin": "Spin polarization: 1 (no), 2 (yes), 4 (non-collinear)",
+        "starting_magnetization": "Starting magnetic moment",
+        "occupations": "Occupation function: smearing, fixed, from_input",
+        "smearing": "Smearing method: gaussian, methfessel-paxton, marzari-vanderbilt, fermi-dirac",
+        "degauss": "Gaussian spreading (Ry)",
     }
 
     def __init__(self, text: str):
@@ -313,18 +331,15 @@ class QEParser:
         """Record a parser error."""
         if token is None:
             token = self.current()
-        self.errors.append({
-            'message': msg,
-            'line': token.line,
-            'column': token.column,
-            'severity': 'error'
-        })
+        self.errors.append(
+            {"message": msg, "line": token.line, "column": token.column, "severity": "error"}
+        )
 
     def current(self) -> Token:
         """Get the current token."""
         if self.pos < len(self.tokens):
             return self.tokens[self.pos]
-        return self.tokens[-1] if self.tokens else Token(TokenType.EOF, '', 0, 0)
+        return self.tokens[-1] if self.tokens else Token(TokenType.EOF, "", 0, 0)
 
     def advance(self) -> Token:
         """Advance to the next token."""
@@ -350,7 +365,7 @@ class QEParser:
         if token.type == TokenType.NUMBER:
             self.advance()
             try:
-                if '.' in token.value or 'e' in token.value.lower():
+                if "." in token.value or "e" in token.value.lower():
                     return float(token.value)
                 return int(token.value)
             except ValueError:
@@ -358,7 +373,7 @@ class QEParser:
 
         if token.type == TokenType.BOOLEAN:
             self.advance()
-            return token.value in ('.true.', 't', '.true')
+            return token.value in (".true.", "t", ".true")
 
         if token.type == TokenType.PARAMETER:
             self.advance()
@@ -418,8 +433,11 @@ class QEParser:
         """Parse card data lines."""
         data = []
 
-        while (self.current().type not in 
-               (TokenType.CARD_NAME, TokenType.NAMELIST_START, TokenType.EOF)):
+        while self.current().type not in (
+            TokenType.CARD_NAME,
+            TokenType.NAMELIST_START,
+            TokenType.EOF,
+        ):
             if self.current().type == TokenType.NEWLINE:
                 self.advance()
                 continue
@@ -430,13 +448,20 @@ class QEParser:
 
             # Read a line of data
             line_data = []
-            while (self.current().type not in 
-                   (TokenType.NEWLINE, TokenType.CARD_NAME, 
-                    TokenType.NAMELIST_START, TokenType.EOF)):
+            while self.current().type not in (
+                TokenType.NEWLINE,
+                TokenType.CARD_NAME,
+                TokenType.NAMELIST_START,
+                TokenType.EOF,
+            ):
                 if self.current().type == TokenType.COMMENT:
                     break
-                if self.current().type in (TokenType.STRING, TokenType.NUMBER, 
-                                          TokenType.PARAMETER, TokenType.BOOLEAN):
+                if self.current().type in (
+                    TokenType.STRING,
+                    TokenType.NUMBER,
+                    TokenType.PARAMETER,
+                    TokenType.BOOLEAN,
+                ):
                     line_data.append(str(self.current().value))
                 self.advance()
 
@@ -475,7 +500,7 @@ class QEParser:
             options=options,
             data=data,
             line_start=line_start,
-            line_end=self.current().line
+            line_end=self.current().line,
         )
 
         return card
@@ -483,21 +508,25 @@ class QEParser:
     def validate(self, result: QEInputFile) -> None:
         """Validate the parsed input file."""
         # Check for required namelists
-        if 'control' not in result.namelists:
-            self.errors.append({
-                'message': "Missing required namelist '&control'",
-                'line': 1,
-                'column': 1,
-                'severity': 'error'
-            })
+        if "control" not in result.namelists:
+            self.errors.append(
+                {
+                    "message": "Missing required namelist '&control'",
+                    "line": 1,
+                    "column": 1,
+                    "severity": "error",
+                }
+            )
 
-        if 'system' not in result.namelists:
-            self.errors.append({
-                'message': "Missing required namelist '&system'",
-                'line': 1,
-                'column': 1,
-                'severity': 'error'
-            })
+        if "system" not in result.namelists:
+            self.errors.append(
+                {
+                    "message": "Missing required namelist '&system'",
+                    "line": 1,
+                    "column": 1,
+                    "severity": "error",
+                }
+            )
 
         # Check for required parameters in each namelist
         for namelist_name, required in self.REQUIRED_PARAMS.items():
@@ -505,12 +534,14 @@ class QEParser:
                 namelist = result.namelists[namelist_name]
                 for param in required:
                     if param not in namelist.parameters:
-                        self.errors.append({
-                            'message': f"Missing required parameter '{param}' in &{namelist_name}",
-                            'line': namelist.line_start,
-                            'column': 1,
-                            'severity': 'error'
-                        })
+                        self.errors.append(
+                            {
+                                "message": f"Missing required parameter '{param}' in &{namelist_name}",
+                                "line": namelist.line_start,
+                                "column": 1,
+                                "severity": "error",
+                            }
+                        )
 
     def parse(self) -> QEInputFile:
         """Parse the input file."""
@@ -549,10 +580,10 @@ class QEParser:
 
 def parse_qe_input(text: str) -> QEInputFile:
     """Parse a Quantum ESPRESSO input file.
-    
+
     Args:
         text: The content of the input file
-        
+
     Returns:
         QEInputFile object containing parsed namelists and cards
     """
@@ -562,10 +593,10 @@ def parse_qe_input(text: str) -> QEInputFile:
 
 def get_parameter_doc(param: str) -> Optional[str]:
     """Get documentation for a parameter.
-    
+
     Args:
         param: The parameter name
-        
+
     Returns:
         Documentation string or None if not found
     """
@@ -574,57 +605,183 @@ def get_parameter_doc(param: str) -> Optional[str]:
 
 def get_namelist_params(namelist: str) -> List[str]:
     """Get list of known parameters for a namelist.
-    
+
     Args:
         namelist: The namelist name (e.g., 'control', 'system')
-        
+
     Returns:
         List of parameter names
     """
     # This is a simplified list - in practice, you'd want a comprehensive database
     params_by_namelist = {
-        'control': ['calculation', 'title', 'verbosity', 'restart_mode', 'outdir',
-                   'wfcdir', 'prefix', 'disk_io', 'pseudo_dir', 'tstress', 'tprnfor',
-                   'dt', 'nstep', 'iprint', 'tabps', 'max_seconds', 'etot_conv_thr',
-                   'forc_conv_thr', 'tefield', 'dipfield', 'lelfield', 'lorbm',
-                   'lberry', 'gdir', 'nppstr', 'lfcpopt', 'gate', 'trism'],
-        'system': ['ibrav', 'celldm', 'A', 'B', 'C', 'cosAB', 'cosAC', 'cosBC',
-                  'nat', 'ntyp', 'nbnd', 'tot_charge', 'starting_charge',
-                  'tot_magnetization', 'starting_magnetization', 'nspin',
-                  'ecutwfc', 'ecutrho', 'ecutfock', 'nr1', 'nr2', 'nr3',
-                  'nr1s', 'nr2s', 'nr3s', 'nosym', 'nosym_evc', 'noinv',
-                  'no_t_rev', 'force_symmorphic', 'use_all_frac', 'occupations',
-                  'degauss', 'smearing', 'one_atom_occupations', 'spinorbit',
-                  'noncolin', 'lspinorb', 'lforcet', 'starting_spin_angle',
-                  'angle1', 'angle2', 'constrained_magnetization', 'B_field',
-                  'fixed_magnetization', 'lambda', 'report', 'lscfpert',
-                  'esm_bc', 'esm_w', 'esm_efield', 'esm_nfit', 'fcp_mu',
-                  'vdw_corr', 'london', 'london_s6', 'london_c6',
-                  'london_rvdw', 'london_rcut', 'ts_vdw_econv_thr',
-                  'xdm', 'xdm_a1', 'xdm_a2', 'space_group', 'origin_choice',
-                  'rhombohedral', 'zmon', 'realxz', 'block', 'block_1',
-                  'block_2', 'block_height'],
-        'electrons': ['electron_maxstep', 'scf_must_converge', 'conv_thr',
-                     'adaptive_thr', 'conv_thr_init', 'conv_thr_multi',
-                     'mixing_mode', 'mixing_beta', 'mixing_ndim', 'mixing_fixed_ns',
-                     'diagonalization', 'ortho_para', 'diago_thr_init',
-                     'diago_cg_maxiter', 'diago_ppcg_maxiter', 'diago_david_ndim',
-                     'diago_full_acc', 'efield', 'efield_cart', 'efield_phase',
-                     'startingpot', 'startingwfc', 'tqr', 'real_space'],
-        'ions': ['ion_dynamics', 'ion_positions', 'pot_extrapolation',
-                'wfc_extrapolation', 'remove_rigid_rot', 'ion_temperature',
-                'tempw', 'tolp', 'delta_t', 'nraise', 'refold_pos',
-                'upscale', 'bfgs_ndim', 'trust_radius_max', 'trust_radius_min',
-                'trust_radius_ini', 'w_1', 'w_2', 'fire_alpha_init', 'fire_fmax'],
-        'cell': ['cell_dynamics', 'press', 'wmass', 'cell_factor', 'press_conv_thr',
-                'cell_dofree', 'protate'],
+        "control": [
+            "calculation",
+            "title",
+            "verbosity",
+            "restart_mode",
+            "outdir",
+            "wfcdir",
+            "prefix",
+            "disk_io",
+            "pseudo_dir",
+            "tstress",
+            "tprnfor",
+            "dt",
+            "nstep",
+            "iprint",
+            "tabps",
+            "max_seconds",
+            "etot_conv_thr",
+            "forc_conv_thr",
+            "tefield",
+            "dipfield",
+            "lelfield",
+            "lorbm",
+            "lberry",
+            "gdir",
+            "nppstr",
+            "lfcpopt",
+            "gate",
+            "trism",
+        ],
+        "system": [
+            "ibrav",
+            "celldm",
+            "A",
+            "B",
+            "C",
+            "cosAB",
+            "cosAC",
+            "cosBC",
+            "nat",
+            "ntyp",
+            "nbnd",
+            "tot_charge",
+            "starting_charge",
+            "tot_magnetization",
+            "starting_magnetization",
+            "nspin",
+            "ecutwfc",
+            "ecutrho",
+            "ecutfock",
+            "nr1",
+            "nr2",
+            "nr3",
+            "nr1s",
+            "nr2s",
+            "nr3s",
+            "nosym",
+            "nosym_evc",
+            "noinv",
+            "no_t_rev",
+            "force_symmorphic",
+            "use_all_frac",
+            "occupations",
+            "degauss",
+            "smearing",
+            "one_atom_occupations",
+            "spinorbit",
+            "noncolin",
+            "lspinorb",
+            "lforcet",
+            "starting_spin_angle",
+            "angle1",
+            "angle2",
+            "constrained_magnetization",
+            "B_field",
+            "fixed_magnetization",
+            "lambda",
+            "report",
+            "lscfpert",
+            "esm_bc",
+            "esm_w",
+            "esm_efield",
+            "esm_nfit",
+            "fcp_mu",
+            "vdw_corr",
+            "london",
+            "london_s6",
+            "london_c6",
+            "london_rvdw",
+            "london_rcut",
+            "ts_vdw_econv_thr",
+            "xdm",
+            "xdm_a1",
+            "xdm_a2",
+            "space_group",
+            "origin_choice",
+            "rhombohedral",
+            "zmon",
+            "realxz",
+            "block",
+            "block_1",
+            "block_2",
+            "block_height",
+        ],
+        "electrons": [
+            "electron_maxstep",
+            "scf_must_converge",
+            "conv_thr",
+            "adaptive_thr",
+            "conv_thr_init",
+            "conv_thr_multi",
+            "mixing_mode",
+            "mixing_beta",
+            "mixing_ndim",
+            "mixing_fixed_ns",
+            "diagonalization",
+            "ortho_para",
+            "diago_thr_init",
+            "diago_cg_maxiter",
+            "diago_ppcg_maxiter",
+            "diago_david_ndim",
+            "diago_full_acc",
+            "efield",
+            "efield_cart",
+            "efield_phase",
+            "startingpot",
+            "startingwfc",
+            "tqr",
+            "real_space",
+        ],
+        "ions": [
+            "ion_dynamics",
+            "ion_positions",
+            "pot_extrapolation",
+            "wfc_extrapolation",
+            "remove_rigid_rot",
+            "ion_temperature",
+            "tempw",
+            "tolp",
+            "delta_t",
+            "nraise",
+            "refold_pos",
+            "upscale",
+            "bfgs_ndim",
+            "trust_radius_max",
+            "trust_radius_min",
+            "trust_radius_ini",
+            "w_1",
+            "w_2",
+            "fire_alpha_init",
+            "fire_fmax",
+        ],
+        "cell": [
+            "cell_dynamics",
+            "press",
+            "wmass",
+            "cell_factor",
+            "press_conv_thr",
+            "cell_dofree",
+            "protate",
+        ],
     }
     return params_by_namelist.get(namelist.lower(), [])
 
 
 def get_card_names() -> List[str]:
     """Get list of valid card names.
-    
+
     Returns:
         List of card names
     """
@@ -633,16 +790,16 @@ def get_card_names() -> List[str]:
 
 def get_word_at_position(text: str, line: int, column: int) -> Tuple[Optional[str], int, int]:
     """Get the word at a specific position in the text.
-    
+
     Args:
         text: The text content
         line: 0-based line number
         column: 0-based column number
-        
+
     Returns:
         Tuple of (word, start_col, end_col) or (None, 0, 0) if not found
     """
-    lines = text.split('\n')
+    lines = text.split("\n")
     if line >= len(lines):
         return None, 0, 0
 

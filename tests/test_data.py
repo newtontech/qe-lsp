@@ -1,6 +1,5 @@
 """Tests for data module."""
 
-
 from qe_lsp.data import (
     ALL_PARAMS,
     CARD_DOCS,

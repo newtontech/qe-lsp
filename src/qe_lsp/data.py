@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 # CONTROL namelist parameters
 CONTROL_PARAMS: dict[str, dict[str, Any]] = {
     "calculation": {
@@ -305,11 +304,11 @@ CARD_DOCS: dict[str, dict[str, str]] = {
 
 def get_param_doc(namelist: str, param: str) -> dict[str, Any] | None:
     """Get documentation for a parameter.
-    
+
     Args:
         namelist: The namelist name (e.g., 'control', 'system')
         param: The parameter name
-        
+
     Returns:
         Parameter documentation dict or None if not found
     """
@@ -318,10 +317,10 @@ def get_param_doc(namelist: str, param: str) -> dict[str, Any] | None:
 
 def get_card_doc(card: str) -> dict[str, str] | None:
     """Get documentation for a card.
-    
+
     Args:
         card: The card name (e.g., 'ATOMIC_SPECIES')
-        
+
     Returns:
         Card documentation dict or None if not found
     """
@@ -330,57 +329,57 @@ def get_card_doc(card: str) -> dict[str, str] | None:
 
 def format_param_hover(param_doc: dict[str, Any]) -> str:
     """Format parameter documentation for hover tooltip.
-    
+
     Args:
         param_doc: Parameter documentation dictionary
-        
+
     Returns:
         Formatted markdown string
     """
     lines = []
-    
+
     if "description" in param_doc:
         lines.append(param_doc["description"])
-    
+
     if "type" in param_doc:
         lines.append(f"\n**Type:** `{param_doc['type']}`")
-    
+
     if param_doc.get("required"):
         lines.append("\n⚠️ **Required parameter**")
-    
+
     if "default" in param_doc:
         lines.append(f"\n**Default:** `{param_doc['default']}`")
-    
+
     if "values" in param_doc:
         values_str = ", ".join(param_doc["values"])
         lines.append(f"\n**Possible values:** {values_str}")
-    
+
     return "\n".join(lines)
 
 
 def format_card_hover(card_doc: dict[str, str]) -> str:
     """Format card documentation for hover tooltip.
-    
+
     Args:
         card_doc: Card documentation dictionary
-        
+
     Returns:
         Formatted markdown string
     """
     lines = []
-    
+
     if "description" in card_doc:
         lines.append(card_doc["description"])
-    
+
     if "format" in card_doc:
         lines.append(f"\n**Format:**\n```\n{card_doc['format']}\n```")
-    
+
     if "example" in card_doc:
         lines.append(f"\n**Example:**\n```\n{card_doc['example']}\n```")
-    
+
     if "required_when" in card_doc:
         lines.append(f"\n**Required when:** {card_doc['required_when']}")
-    
+
     return "\n".join(lines)
 
 
@@ -458,11 +457,11 @@ Values:
 
 def get_parameter_doc(namelist: str, param: str) -> str | None:
     """Get documentation for a parameter (legacy string version).
-    
+
     Args:
         namelist: The namelist name (e.g., 'control', 'system')
         param: The parameter name
-        
+
     Returns:
         Documentation string or None if not found
     """

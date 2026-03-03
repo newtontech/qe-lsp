@@ -34,10 +34,7 @@ class TestNamelist:
     def test_namelist_creation(self):
         """Test creating a Namelist."""
         namelist = Namelist(
-            name="control",
-            parameters={"calculation": "scf"},
-            line_start=1,
-            line_end=5
+            name="control", parameters={"calculation": "scf"}, line_start=1, line_end=5
         )
         assert namelist.name == "control"
         assert namelist.parameters["calculation"] == "scf"
@@ -63,7 +60,7 @@ class TestCard:
             options="crystal",
             data=[["Si", "28.085", "Si.pbe-n-kjpaw_psl.1.0.0.UPF"]],
             line_start=10,
-            line_end=15
+            line_end=15,
         )
         assert card.name == "ATOMIC_SPECIES"
         assert card.options == "crystal"

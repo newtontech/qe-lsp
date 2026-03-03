@@ -17,43 +17,43 @@ class DocFormatter:
     @staticmethod
     def format_parameter_doc(param: str, namelist: str) -> str | None:
         """Format parameter documentation for hover tooltip.
-        
+
         Args:
             param: Parameter name
             namelist: Namelist name (e.g., 'control', 'system')
-            
+
         Returns:
             Formatted markdown documentation or None if not found
         """
         doc = get_parameter_doc(namelist, param)
         if doc is None:
             return None
-        
+
         return f"**{param}** (in &{namelist})\n\n{doc}"
-    
+
     @staticmethod
     def format_card_doc(card: str) -> str | None:
         """Format card documentation for hover tooltip.
-        
+
         Args:
             card: Card name (e.g., 'ATOMIC_SPECIES')
-            
+
         Returns:
             Formatted markdown documentation or None if not found
         """
         doc = get_card_doc(card)
         if doc is None:
             return None
-        
+
         return f"**{card}** card\n\n{doc}"
-    
+
     @staticmethod
     def format_namelist_doc(namelist: str) -> str:
         """Format namelist documentation.
-        
+
         Args:
             namelist: Namelist name (e.g., 'control')
-            
+
         Returns:
             Formatted markdown documentation
         """

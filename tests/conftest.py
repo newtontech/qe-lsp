@@ -2,7 +2,6 @@
 
 import pytest
 
-
 SAMPLE_QE_INPUT = """
 &control
     calculation = 'scf'
