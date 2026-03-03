@@ -1,6 +1,7 @@
 """Basic tests for qe-lsp."""
 
 
+import pytest
 def test_package_imports():
     """Test that the package can be imported."""
     import qe_lsp
@@ -62,3 +63,20 @@ def test_import_server():
 
     assert server is not None
     assert main is not None
+
+
+def test_getattr_invalid():
+    """Test that accessing invalid attribute raises AttributeError."""
+    import qe_lsp
+
+    with pytest.raises(AttributeError):
+        _ = qe_lsp.nonexistent_attribute
+
+
+def test_main_lazy_import():
+    """Test lazy import of main function."""
+    import qe_lsp
+
+    main_fn = qe_lsp.main
+    assert main_fn is not None
+    assert callable(main_fn)

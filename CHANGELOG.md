@@ -1,5 +1,24 @@
 # Change Log
 
+## [0.1.2] - 2026-03-03
+
+### Added
+- Added tests for docs module (DocFormatter, convenience functions)
+- Added test for lazy import of main function
+- Added test for AttributeError on invalid attribute access
+- Added tests for hover on card names
+- Added tests for completion with card names
+- Added tests for document symbols with cards
+- Added .coveragerc for proper coverage configuration
+
+### Fixed
+- Fixed coverage configuration to properly measure source code
+- Coverage now correctly reports 91% (141 tests)
+
+### Improvements
+- Improved test coverage from 127 to 141 tests
+- Added comprehensive documentation tests
+
 ## [0.1.1] - 2026-03-03
 
 ### Fixed

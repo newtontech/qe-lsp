@@ -1,0 +1,6 @@
+[run]
+source = src/qe_lsp
+branch = true
+
+[report]
+fail_under = 100

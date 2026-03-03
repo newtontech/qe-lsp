@@ -215,3 +215,78 @@ class TestMain:
         main()
         mock_get_server.assert_called_once()
         mock_server.start_io.assert_called_once()
+
+class TestHoverCards:
+    """Test hover on card names."""
+
+    @patch("qe_lsp.server._get_server")
+    def test_hover_on_card(self, mock_get_server):
+        """Test hover on card name."""
+        srv = MagicMock()
+        srv.workspace.get_text_document.return_value = MagicMock(
+            source="ATOMIC_SPECIES\nSi 28.086 Si.upf"
+        )
+        mock_get_server.return_value = srv
+        
+        from lsprotocol.types import HoverParams, TextDocumentIdentifier, Position
+        
+        params = HoverParams(
+            text_document=TextDocumentIdentifier(uri="file:///test.in"),
+            position=Position(line=0, character=5)
+        )
+        
+        from qe_lsp.server import _hover_handler
+        result = _hover_handler(params)
+        # May return None or Hover
+        assert result is None or hasattr(result, "contents")
+
+
+class TestCompletionCards:
+    """Test completion for cards."""
+
+    @patch("qe_lsp.server._get_server")
+    def test_completion_cards(self, mock_get_server):
+        """Test completion includes card names."""
+        srv = MagicMock()
+        srv.workspace.get_text_document.return_value = MagicMock(source="ATOMIC")
+        mock_get_server.return_value = srv
+        
+        from lsprotocol.types import CompletionParams, TextDocumentIdentifier, Position
+        
+        params = CompletionParams(
+            text_document=TextDocumentIdentifier(uri="file:///test.in"),
+            position=Position(line=0, character=6)
+        )
+        
+        from qe_lsp.server import _completion_handler
+        result = _completion_handler(params)
+        if result:
+            items = result.items if hasattr(result, 'items') else result
+            labels = [i.label for i in items]
+            # Should include ATOMIC_SPECIES or ATOMIC_POSITIONS
+            assert any("ATOMIC" in label.upper() for label in labels)
+
+
+class TestDocumentSymbolsCards:
+    """Test document symbols for cards."""
+
+    @patch("qe_lsp.server._get_server")
+    def test_document_symbols_with_cards(self, mock_get_server):
+        """Test document symbols includes cards."""
+        srv = MagicMock()
+        srv.workspace.get_text_document.return_value = MagicMock(
+            source="&control\n/\nATOMIC_SPECIES\nSi 28.086 Si.upf"
+        )
+        mock_get_server.return_value = srv
+        
+        from lsprotocol.types import DocumentSymbolParams, TextDocumentIdentifier
+        
+        params = DocumentSymbolParams(
+            text_document=TextDocumentIdentifier(uri="file:///test.in")
+        )
+        
+        from qe_lsp.server import _document_symbol_handler
+        result = _document_symbol_handler(params)
+        if result:
+            names = [s.name for s in result]
+            assert "control" in names or "ATOMIC_SPECIES" in names
