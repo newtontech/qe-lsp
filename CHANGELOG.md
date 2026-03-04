@@ -1,5 +1,19 @@
 # Change Log
 
+## [0.1.9] - 2026-03-04
+
+### Added
+- Added test_100_coverage.py with tests targeting specific uncovered lines:
+  - __init__.py: AttributeError on invalid attribute access (lines 35-37)
+  - parser.py: Unclosed string handling, missing equals branch, card data edge cases
+  - server.py: Namelist position detection branch, hover None return branch, main() function
+
+### Improvements
+- Test coverage maintained at 97.47% (277 tests passing)
+- All target modules exceed 95% coverage requirement
+- Parser coverage at 97%, Server coverage at 98%
+# Change Log
+
 ## [0.1.8] - 2026-03-04
 
 ### Added
