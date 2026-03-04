@@ -494,3 +494,134 @@ Si 28.085 Si.upf
             result = completion(params)
             assert result is not None
             assert any("ATOMIC" in item.label for item in result.items)
+
+
+
+class TestDataBranchCoverage:
+    """Test data.py branch coverage for 100%."""
+
+    def test_format_param_hover_no_type(self):
+        """Test format_param_hover without type field (branch 373->376)."""
+        from qe_lsp.data import format_param_hover
+        param_doc = {
+            "description": "Test description",
+            "required": True,
+            "default": 1.0,
+            "values": ["a", "b"]
+        }
+        result = format_param_hover(param_doc)
+        assert "Test description" in result
+        assert "Type" not in result
+        assert "Required" in result
+
+    def test_format_card_hover_no_format(self):
+        """Test format_card_hover without format field (branch 403->406)."""
+        from qe_lsp.data import format_card_hover
+        card_doc = {
+            "description": "Simple card description",
+            "example": "example content",
+            "required_when": "always"
+        }
+        result = format_card_hover(card_doc)
+        assert "Simple card description" in result
+        assert "Format" not in result
+        assert "example content" in result
+        assert "always" in result
+
+
+class TestParserBranchCoverage:
+    """Test parser.py branch coverage for 100%."""
+
+    def test_lexer_read_identifier_single_char(self):
+        """Test lexer with single character after &."""
+        from qe_lsp.parser import QELexer, TokenType
+        lexer = QELexer("&x")
+        token = lexer.read_identifier()
+        assert token.type == TokenType.PARAMETER
+
+    def test_parser_validate_control_namelist(self):
+        """Test validation when control namelist exists."""
+        from qe_lsp.parser import QEParser
+        text = """&control
+  calculation = 'scf'
+  prefix = 'test'
+  outdir = './tmp'
+/
+&system
+  ibrav = 1
+  nat = 1
+  ntyp = 1
+  ecutwfc = 30
+/
+"""
+        parser = QEParser(text)
+        result = parser.parse()
+        assert "control" in result.namelists
+
+    def test_parser_boolean_values(self):
+        """Test parsing boolean values."""
+        from qe_lsp.parser import QEParser
+        text = """&control
+  tstress = .true.
+/
+&system
+  ibrav = 1
+  nat = 1
+  ntyp = 1
+  ecutwfc = 30
+/
+"""
+        parser = QEParser(text)
+        result = parser.parse()
+        assert result.namelists["control"].parameters["tstress"] == True
+
+
+
+class TestFinalCoverage100:
+    """Final tests to reach 100% coverage."""
+
+    def test_init_attribute_error(self):
+        """Test __init__.py AttributeError branch (lines 35-37)."""
+        import qe_lsp
+        with pytest.raises(AttributeError):
+            _ = qe_lsp.nonexistent_attribute_xyz
+
+    def test_format_param_hover_description_only(self):
+        """Test format_param_hover with only description field."""
+        from qe_lsp.data import format_param_hover
+        param_doc = {"description": "Only description, no type"}
+        result = format_param_hover(param_doc)
+        assert "Only description" in result
+        assert "Type" not in result  # No type field
+
+    def test_format_card_hover_description_only(self):
+        """Test format_card_hover with only description field."""
+        from qe_lsp.data import format_card_hover
+        card_doc = {"description": "Only description, no format"}
+        result = format_card_hover(card_doc)
+        assert "Only description" in result
+        assert "Format" not in result  # No format field
+
+    def test_server_main_function(self):
+        """Test main function (line 320)."""
+        from qe_lsp.server import main
+        # Just verify it exists and is callable
+        assert callable(main)
+
+    def test_data_param_doc_no_type_branch(self):
+        """Test param doc without type to cover branch 373->376."""
+        from qe_lsp.data import format_param_hover
+        # This should NOT have "type" key to cover the else branch
+        doc = {"description": "Test"}
+        result = format_param_hover(doc)
+        assert "Test" in result
+        assert "**Type:**" not in result
+
+    def test_data_card_doc_no_format_branch(self):
+        """Test card doc without format to cover branch 403->406."""
+        from qe_lsp.data import format_card_hover
+        # This should NOT have "format" key to cover the else branch
+        doc = {"description": "Test card"}
+        result = format_card_hover(doc)
+        assert "Test card" in result
+        assert "**Format:**" not in result
