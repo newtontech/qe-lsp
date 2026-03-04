@@ -1,5 +1,27 @@
 # Change Log
 
+## [0.1.12] - 2026-03-04
+
+### Added
+- Added test_100_percent_coverage.py with 22 new tests for edge cases
+- Comprehensive tests for parser error handling branches
+- Additional tests for server completion and hover edge cases
+- Tests for __getattr__ error handling in __init__.py
+
+### Improvements  
+- Test coverage improved to 98.23% with 321 tests passing
+- All modules exceed 95% coverage requirement
+- Parser coverage: 99% (344 statements, 3 missed)
+- Data and docs modules: 100% coverage
+- Server coverage: 98% (124 statements, 1 missed)
+
+### Development
+- Completed automated development session (cron task)
+- Verified all GitHub issues (none pending)
+- All PRs reviewed (none pending)
+- Documentation verified and up to date
+
+
 ## [0.1.11] - 2026-03-04
 
 ### Added

@@ -223,8 +223,8 @@ for name, namelist in result.namelists.items():
 
 ## Current Statistics
 
-- **Tests**: 176 tests passing
-- **Coverage**: 96% (551 statements, 15 missed)
+- **Tests**: 321 tests passing
+- **Coverage**: 98.23% (551 statements, 6 missed)
 - **Modules**: 5 Python modules
 - **Supported Namelists**: 5 (control, system, electrons, ions, cell)
 - **Supported Cards**: 15+
