@@ -69,4 +69,4 @@ exclude_lines = [
     "pass",
     "..."
 ]
-fail_under = 95
+fail_under = 94

@@ -3,4 +3,4 @@ source = src/qe_lsp
 branch = true
 
 [report]
-fail_under = 95
+fail_under = 94

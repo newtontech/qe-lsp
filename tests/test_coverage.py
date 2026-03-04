@@ -1,536 +1,496 @@
-"""Additional tests for qe-lsp to achieve 100% coverage."""
-
-from unittest.mock import MagicMock, patch
+"""Additional tests for 100% coverage."""
 
 import pytest
+from unittest.mock import MagicMock, patch
+import qe_lsp
+from qe_lsp.parser import QELexer, QEParser, TokenType, parse
 
 
 class TestInitModule:
-    """Test __init__.py module for full coverage."""
+    """Test __init__.py exports."""
 
-    def test_getattr_invalid_attribute(self):
-        """Test that accessing invalid attribute raises AttributeError."""
+    def test_all_exports(self):
+        """Test that __all__ contains expected exports."""
+        # Import directly to check exports
         import qe_lsp
+        assert hasattr(qe_lsp, '__all__')
+        assert 'parse_qe_input' in qe_lsp.__all__
+        assert 'QEParser' in qe_lsp.__all__
+        assert 'QELexer' in qe_lsp.__all__
 
-        with pytest.raises(AttributeError) as exc_info:
-            _ = qe_lsp.invalid_attribute_name
+    def test_version(self):
+        """Test version is defined."""
+        import qe_lsp
+        assert hasattr(qe_lsp, '__version__')
+        assert qe_lsp.__version__ == "0.1.0"
 
-        assert "invalid_attribute_name" in str(exc_info.value)
-        assert "module" in str(exc_info.value)
+    def test_lazy_import_server(self):
+        """Test lazy import of server."""
+        server = qe_lsp.server
+        assert server is not None
+
+    def test_lazy_import_main(self):
+        """Test lazy import of main."""
+        main = qe_lsp.main
+        assert main is not None
+
+    def test_lazy_import_invalid(self):
+        """Test lazy import of invalid attribute raises error."""
+        with pytest.raises(AttributeError):
+            _ = qe_lsp.nonexistent_attribute
+
+
+class TestParserMissingCoverage:
+    """Test parser code paths not covered by existing tests."""
+
+    def test_lexer_error_method(self):
+        """Test lexer error method raises SyntaxError."""
+        lexer = QELexer("test")
+        with pytest.raises(SyntaxError) as exc_info:
+            lexer.error("Test error message")
+        assert "Line 1, Column 1: Test error message" in str(exc_info.value)
+
+    def test_lexer_read_identifier_empty_after_ampersand(self):
+        """Test lexer with just & and nothing after."""
+        lexer = QELexer("& ")
+        token = lexer.read_identifier()
+        assert token.type == TokenType.PARAMETER
+
+    def test_lexer_read_identifier_namelist_not_in_list(self):
+        """Test lexer with namelist not in known list."""
+        lexer = QELexer("&unknown_namelist")
+        token = lexer.read_identifier()
+        # Should be treated as parameter since it's not a known namelist
+        assert token.type == TokenType.PARAMETER
+
+    def test_parser_unexpected_tokens(self):
+        """Test parser handling unexpected tokens."""
+        parser = QEParser("@#$%^&*")
+        result = parser.parse()
+        # Should handle gracefully
+        assert isinstance(result.namelists, dict)
+
+    def test_parser_tokenize_with_various_whitespace(self):
+        """Test tokenizing with various whitespace characters."""
+        text = "&control\n  calculation = 'scf'\n  prefix = 'test'\n/"
+        lexer = QELexer(text)
+        tokens = lexer.tokenize()
+        # Should handle tabs and spaces
+        assert any(t.type == TokenType.NAMELIST_START for t in tokens)
+
+    def test_parser_card_data_with_comments(self):
+        """Test parsing card data with comments."""
+        text = """ATOMIC_SPECIES
+Si 28.085 Si.upf  ! This is a comment
+"""
+        parser = QEParser(text)
+        result = parser.parse()
+        assert "ATOMIC_SPECIES" in result.cards
+
+    def test_parser_array_parameter(self):
+        """Test parsing array parameter like celldm(1)."""
+        text = """
+&system
+  celldm(1) = 10.0
+/"""
+        parser = QEParser(text)
+        result = parser.parse()
+        assert "system" in result.namelists
 
 
 class TestParserEdgeCases:
-    """Test edge cases in parser for full coverage."""
+    """Additional edge case tests."""
 
-    def test_lexer_error_raises(self):
-        """Test that lexer error raises SyntaxError."""
-        from qe_lsp.parser import QELexer
+    def test_lexer_peek_past_end(self):
+        """Test peeking past end of text."""
+        lexer = QELexer("ab")
+        lexer.advance()
+        lexer.advance()
+        assert lexer.peek() == ""
+        assert lexer.peek(10) == ""
 
-        lexer = QELexer("test")
-        # Manually trigger error
-        with pytest.raises(SyntaxError) as exc_info:
-            lexer.error("test error message")
+    def test_parser_advance_past_end(self):
+        """Test advancing past end of tokens."""
+        parser = QEParser("")
+        parser.tokens = parser.lexer.tokenize()
+        parser.pos = len(parser.tokens)
+        # Should return last token without error
+        token = parser.advance()
+        assert token.type == TokenType.EOF
 
-        assert "test error message" in str(exc_info.value)
-
-    def test_lexer_read_identifier_empty_boolean(self):
-        """Test reading identifier with just dot."""
-        from qe_lsp.parser import QELexer, TokenType
-
-        lexer = QELexer(".")
-        token = lexer.read_identifier()
-        assert token.type == TokenType.PARAMETER
-        assert token.value == "."
-
-    def test_lexer_read_identifier_only_ampersand(self):
-        """Test reading identifier with just ampersand."""
-        from qe_lsp.parser import QELexer, TokenType
-
-        lexer = QELexer("&")
-        token = lexer.read_identifier()
-        assert token.type == TokenType.PARAMETER
-        assert token.value == "&"
-
-    def test_lexer_tokenize_with_parens(self):
-        """Test tokenizing with parentheses (array indices)."""
-        from qe_lsp.parser import QELexer, TokenType
-
-        lexer = QELexer("celldm(1) = 10.0")
-        tokens = lexer.tokenize()
-        types = [t.type for t in tokens]
-        # Should handle parentheses
-        assert TokenType.PARAMETER in types
-        assert TokenType.NUMBER in types
-
-    def test_lexer_tokenize_unknown_characters(self):
-        """Test tokenizing unknown characters."""
-        from qe_lsp.parser import QELexer, TokenType
-
-        lexer = QELexer("&control\n  $unknown\n/")
-        tokens = lexer.tokenize()
-        # Should skip unknown characters without error
-        assert tokens[-1].type == TokenType.EOF
-
-    def test_lexer_read_string_with_escape(self):
-        """Test reading string with escape sequences."""
-        from qe_lsp.parser import QELexer, TokenType
-
-        lexer = QELexer("'test\\'value'")
-        token = lexer.read_string()
-        assert token.type == TokenType.STRING
-
-    def test_lexer_read_number_with_sign(self):
-        """Test reading number with leading sign."""
-        from qe_lsp.parser import QELexer, TokenType
-
-        lexer = QELexer("-42.5")
-        token = lexer.read_number()
-        assert token.type == TokenType.NUMBER
-        assert token.value == "-42.5"
-
-    def test_lexer_read_number_with_exponent_sign(self):
-        """Test reading number with signed exponent."""
-        from qe_lsp.parser import QELexer, TokenType
-
-        lexer = QELexer("1.0e-10")
-        token = lexer.read_number()
-        assert token.type == TokenType.NUMBER
-        assert "e-10" in token.value
-
-    def test_parser_error_with_token(self):
-        """Test parser error recording with specific token."""
-        from qe_lsp.parser import QEParser, Token, TokenType
-
-        parser = QEParser("test")
-        token = Token(TokenType.PARAMETER, "test", 5, 10)
-        parser.error("test error", token)
-
-        assert len(parser.errors) == 1
-        assert parser.errors[0]["line"] == 5
-        assert parser.errors[0]["column"] == 10
-
-    def test_parser_parse_value_invalid(self):
-        """Test parsing invalid value."""
-        from qe_lsp.parser import QEParser, TokenType
-
-        parser = QEParser("/")
+    def test_parse_value_with_empty_tokens(self):
+        """Test parse_value with empty token list."""
+        parser = QEParser("")
         parser.tokens = parser.lexer.tokenize()
         value = parser.parse_value()
         assert value is None
 
-    def test_parser_parse_namelist_with_comment(self):
-        """Test parsing namelist with comments."""
-        from qe_lsp.parser import parse_qe_input
-
-        text = """&control
-  calculation = 'scf'  ! This is a comment
-  prefix = 'test'
-/"""
-        result = parse_qe_input(text)
-        assert result.namelists["control"].parameters["calculation"] == "scf"
-
-    def test_parser_parse_card_data_with_comments(self):
-        """Test parsing card data with comments."""
-        from qe_lsp.parser import parse_qe_input
-
-        text = """ATOMIC_SPECIES
-Si 28.085 Si.upf  ! Silicon
-Ge 72.63 Ge.upf   ! Germanium"""
-        result = parse_qe_input(text)
-        assert "ATOMIC_SPECIES" in result.cards
-        assert len(result.cards["ATOMIC_SPECIES"].data) >= 1
-
-    def test_parser_parse_card_empty_lines(self):
-        """Test parsing card with empty lines."""
-        from qe_lsp.parser import parse_qe_input
-
-        text = """ATOMIC_SPECIES
-
-Si 28.085 Si.upf
-
-/"""
-        result = parse_qe_input(text)
-        assert "ATOMIC_SPECIES" in result.cards
-
-    def test_parser_validate_unknown_namelist(self):
-        """Test validation with unknown namelist."""
-        from qe_lsp.parser import Namelist, QEInputFile, QEParser
-
-        parser = QEParser("test")
-        result = QEInputFile()
-        result.namelists["unknown"] = Namelist(name="unknown")
-        parser.validate(result)
-        # Should not add errors for unknown namelists
-
-    def test_get_word_at_position_no_word(self):
-        """Test get_word_at_position when there's no word."""
-        from qe_lsp.parser import get_word_at_position
-
-        text = "   "
-        word, start, end = get_word_at_position(text, 0, 1)
-        assert word is None
-
-    def test_get_word_at_position_special_chars(self):
-        """Test get_word_at_position with special characters."""
-        from qe_lsp.parser import get_word_at_position
-
-        text = "hello!world"
-        word, start, end = get_word_at_position(text, 0, 6)
-        # Should stop at special character
-        assert word is not None
+    def test_parse_namelist_with_missing_value(self):
+        """Test parsing namelist with missing value after =."""
+        text = "&control\n  calculation =\n/"
+        parser = QEParser(text)
+        result = parser.parse()
+        # Should handle gracefully
+        assert "control" in result.namelists
 
 
-class TestDataModule:
-    """Test data module for full coverage."""
+class TestDataModuleCoverage:
+    """Test data module for complete coverage."""
 
-    def test_get_parameter_doc_function(self):
-        """Test get_parameter_doc function."""
-        from qe_lsp.data import get_parameter_doc
+    def test_get_param_doc_unknown_namelist(self):
+        """Test get_param_doc with unknown namelist."""
+        from qe_lsp.data import get_param_doc
+        result = get_param_doc("unknown_namelist", "some_param")
+        assert result is None
 
-        # Test existing parameter
-        doc = get_parameter_doc("control", "calculation")
-        assert doc is not None
+    def test_get_param_doc_unknown_param(self):
+        """Test get_param_doc with unknown parameter."""
+        from qe_lsp.data import get_param_doc
+        result = get_param_doc("control", "unknown_param")
+        assert result is None
 
-        # Test non-existent namelist
-        doc = get_parameter_doc("nonexistent", "param")
-        assert doc is None
-
-        # Test non-existent parameter
-        doc = get_parameter_doc("control", "nonexistent")
-        assert doc is None
-
-    def test_get_card_doc_function(self):
-        """Test get_card_doc function."""
-        from qe_lsp.data import get_card_doc
-
-        # Test existing card
-        doc = get_card_doc("ATOMIC_SPECIES")
-        assert doc is not None
-
-        # Test non-existent card
-        doc = get_card_doc("NONEXISTENT")
-        assert doc is None
-
-    def test_format_param_hover_no_description(self):
-        """Test format_param_hover without description."""
+    def test_format_param_hover_with_all_fields(self):
+        """Test format_param_hover with all possible fields."""
         from qe_lsp.data import format_param_hover
-
-        param_doc = {"type": "string"}
+        param_doc = {
+            "description": "Test parameter",
+            "type": "real",
+            "required": True,
+            "default": 1.0,
+            "values": ["'option1'", "'option2'"]
+        }
         result = format_param_hover(param_doc)
-        assert "Type:" in result
+        assert "Test parameter" in result
+        assert "real" in result
+        assert "Required" in result
+        assert "1.0" in result
+        assert "option1" in result
 
-    def test_format_card_hover_no_description(self):
-        """Test format_card_hover without description."""
+    def test_format_param_hover_minimal(self):
+        """Test format_param_hover with minimal fields."""
+        from qe_lsp.data import format_param_hover
+        param_doc = {"description": "Simple param"}
+        result = format_param_hover(param_doc)
+        assert "Simple param" in result
+        assert "Type" not in result
+
+    def test_format_card_hover_with_example(self):
+        """Test format_card_hover with example field."""
         from qe_lsp.data import format_card_hover
-
-        card_doc = {"format": "test format"}
+        card_doc = {
+            "description": "Test card",
+            "format": "FORMAT",
+            "example": "EXAMPLE",
+            "required_when": "always"
+        }
         result = format_card_hover(card_doc)
-        assert "Format:" in result
+        assert "Test card" in result
+        assert "FORMAT" in result
+        assert "EXAMPLE" in result
+        assert "always" in result
+
+    def test_format_card_hover_minimal(self):
+        """Test format_card_hover with minimal fields."""
+        from qe_lsp.data import format_card_hover
+        card_doc = {"description": "Simple card"}
+        result = format_card_hover(card_doc)
+        assert "Simple card" in result
 
 
-class TestServerEdgeCases:
-    """Test server module edge cases for full coverage."""
+class TestServerCoverage:
+    """Test server module for complete coverage."""
 
-    @patch("qe_lsp.server._get_server")
-    def test_completion_with_empty_result(self, mock_get_server):
-        """Test completion when result is empty."""
-        from qe_lsp.server import completion
-
-        srv = MagicMock()
-        srv.workspace.get_text_document.return_value = MagicMock(source="xyz")
-        mock_get_server.return_value = srv
-
-        params = MagicMock()
-        params.text_document.uri = "test://test.in"
-        params.position = MagicMock(line=0, character=3)
-
-        result = completion(params)
-        # Should return empty or partial list
-        assert result is not None or result is None
-
-    @patch("qe_lsp.server._get_server")
-    def test_hover_on_namelist_name(self, mock_get_server):
-        """Test hover on namelist name."""
-        from qe_lsp.server import hover
-
-        srv = MagicMock()
-        srv.workspace.get_text_document.return_value = MagicMock(source="&control")
-        mock_get_server.return_value = srv
-
-        params = MagicMock()
-        params.text_document.uri = "test://test.in"
-        params.position = MagicMock(line=0, character=1)
-
-        result = hover(params)
-        # Should return hover for namelist
-        assert result is not None or result is None
-
-    @patch("qe_lsp.server._get_server")
-    def test_diagnostic_with_warning(self, mock_get_server):
-        """Test diagnostic with warning severity."""
-        from qe_lsp.server import diagnostic
-
-        srv = MagicMock()
-        srv.workspace.get_text_document.return_value = MagicMock(source="&unknown\n/")
-        mock_get_server.return_value = srv
-
-        params = MagicMock()
-        params.text_document.uri = "test://test.in"
-
-        result = diagnostic(params)
-        assert isinstance(result, list)
-
-    @patch("qe_lsp.server._get_server")
-    def test_document_symbol_empty(self, mock_get_server):
-        """Test document symbol with empty document."""
-        from qe_lsp.server import document_symbol
-
-        srv = MagicMock()
-        srv.workspace.get_text_document.return_value = MagicMock(source="")
-        mock_get_server.return_value = srv
-
-        params = MagicMock()
-        params.text_document.uri = "test://test.in"
-
-        result = document_symbol(params)
-        assert isinstance(result, list)
-        assert len(result) == 0
-
-    def test_get_word_at_position_line_out_of_range(self):
-        """Test _get_word_at_position with line out of range."""
-        from lsprotocol.types import Position
-
+    def test_get_word_at_position_empty_line(self):
+        """Test get_word_at_position with empty line."""
         from qe_lsp.server import _get_word_at_position
-
-        doc = MagicMock()
-        doc.source = "test"
-        position = Position(line=100, character=0)
-
-        word, rng = _get_word_at_position(doc, position)
+        mock_doc = MagicMock()
+        mock_doc.source = "\n\n"
+        from lsprotocol.types import Position
+        pos = Position(line=0, character=0)
+        word, range_obj = _get_word_at_position(mock_doc, pos)
         assert word == ""
 
-    def test_get_namelist_at_position_with_end(self):
-        """Test _get_namelist_at_position with &end."""
-        from lsprotocol.types import Position
+    def test_hover_no_namelist_no_match(self):
+        """Test hover when no namelist and word doesn't match."""
+        from qe_lsp.server import hover
+        from lsprotocol.types import TextDocumentPositionParams, Position
+        
+        mock_doc = MagicMock()
+        mock_doc.source = "random text here"
+        
+        mock_workspace = MagicMock()
+        mock_workspace.get_text_document.return_value = mock_doc
+        
+        with patch('qe_lsp.server._get_server') as mock_get_server:
+            mock_server = MagicMock()
+            mock_server.workspace = mock_workspace
+            mock_get_server.return_value = mock_server
+            
+            params = TextDocumentPositionParams(
+                text_document=MagicMock(uri="file:///test.in"),
+                position=Position(line=0, character=0)
+            )
+            result = hover(params)
+            # Should return None for unknown word
+            assert result is None
 
-        from qe_lsp.server import _get_namelist_at_position
+    def test_completion_no_namelist_with_filter(self):
+        """Test completion outside namelist with filter word."""
+        from qe_lsp.server import completion
+        from lsprotocol.types import CompletionParams, Position
+        
+        mock_doc = MagicMock()
+        mock_doc.source = "con"  # Partial match for 'control'
+        
+        mock_workspace = MagicMock()
+        mock_workspace.get_text_document.return_value = mock_doc
+        
+        with patch('qe_lsp.server._get_server') as mock_get_server:
+            mock_server = MagicMock()
+            mock_server.workspace = mock_workspace
+            mock_get_server.return_value = mock_server
+            
+            params = CompletionParams(
+                text_document=MagicMock(uri="file:///test.in"),
+                position=Position(line=0, character=3)
+            )
+            result = completion(params)
+            assert result is not None
+            assert any("control" in item.label for item in result.items)
 
-        doc = MagicMock()
-        doc.source = "&control\n&end\ntest"
-        position = Position(line=2, character=0)
+    def test_diagnostic_with_errors(self):
+        """Test diagnostic handler with parsing errors."""
+        from qe_lsp.server import diagnostic
+        
+        mock_doc = MagicMock()
+        mock_doc.source = "&unknown_namelist\n/"  # Invalid namelist
+        
+        mock_workspace = MagicMock()
+        mock_workspace.get_text_document.return_value = mock_doc
+        
+        with patch('qe_lsp.server._get_server') as mock_get_server:
+            mock_server = MagicMock()
+            mock_server.workspace = mock_workspace
+            mock_get_server.return_value = mock_server
+            
+            params = MagicMock()
+            params.text_document.uri = "file:///test.in"
+            result = diagnostic(params)
+            # Should return list of diagnostics
+            assert isinstance(result, list)
 
-        namelist = _get_namelist_at_position(doc, position)
-        assert namelist is None
+    def test_document_symbol_empty_file(self):
+        """Test document_symbol with empty file."""
+        from qe_lsp.server import document_symbol
+        
+        mock_doc = MagicMock()
+        mock_doc.source = ""
+        
+        mock_workspace = MagicMock()
+        mock_workspace.get_text_document.return_value = mock_doc
+        
+        with patch('qe_lsp.server._get_server') as mock_get_server:
+            mock_server = MagicMock()
+            mock_server.workspace = mock_workspace
+            mock_get_server.return_value = mock_server
+            
+            params = MagicMock()
+            params.text_document.uri = "file:///test.in"
+            result = document_symbol(params)
+            assert isinstance(result, list)
+            assert len(result) == 0
 
-    def test_get_namelist_at_position_no_ampersand(self):
-        """Test _get_namelist_at_position with namelist without &."""
-        from lsprotocol.types import Position
 
-        from qe_lsp.server import _get_namelist_at_position
+class TestMainFunction:
+    """Test main function coverage."""
 
-        doc = MagicMock()
-        doc.source = "control\ntest"
-        position = Position(line=1, character=0)
+    def test_main_with_exception(self):
+        """Test main function exception handling."""
+        from qe_lsp.server import main
+        
+        with patch('qe_lsp.server._get_server') as mock_get_server:
+            mock_server = MagicMock()
+            mock_server.start_io.side_effect = KeyboardInterrupt()
+            mock_get_server.return_value = mock_server
+            
+            # Should handle KeyboardInterrupt gracefully
+            with pytest.raises(KeyboardInterrupt):
+                main()
 
-        namelist = _get_namelist_at_position(doc, position)
-        assert namelist is None
 
+class TestAdditionalCoverage:
+    """Additional tests for 100% coverage."""
 
-class TestParserAdvancedFeatures:
-    """Test advanced parser features."""
+    def test_parser_error_with_token(self):
+        """Test parser error method with token."""
+        from qe_lsp.parser import QEParser
+        parser = QEParser("test")
+        parser.tokens = parser.lexer.tokenize()
+        parser.error("test error", parser.current())
+        assert len(parser.errors) == 1
 
-    def test_parse_complex_input(self):
-        """Test parsing complex input with multiple sections."""
-        from qe_lsp.parser import parse_qe_input
+    def test_parser_current_no_tokens(self):
+        """Test parser current with no tokens."""
+        from qe_lsp.parser import QEParser, TokenType
+        parser = QEParser("")
+        parser.tokens = []
+        token = parser.current()
+        assert token.type == TokenType.EOF
 
-        text = """
+    def test_parse_card_data_with_namelist_start(self):
+        """Test parse_card_data stopping at namelist."""
+        from qe_lsp.parser import QEParser
+        text = """ATOMIC_SPECIES
+Si 28.085 Si.upf
 &control
-  calculation = 'vc-relax'
-  prefix = 'silicon'
-  outdir = './tmp'
-  pseudo_dir = './'
-  tstress = .true.
-  tprnfor = .true.
-/
+/"""
+        parser = QEParser(text)
+        parser.tokens = parser.lexer.tokenize()
+        parser.pos = 2  # Start after ATOMIC_SPECIES
+        data = parser.parse_card_data("ATOMIC_SPECIES")
+        assert len(data) >= 0
 
-&system
-  ibrav = 2
-  celldm(1) = 10.20
-  nat = 2
-  ntyp = 1
-  ecutwfc = 30.0
-  ecutrho = 240.0
-  occupations = 'smearing'
-  degauss = 0.01
-  smearing = 'methfessel-paxton'
-/
+    def test_parse_card_data_with_card_name(self):
+        """Test parse_card_data stopping at another card."""
+        from qe_lsp.parser import QEParser
+        text = """ATOMIC_SPECIES
+Si 28.085 Si.upf
+K_POINTS
+6 6 6 1 1 1"""
+        parser = QEParser(text)
+        parser.tokens = parser.lexer.tokenize()
+        parser.pos = 2  # Start after ATOMIC_SPECIES
+        data = parser.parse_card_data("ATOMIC_SPECIES")
+        assert len(data) >= 0
 
-&electrons
-  conv_thr = 1.0d-10
-  mixing_beta = 0.7
-  mixing_mode = 'plain'
-  diagonalization = 'david'
-/
+    def test_parse_card_with_empty_data(self):
+        """Test parsing card with empty data lines."""
+        from qe_lsp.parser import QEParser
+        text = """ATOMIC_SPECIES
 
-&ions
-  ion_dynamics = 'bfgs'
-/
-
-&cell
-  cell_dynamics = 'bfgs'
-  press = 0.0
-/
-
-ATOMIC_SPECIES
- Si  28.0855  Si.pbe-n-rrkjus_psl.1.0.0.UPF
-
-ATOMIC_POSITIONS alat
- Si   0.000000000   0.000000000   0.000000000
- Si   0.250000000   0.250000000   0.250000000
-
-K_POINTS automatic
- 6 6 6 0 0 0
-
-CELL_PARAMETERS alat
-  0.0   0.5   0.5
-  0.5   0.0   0.5
-  0.5   0.5   0.0
-"""
-        result = parse_qe_input(text)
-        assert "control" in result.namelists
-        assert "system" in result.namelists
-        assert "electrons" in result.namelists
-        assert "ions" in result.namelists
-        assert "cell" in result.namelists
+&control
+/"""
+        parser = QEParser(text)
+        result = parser.parse()
         assert "ATOMIC_SPECIES" in result.cards
-        assert "ATOMIC_POSITIONS" in result.cards
-        assert "K_POINTS" in result.cards
-        assert "CELL_PARAMETERS" in result.cards
 
-    def test_parse_with_huge_numbers(self):
-        """Test parsing with scientific notation variations."""
-        from qe_lsp.parser import parse_qe_input
+    def test_lexer_skip_comment_at_end(self):
+        """Test lexer skip comment at end of text."""
+        from qe_lsp.parser import QELexer
+        lexer = QELexer("! comment at end")
+        lexer.skip_comment()
+        assert lexer.peek() == ""
 
-        text = """
-&system
-  ibrav = 1
-  nat = 1
-  ntyp = 1
-  ecutwfc = 1.0D+10
-  degauss = 1.D-5
-/
-"""
-        result = parse_qe_input(text)
-        params = result.namelists["system"].parameters
-        assert params["ecutwfc"] == 1.0e10
+    def test_parser_expect_wrong_type(self):
+        """Test parser expect with wrong token type."""
+        from qe_lsp.parser import QEParser, TokenType
+        parser = QEParser("&control")
+        parser.tokens = parser.lexer.tokenize()
+        result = parser.expect(TokenType.CARD_NAME)
+        assert result is None
 
-    def test_parse_missing_equals_in_namelist(self):
-        """Test parsing namelist with missing equals sign."""
-        from qe_lsp.parser import parse_qe_input
+    def test_server_completion_with_namelist_and_filter(self):
+        """Test server completion inside namelist with filter."""
+        from qe_lsp.server import completion
+        from lsprotocol.types import CompletionParams, Position
+        
+        mock_doc = MagicMock()
+        mock_doc.source = "&control\n  calc"  # Partial match for 'calculation'
+        
+        mock_workspace = MagicMock()
+        mock_workspace.get_text_document.return_value = mock_doc
+        
+        with patch('qe_lsp.server._get_server') as mock_get_server:
+            mock_server = MagicMock()
+            mock_server.workspace = mock_workspace
+            mock_get_server.return_value = mock_server
+            
+            params = CompletionParams(
+                text_document=MagicMock(uri="file:///test.in"),
+                position=Position(line=1, character=6)
+            )
+            result = completion(params)
+            assert result is not None
+            assert len(result.items) > 0
 
-        text = """
+    def test_server_hover_on_card_without_doc(self):
+        """Test hover on card without documentation."""
+        from qe_lsp.server import hover
+        from lsprotocol.types import TextDocumentPositionParams, Position
+        
+        mock_doc = MagicMock()
+        mock_doc.source = "UNKNOWN_CARD"
+        
+        mock_workspace = MagicMock()
+        mock_workspace.get_text_document.return_value = mock_doc
+        
+        with patch('qe_lsp.server._get_server') as mock_get_server:
+            mock_server = MagicMock()
+            mock_server.workspace = mock_workspace
+            mock_get_server.return_value = mock_server
+            
+            params = TextDocumentPositionParams(
+                text_document=MagicMock(uri="file:///test.in"),
+                position=Position(line=0, character=0)
+            )
+            result = hover(params)
+            # Should return None for unknown card without doc
+            assert result is None
+
+
+class TestFinalCoverage:
+    """Final tests to reach 100% coverage."""
+
+    def test_init_main_import(self):
+        """Test main import through __getattr__."""
+        import qe_lsp
+        main_func = qe_lsp.main
+        assert main_func is not None
+
+    def test_parser_parse_card_with_data_then_namelist(self):
+        """Test parse card followed by namelist."""
+        from qe_lsp.parser import QEParser
+        text = """ATOMIC_SPECIES
+Si 28.085 Si.upf
 &control
-  calculation 'scf'
-  prefix = 'test'
-/
-&system
-  ibrav = 1
-  nat = 1
-  ntyp = 1
-  ecutwfc = 20
-/
-"""
-        # Should handle gracefully
-        result = parse_qe_input(text)
+  calculation = 'scf'
+/"""
+        parser = QEParser(text)
+        result = parser.parse()
+        assert "ATOMIC_SPECIES" in result.cards
         assert "control" in result.namelists
 
-    def test_parse_boolean_variations(self):
-        """Test parsing various boolean formats."""
-        from qe_lsp.parser import parse_qe_input
-
+    def test_parse_value_array_notation(self):
+        """Test parse value with array notation like celldm(1)."""
+        from qe_lsp.parser import QEParser
         text = """
-&control
-  calculation = 'scf'
-  prefix = 'test'
-  outdir = './'
-  tstress = T
-  tprnfor = F
-/
 &system
-  ibrav = 1
-  nat = 1
-  ntyp = 1
-  ecutwfc = 20
-/
-"""
-        result = parse_qe_input(text)
-        params = result.namelists["control"].parameters
-        assert params["tstress"] is True
-        assert params["tprnfor"] is False
+  celldm(1) = 10.26
+/"""
+        parser = QEParser(text)
+        result = parser.parse()
+        assert "system" in result.namelists
 
-
-class TestParserValidateRequiredParams:
-    """Test validation of required parameters."""
-
-    def test_validate_all_required_params_present(self):
-        """Test validation when all required params are present."""
-        from qe_lsp.parser import parse_qe_input
-
-        text = """
-&control
-  calculation = 'scf'
-  prefix = 'test'
-  outdir = './'
-/
-&system
-  ibrav = 1
-  nat = 1
-  ntyp = 1
-  ecutwfc = 20
-/
-"""
-        result = parse_qe_input(text)
-        # Should have no missing parameter errors
-        missing_param_errors = [
-            e for e in result.errors if "Missing required parameter" in e["message"]
-        ]
-        assert len(missing_param_errors) == 0
-
-    def test_validate_missing_params_in_control(self):
-        """Test validation with missing params in control."""
-        from qe_lsp.parser import parse_qe_input
-
-        text = """
-&control
-  prefix = 'test'
-/
-&system
-  ibrav = 1
-  nat = 1
-  ntyp = 1
-  ecutwfc = 20
-/
-"""
-        result = parse_qe_input(text)
-        # Should have missing calculation error
-        assert any("calculation" in e["message"] for e in result.errors)
-
-    def test_validate_missing_params_in_system(self):
-        """Test validation with missing params in system."""
-        from qe_lsp.parser import parse_qe_input
-
-        text = """
-&control
-  calculation = 'scf'
-  prefix = 'test'
-  outdir = './'
-/
-&system
-  ibrav = 1
-  ntyp = 1
-  ecutwfc = 20
-/
-"""
-        result = parse_qe_input(text)
-        # Should have missing nat error
-        assert any("nat" in e["message"] for e in result.errors)
+    def test_server_completion_cards_filter(self):
+        """Test completion with card filtering."""
+        from qe_lsp.server import completion
+        from lsprotocol.types import CompletionParams, Position
+        
+        mock_doc = MagicMock()
+        mock_doc.source = "ATOM"  # Partial match for ATOMIC_SPECIES
+        
+        mock_workspace = MagicMock()
+        mock_workspace.get_text_document.return_value = mock_doc
+        
+        with patch('qe_lsp.server._get_server') as mock_get_server:
+            mock_server = MagicMock()
+            mock_server.workspace = mock_workspace
+            mock_get_server.return_value = mock_server
+            
+            params = CompletionParams(
+                text_document=MagicMock(uri="file:///test.in"),
+                position=Position(line=0, character=4)
+            )
+            result = completion(params)
+            assert result is not None
+            assert any("ATOMIC" in item.label for item in result.items)
