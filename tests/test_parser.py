@@ -1,18 +1,18 @@
 """Tests for Quantum ESPRESSO input file parser."""
 
 from qe_lsp.parser import (
-    Token,
-    TokenType,
-    Namelist,
     Card,
+    Namelist,
     QEInputFile,
     QELexer,
     QEParser,
-    parse_qe_input,
-    get_parameter_doc,
-    get_namelist_params,
+    Token,
+    TokenType,
     get_card_names,
+    get_namelist_params,
+    get_parameter_doc,
     get_word_at_position,
+    parse_qe_input,
 )
 
 

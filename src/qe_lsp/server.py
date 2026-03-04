@@ -4,7 +4,7 @@ Quantum ESPRESSO Language Server Protocol implementation
 
 from __future__ import annotations
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from lsprotocol.types import (
     CompletionItem,
@@ -170,7 +170,7 @@ def _hover_handler(params: HoverParams | TextDocumentPositionParams) -> Hover | 
         )
 
     if word.upper() in ["ATOMIC_SPECIES", "ATOMIC_POSITIONS", "K_POINTS", "CELL_PARAMETERS"]:
-        from .data import get_card_doc, format_card_hover
+        from .data import format_card_hover, get_card_doc
 
         card_doc = get_card_doc(word)
         if card_doc:

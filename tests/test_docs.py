@@ -1,11 +1,12 @@
 """Tests for docs module."""
 
 import pytest
+
 from qe_lsp.docs import (
     DocFormatter,
-    get_formatted_parameter_doc,
     get_formatted_card_doc,
     get_formatted_namelist_doc,
+    get_formatted_parameter_doc,
 )
 
 

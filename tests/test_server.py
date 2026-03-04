@@ -3,14 +3,14 @@
 from unittest.mock import MagicMock, patch
 
 from qe_lsp.server import (
-    _get_word_at_position,
     _get_namelist_at_position,
+    _get_server_for_testing,
+    _get_word_at_position,
     completion,
-    hover,
     diagnostic,
     document_symbol,
+    hover,
     main,
-    _get_server_for_testing,
 )
 
 
@@ -229,7 +229,7 @@ class TestHoverCards:
         )
         mock_get_server.return_value = srv
 
-        from lsprotocol.types import HoverParams, TextDocumentIdentifier, Position
+        from lsprotocol.types import HoverParams, Position, TextDocumentIdentifier
 
         params = HoverParams(
             text_document=TextDocumentIdentifier(uri="file:///test.in"),
@@ -253,7 +253,7 @@ class TestCompletionCards:
         srv.workspace.get_text_document.return_value = MagicMock(source="ATOMIC")
         mock_get_server.return_value = srv
 
-        from lsprotocol.types import CompletionParams, TextDocumentIdentifier, Position
+        from lsprotocol.types import CompletionParams, Position, TextDocumentIdentifier
 
         params = CompletionParams(
             text_document=TextDocumentIdentifier(uri="file:///test.in"),

@@ -1,9 +1,10 @@
 """Final coverage tests to achieve 100% test coverage."""
 
-import pytest
-from unittest.mock import MagicMock, patch, mock_open
-import sys
 import io
+import sys
+from unittest.mock import MagicMock, mock_open, patch
+
+import pytest
 
 
 class TestFinalCoverage:
@@ -105,7 +106,7 @@ class TestFinalCoverage:
 
     def test_parser_advance_end(self):
         """Test parser.advance() at end of tokens."""
-        from qe_lsp.parser import QEParser, TokenType, Token
+        from qe_lsp.parser import QEParser, Token, TokenType
 
         parser = QEParser("")
         parser.tokens = [Token(TokenType.EOF, "", 1, 1)]
@@ -116,7 +117,7 @@ class TestFinalCoverage:
 
     def test_parser_parse_value_number_int_conversion(self):
         """Test parse_value with integer number."""
-        from qe_lsp.parser import QEParser, TokenType, Token
+        from qe_lsp.parser import QEParser, Token, TokenType
 
         parser = QEParser("42")
         parser.tokens = [
@@ -129,7 +130,7 @@ class TestFinalCoverage:
 
     def test_parser_parse_value_number_error(self):
         """Test parse_value with malformed number."""
-        from qe_lsp.parser import QEParser, TokenType, Token
+        from qe_lsp.parser import QEParser, Token, TokenType
 
         parser = QEParser("invalid")
         parser.tokens = [
@@ -142,7 +143,7 @@ class TestFinalCoverage:
 
     def test_parser_parse_value_boolean_true(self):
         """Test parse_value with .true. boolean."""
-        from qe_lsp.parser import QEParser, TokenType, Token
+        from qe_lsp.parser import QEParser, Token, TokenType
 
         parser = QEParser(".true.")
         parser.tokens = [
@@ -154,7 +155,7 @@ class TestFinalCoverage:
 
     def test_parser_parse_value_boolean_t(self):
         """Test parse_value with 't' boolean."""
-        from qe_lsp.parser import QEParser, TokenType, Token
+        from qe_lsp.parser import QEParser, Token, TokenType
 
         parser = QEParser("t")
         parser.tokens = [
@@ -166,7 +167,7 @@ class TestFinalCoverage:
 
     def test_parser_parse_namelist_without_equals(self):
         """Test parse_namelist with parameter without equals sign."""
-        from qe_lsp.parser import QEParser, TokenType, Token, Namelist
+        from qe_lsp.parser import Namelist, QEParser, Token, TokenType
 
         parser = QEParser("&control\n  calculation\n/")
         parser.tokens = [
@@ -184,7 +185,7 @@ class TestFinalCoverage:
 
     def test_parser_parse_card_data_with_newlines_only(self):
         """Test parse_card_data with only newlines."""
-        from qe_lsp.parser import QEParser, TokenType, Token
+        from qe_lsp.parser import QEParser, Token, TokenType
 
         parser = QEParser("ATOMIC_SPECIES\n\n\nK_POINTS")
         parser.tokens = [
@@ -201,7 +202,7 @@ class TestFinalCoverage:
 
     def test_parser_parse_card_with_options(self):
         """Test parse_card with options parameter."""
-        from qe_lsp.parser import QEParser, TokenType, Token
+        from qe_lsp.parser import QEParser, Token, TokenType
 
         parser = QEParser("ATOMIC_POSITIONS crystal\nSi 0.0 0.0 0.0")
         parser.tokens = parser.lexer.tokenize()
@@ -245,8 +246,9 @@ class TestFinalCoverage:
     @patch("qe_lsp.server._get_server")
     def test_hover_returns_none_no_word(self, mock_get_server):
         """Test hover returns None when word is empty."""
-        from qe_lsp.server import hover
         from lsprotocol.types import Position
+
+        from qe_lsp.server import hover
 
         srv = MagicMock()
         srv.workspace.get_text_document.return_value = MagicMock(source="   ")
@@ -262,8 +264,9 @@ class TestFinalCoverage:
     @patch("qe_lsp.server._get_server")
     def test_hover_returns_none_unknown_word(self, mock_get_server):
         """Test hover returns None for unknown word not in namelist."""
-        from qe_lsp.server import hover
         from lsprotocol.types import Position
+
+        from qe_lsp.server import hover
 
         srv = MagicMock()
         srv.workspace.get_text_document.return_value = MagicMock(source="unknownword")
@@ -279,8 +282,9 @@ class TestFinalCoverage:
     @patch("qe_lsp.server._get_server")
     def test_hover_in_namelist_no_param_doc(self, mock_get_server):
         """Test hover in namelist but no documentation for parameter."""
-        from qe_lsp.server import hover
         from lsprotocol.types import Position
+
+        from qe_lsp.server import hover
 
         srv = MagicMock()
         srv.workspace.get_text_document.return_value = MagicMock(
@@ -299,8 +303,9 @@ class TestFinalCoverage:
     @patch("qe_lsp.server._get_server")
     def test_hover_card_no_doc(self, mock_get_server):
         """Test hover on card with no documentation."""
-        from qe_lsp.server import hover
         from lsprotocol.types import Position
+
+        from qe_lsp.server import hover
 
         srv = MagicMock()
         srv.workspace.get_text_document.return_value = MagicMock(source="UNKNOWN_CARD")
@@ -318,10 +323,9 @@ class TestFinalCoverage:
     @patch("pygls.server.LanguageServer.start_io")
     def test_main_function(self, mock_start_io, mock_stdin, mock_stdout):
         """Test main() function starts the server."""
-        from qe_lsp.server import main, _server_instance
-
         # Reset server instance
         import qe_lsp.server as server_module
+        from qe_lsp.server import _server_instance, main
 
         server_module._server_instance = None
 
@@ -341,7 +345,7 @@ class TestFinalCoverage:
 
     def test_parser_parse_card_no_start_token(self):
         """Test parse_card when current token is not CARD_NAME."""
-        from qe_lsp.parser import QEParser, TokenType, Token
+        from qe_lsp.parser import QEParser, Token, TokenType
 
         parser = QEParser("")
         parser.tokens = [
@@ -354,7 +358,7 @@ class TestFinalCoverage:
 
     def test_parser_expect_wrong_type(self):
         """Test expect() with wrong token type."""
-        from qe_lsp.parser import QEParser, TokenType, Token
+        from qe_lsp.parser import QEParser, Token, TokenType
 
         parser = QEParser("")
         parser.tokens = [
@@ -367,7 +371,7 @@ class TestFinalCoverage:
 
     def test_parser_validate_with_warnings(self):
         """Test validate() records warnings correctly."""
-        from qe_lsp.parser import QEParser, QEInputFile
+        from qe_lsp.parser import QEInputFile, QEParser
 
         parser = QEParser("")
         result = QEInputFile()

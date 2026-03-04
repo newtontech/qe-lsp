@@ -1,7 +1,9 @@
 """Tests to achieve 100% coverage for missing lines."""
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
+
 from qe_lsp.parser import QELexer, QEParser, TokenType, parse_qe_input
 from qe_lsp.server import _get_namelist_at_position, _hover_handler
 
@@ -90,7 +92,7 @@ class TestServerCoverage:
 
     def test_hover_handler_returns_none(self):
         """Cover server.py:177->185 - hover returns None branch."""
-        from lsprotocol.types import TextDocumentPositionParams, Position
+        from lsprotocol.types import Position, TextDocumentPositionParams
 
         params = MagicMock(spec=TextDocumentPositionParams)
         params.text_document.uri = "test:///test.in"

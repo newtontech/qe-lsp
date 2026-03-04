@@ -43,7 +43,7 @@ def test_parser_exports():
 
 def test_docs_exports():
     """Test that documentation can be imported."""
-    from qe_lsp import get_parameter_doc, get_card_doc
+    from qe_lsp import get_card_doc, get_parameter_doc
 
     assert get_parameter_doc is not None
     assert get_card_doc is not None
@@ -60,7 +60,7 @@ def test_parse_function():
 
 def test_import_server():
     """Test that server can be imported."""
-    from qe_lsp import server, main
+    from qe_lsp import main, server
 
     assert server is not None
     assert main is not None

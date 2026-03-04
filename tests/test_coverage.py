@@ -1,7 +1,8 @@
 """Additional tests for qe-lsp to achieve 100% coverage."""
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 class TestInitModule:
@@ -153,7 +154,7 @@ Si 28.085 Si.upf
 
     def test_parser_validate_unknown_namelist(self):
         """Test validation with unknown namelist."""
-        from qe_lsp.parser import QEParser, QEInputFile, Namelist
+        from qe_lsp.parser import Namelist, QEInputFile, QEParser
 
         parser = QEParser("test")
         result = QEInputFile()
@@ -297,8 +298,9 @@ class TestServerEdgeCases:
 
     def test_get_word_at_position_line_out_of_range(self):
         """Test _get_word_at_position with line out of range."""
-        from qe_lsp.server import _get_word_at_position
         from lsprotocol.types import Position
+
+        from qe_lsp.server import _get_word_at_position
 
         doc = MagicMock()
         doc.source = "test"
@@ -309,8 +311,9 @@ class TestServerEdgeCases:
 
     def test_get_namelist_at_position_with_end(self):
         """Test _get_namelist_at_position with &end."""
-        from qe_lsp.server import _get_namelist_at_position
         from lsprotocol.types import Position
+
+        from qe_lsp.server import _get_namelist_at_position
 
         doc = MagicMock()
         doc.source = "&control\n&end\ntest"
@@ -321,8 +324,9 @@ class TestServerEdgeCases:
 
     def test_get_namelist_at_position_no_ampersand(self):
         """Test _get_namelist_at_position with namelist without &."""
-        from qe_lsp.server import _get_namelist_at_position
         from lsprotocol.types import Position
+
+        from qe_lsp.server import _get_namelist_at_position
 
         doc = MagicMock()
         doc.source = "control\ntest"

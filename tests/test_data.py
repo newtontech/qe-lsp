@@ -3,12 +3,12 @@
 from qe_lsp.data import (
     ALL_PARAMS,
     CARD_DOCS,
+    CELL_PARAMS,
     CONTROL_PARAMS,
     ELECTRONS_PARAMS,
     IONS_PARAMS,
     NAMELIST_SUGGESTIONS,
     SYSTEM_PARAMS,
-    CELL_PARAMS,
     format_card_hover,
     format_param_hover,
     get_card_doc,

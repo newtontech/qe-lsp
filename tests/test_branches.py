@@ -1,7 +1,8 @@
 """Final coverage tests to achieve 100% test coverage - Branch Tests."""
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 
 
 class TestParserBranches:
@@ -49,7 +50,7 @@ class TestParserBranches:
 
     def test_parser_parse_card_data_no_line_data(self):
         """Test parse_card_data when line_data is empty (branch line 504->507)."""
-        from qe_lsp.parser import QEParser, TokenType, Token
+        from qe_lsp.parser import QEParser, Token, TokenType
 
         # Create a scenario where line_data would be empty
         parser = QEParser("ATOMIC_SPECIES\n! just a comment\nK_POINTS")
@@ -68,7 +69,7 @@ class TestParserBranches:
 
     def test_parser_parse_returns_none_namelist(self):
         """Test parse when parse_namelist returns None (branch 572->574)."""
-        from qe_lsp.parser import QEParser, TokenType, Token
+        from qe_lsp.parser import QEParser, Token, TokenType
 
         parser = QEParser("")
         parser.tokens = [
@@ -82,7 +83,7 @@ class TestParserBranches:
 
     def test_parser_parse_returns_none_card(self):
         """Test parse when parse_card returns None (branch 578->580)."""
-        from qe_lsp.parser import QEParser, TokenType, Token
+        from qe_lsp.parser import QEParser, Token, TokenType
 
         # First create proper namelists to avoid validation errors
         parser = QEParser("")
@@ -182,7 +183,7 @@ Si si_value Si.upf"""
 
     def test_parser_card_data_line_469(self):
         """Test parse_card_data specific branch at line 469."""
-        from qe_lsp.parser import QEParser, TokenType, Token
+        from qe_lsp.parser import QEParser, Token, TokenType
 
         # Create tokens to hit the specific line_data append branch
         parser = QEParser("")
@@ -252,7 +253,7 @@ class TestParserEdgeCases:
 
     def test_parse_value_with_string_having_escape(self):
         """Test parse_value with escaped string."""
-        from qe_lsp.parser import QEParser, TokenType, Token
+        from qe_lsp.parser import QEParser, Token, TokenType
 
         parser = QEParser("'test\\n'")
         parser.tokens = [
@@ -273,7 +274,7 @@ class TestParserEdgeCases:
 
     def test_validate_missing_control_system(self):
         """Test validate when both control and system are missing."""
-        from qe_lsp.parser import QEParser, QEInputFile
+        from qe_lsp.parser import QEInputFile, QEParser
 
         parser = QEParser("")
         result = QEInputFile()

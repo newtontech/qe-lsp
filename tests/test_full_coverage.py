@@ -1,21 +1,23 @@
 """Additional tests to achieve 100% coverage."""
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
+
+from qe_lsp.data import (
+    PARAMETER_DOCS,
+    format_card_hover,
+    format_param_hover,
+    get_card_doc,
+    get_parameter_doc,
+)
 from qe_lsp.parser import (
+    Namelist,
+    QEInputFile,
     QELexer,
     QEParser,
-    parse_qe_input,
     TokenType,
-    QEInputFile,
-    Namelist,
-)
-from qe_lsp.data import (
-    get_parameter_doc,
-    get_card_doc,
-    format_param_hover,
-    format_card_hover,
-    PARAMETER_DOCS,
+    parse_qe_input,
 )
 
 
