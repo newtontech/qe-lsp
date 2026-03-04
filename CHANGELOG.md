@@ -1,3 +1,24 @@
+## [0.1.14] - 2026-03-04
+
+### Added
+- Added test_complete_coverage.py with 11 additional edge case tests
+- Enhanced test_coverage_final.py with additional parser and server tests
+- Complete coverage tests for __init__.py __getattr__ exception handling
+- Additional parser error handling and edge case tests
+
+### Improvements
+- Test coverage maintained at 97.72% with 362 tests passing
+- All modules exceed 95% coverage requirement
+- Data and docs modules: 100% coverage
+- Parser coverage: 98% (344 statements, 4 missed)
+- Server coverage: 98% (124 statements, 1 missed)
+
+### Development
+- Completed QE-LSP automated development task
+- All 362 tests passing
+- No GitHub issues or PRs pending
+- Documentation verified
+
 ## [0.1.13] - 2026-03-04
 
 ### Added
