@@ -1,5 +1,23 @@
 # Change Log
 
+## [0.1.8] - 2026-03-04
+
+### Added
+- Added test_full_coverage.py with comprehensive coverage tests:
+  - Init module lazy import tests for server and main
+  - Parser tokenize branches for parentheses handling
+  - Parser namelist branches for comment tokens and missing equals
+  - Parser card data branches for comment handling
+  - Data module branches for format_param_hover and format_card_hover
+  - Edge cases for boolean variations and scientific notation
+- Added 35 new tests to improve code coverage
+
+### Improvements
+- Test coverage improved from 96.83% to 97.34% (264 tests passing)
+- data.py achieved 100% coverage
+- docs.py achieved 100% coverage
+- Enhanced test suite robustness with edge case coverage
+
 ## [0.1.7] - 2026-03-04
 
 ### Added
