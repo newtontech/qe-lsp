@@ -1,3 +1,18 @@
+## [0.1.18] - 2026-03-05
+
+### Development
+- Completed QE-LSP development task (cron job)
+- Checked GitHub issues and PRs: none open
+- Test suite: 195 tests passing
+- Test coverage: 95.18% (exceeds 94% requirement)
+- All modules exceed coverage requirements:
+  - __init__.py: 85% coverage
+  - data.py: 97% coverage
+  - docs.py: 100% coverage
+  - parser.py: 95% coverage
+  - server.py: 96% coverage
+- Documentation updated
+
 ## [0.1.16] - 2026-03-05
 
 ### Added
