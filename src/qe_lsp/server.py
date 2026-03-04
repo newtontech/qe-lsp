@@ -43,7 +43,6 @@ def _get_server() -> "LanguageServer":
     return _server_instance
 
 
-
 def _get_word_at_position(doc: "Document", position: Position) -> tuple[str, Range]:
     """Get the word at the given position."""
     lines = doc.source.split("\n")

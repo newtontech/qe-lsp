@@ -10,7 +10,7 @@ class TestParserBranches:
     def test_lexer_tokenize_no_paren_handling(self):
         """Test tokenize without parentheses (branch coverage)."""
         from qe_lsp.parser import QELexer, TokenType
-        
+
         # Input without parentheses
         lexer = QELexer("&control\n  calculation = 'scf'\n/")
         tokens = lexer.tokenize()
@@ -20,7 +20,7 @@ class TestParserBranches:
     def test_lexer_tokenize_paren_not_closed(self):
         """Test tokenize with unclosed parenthesis (branch coverage line 288-290)."""
         from qe_lsp.parser import QELexer, TokenType
-        
+
         # Input with unclosed paren
         lexer = QELexer("&system\n  celldm(1 = 10\n/")
         tokens = lexer.tokenize()
@@ -30,7 +30,7 @@ class TestParserBranches:
     def test_parser_parse_namelist_no_value_branch(self):
         """Test parse_namelist with parameter but no equals sign (line 382-383 branch)."""
         from qe_lsp.parser import parse_qe_input
-        
+
         # Parameter without equals - will hit the "pass" branch
         text = """&control
   calculation
@@ -50,7 +50,7 @@ class TestParserBranches:
     def test_parser_parse_card_data_no_line_data(self):
         """Test parse_card_data when line_data is empty (branch line 504->507)."""
         from qe_lsp.parser import QEParser, TokenType, Token
-        
+
         # Create a scenario where line_data would be empty
         parser = QEParser("ATOMIC_SPECIES\n! just a comment\nK_POINTS")
         parser.tokens = [
@@ -69,7 +69,7 @@ class TestParserBranches:
     def test_parser_parse_returns_none_namelist(self):
         """Test parse when parse_namelist returns None (branch 572->574)."""
         from qe_lsp.parser import QEParser, TokenType, Token
-        
+
         parser = QEParser("")
         parser.tokens = [
             Token(TokenType.NAMELIST_START, "control", 1, 0),
@@ -83,7 +83,7 @@ class TestParserBranches:
     def test_parser_parse_returns_none_card(self):
         """Test parse when parse_card returns None (branch 578->580)."""
         from qe_lsp.parser import QEParser, TokenType, Token
-        
+
         # First create proper namelists to avoid validation errors
         parser = QEParser("")
         parser.tokens = [
@@ -129,7 +129,7 @@ class TestParserBranches:
     def test_parser_read_identifier_no_boolean_dot(self):
         """Test read_identifier when there's no dot for boolean (line 160->162)."""
         from qe_lsp.parser import QELexer, TokenType
-        
+
         # Start with letter, not dot
         lexer = QELexer("hello")
         token = lexer.read_identifier()
@@ -139,7 +139,7 @@ class TestParserBranches:
     def test_parser_tokenize_comment_then_whitespace(self):
         """Test tokenize when comment is followed by whitespace (line 146->exit)."""
         from qe_lsp.parser import QELexer, TokenType
-        
+
         # Comment at end of input
         lexer = QELexer("! just a comment")
         tokens = lexer.tokenize()
@@ -149,7 +149,7 @@ class TestParserBranches:
     def test_parser_tokenize_empty_paren(self):
         """Test tokenize with empty parentheses (line 280-281 branch)."""
         from qe_lsp.parser import QELexer, TokenType
-        
+
         lexer = QELexer("test()")
         tokens = lexer.tokenize()
         types = [t.type for t in tokens]
@@ -159,7 +159,7 @@ class TestParserBranches:
     def test_parser_parse_card_with_empty_options(self):
         """Test parse_card when options parameter handling (lines 426, 432)."""
         from qe_lsp.parser import parse_qe_input
-        
+
         text = """ATOMIC_POSITIONS
 Si 0.0 0.0 0.0
 K_POINTS automatic
@@ -172,7 +172,7 @@ K_POINTS automatic
     def test_parser_card_data_with_param_token(self):
         """Test parse_card_data when token is PARAMETER (lines 457-458)."""
         from qe_lsp.parser import parse_qe_input
-        
+
         # Card with parameter-like data
         text = """ATOMIC_SPECIES
 Si si_value Si.upf"""
@@ -183,7 +183,7 @@ Si si_value Si.upf"""
     def test_parser_card_data_line_469(self):
         """Test parse_card_data specific branch at line 469."""
         from qe_lsp.parser import QEParser, TokenType, Token
-        
+
         # Create tokens to hit the specific line_data append branch
         parser = QEParser("")
         parser.tokens = [
@@ -205,15 +205,15 @@ class TestServerBranches:
     def test_hover_returns_none_for_non_special_word(self, mock_get_server):
         """Test hover returns None when word is not special (line 177->185)."""
         from qe_lsp.server import hover
-        
+
         srv = MagicMock()
         srv.workspace.get_text_document.return_value = MagicMock(source="randomword")
         mock_get_server.return_value = srv
-        
+
         params = MagicMock()
         params.text_document.uri = "test://test.in"
         params.position = MagicMock(line=0, character=0)
-        
+
         result = hover(params)
         # Should return None for unknown word
         assert result is None
@@ -225,24 +225,24 @@ class TestInitModule:
     def test_module_getattr_raises_on_invalid(self):
         """Test that accessing invalid attribute raises AttributeError."""
         import qe_lsp
-        
+
         with pytest.raises(AttributeError) as exc_info:
             _ = qe_lsp.nonexistent_attribute_xyz
-        
+
         assert "nonexistent_attribute_xyz" in str(exc_info.value)
         assert "module" in str(exc_info.value)
 
     def test_module_lazy_import_server(self):
         """Test lazy import of server."""
         import qe_lsp
-        
+
         srv = qe_lsp.server
         assert srv is not None
 
     def test_module_lazy_import_main(self):
         """Test lazy import of main."""
         import qe_lsp
-        
+
         main_func = qe_lsp.main
         assert callable(main_func)
 
@@ -253,7 +253,7 @@ class TestParserEdgeCases:
     def test_parse_value_with_string_having_escape(self):
         """Test parse_value with escaped string."""
         from qe_lsp.parser import QEParser, TokenType, Token
-        
+
         parser = QEParser("'test\\n'")
         parser.tokens = [
             Token(TokenType.STRING, "test\\n", 1, 0),
@@ -265,7 +265,7 @@ class TestParserEdgeCases:
     def test_lexer_read_number_with_uppercase_exponent(self):
         """Test read_number with uppercase D exponent."""
         from qe_lsp.parser import QELexer, TokenType
-        
+
         lexer = QELexer("1.0D-10")
         token = lexer.read_number()
         assert token.type == TokenType.NUMBER
@@ -274,11 +274,11 @@ class TestParserEdgeCases:
     def test_validate_missing_control_system(self):
         """Test validate when both control and system are missing."""
         from qe_lsp.parser import QEParser, QEInputFile
-        
+
         parser = QEParser("")
         result = QEInputFile()
         parser.validate(result)
-        
+
         # Should have errors for both missing namelists
         assert any("control" in e["message"].lower() for e in parser.errors)
         assert any("system" in e["message"].lower() for e in parser.errors)

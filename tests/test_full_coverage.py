@@ -238,15 +238,15 @@ class TestInitModuleDetailed:
     def test_server_lazy_import(self):
         """Test server lazy import path."""
         import qe_lsp
-        
+
         # Access server - triggers lines 35-37
         server = qe_lsp.server
         assert server is not None
-        
+
     def test_main_lazy_import(self):
         """Test main lazy import path."""
         import qe_lsp
-        
+
         # Access main - triggers lines 39-41
         main = qe_lsp.main
         assert callable(main)
@@ -254,7 +254,7 @@ class TestInitModuleDetailed:
     def test_invalid_attribute_error_message(self):
         """Test that invalid attribute has proper error message."""
         import qe_lsp
-        
+
         try:
             _ = qe_lsp.invalid_attr_xyz
             assert False, "Should have raised"
@@ -324,6 +324,7 @@ class TestParserDetailed:
     def test_parse_value_returns_none_for_unknown(self):
         """Test parse_value returns None for unknown token types."""
         from qe_lsp.parser import Token
+
         parser = QEParser("")
         # Create a token with a type that parse_value doesn't handle
         parser.tokens = [Token(TokenType.NAMELIST_END, "/", 1, 1)]
@@ -403,4 +404,5 @@ class TestServerMainBranch:
         # We can't easily test this without actually running the module
         # Just verify the main function exists
         from qe_lsp.server import main
+
         assert callable(main)

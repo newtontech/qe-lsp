@@ -13,7 +13,7 @@ class TestInitModule:
 
         with pytest.raises(AttributeError) as exc_info:
             _ = qe_lsp.invalid_attribute_name
-        
+
         assert "invalid_attribute_name" in str(exc_info.value)
         assert "module" in str(exc_info.value)
 
@@ -29,7 +29,7 @@ class TestParserEdgeCases:
         # Manually trigger error
         with pytest.raises(SyntaxError) as exc_info:
             lexer.error("test error message")
-        
+
         assert "test error message" in str(exc_info.value)
 
     def test_lexer_read_identifier_empty_boolean(self):
@@ -103,7 +103,7 @@ class TestParserEdgeCases:
         parser = QEParser("test")
         token = Token(TokenType.PARAMETER, "test", 5, 10)
         parser.error("test error", token)
-        
+
         assert len(parser.errors) == 1
         assert parser.errors[0]["line"] == 5
         assert parser.errors[0]["column"] == 10
@@ -487,7 +487,9 @@ class TestParserValidateRequiredParams:
 """
         result = parse_qe_input(text)
         # Should have no missing parameter errors
-        missing_param_errors = [e for e in result.errors if "Missing required parameter" in e["message"]]
+        missing_param_errors = [
+            e for e in result.errors if "Missing required parameter" in e["message"]
+        ]
         assert len(missing_param_errors) == 0
 
     def test_validate_missing_params_in_control(self):
