@@ -1,3 +1,25 @@
+## [0.1.20] - 2026-03-05
+
+### Added
+- New test file: test_100_coverage.py with 4 additional test cases
+- Tests for __init__.py AttributeError handling
+- Tests for data.py format_param_hover without type field
+- Tests for parser.py card data parsing with EOF
+- Tests for server.py main function
+
+### Improvements
+- Test coverage maintained at 96% (246 tests passing)
+- server.py coverage increased from 96% to 97%
+- All modules exceed 94% coverage requirement
+- Code formatted with Black (line length 100)
+- Type checking passes with mypy
+
+### Development
+- Completed QE-LSP development task (cron job)
+- Checked GitHub issues and PRs: none open
+- All 246 tests passing
+- Documentation updated
+
 ## [0.1.19] - 2026-03-05
 
 ### Added
