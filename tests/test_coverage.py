@@ -13,15 +13,17 @@ class TestInitModule:
         """Test that __all__ contains expected exports."""
         # Import directly to check exports
         import qe_lsp
-        assert hasattr(qe_lsp, '__all__')
-        assert 'parse_qe_input' in qe_lsp.__all__
-        assert 'QEParser' in qe_lsp.__all__
-        assert 'QELexer' in qe_lsp.__all__
+
+        assert hasattr(qe_lsp, "__all__")
+        assert "parse_qe_input" in qe_lsp.__all__
+        assert "QEParser" in qe_lsp.__all__
+        assert "QELexer" in qe_lsp.__all__
 
     def test_version(self):
         """Test version is defined."""
         import qe_lsp
-        assert hasattr(qe_lsp, '__version__')
+
+        assert hasattr(qe_lsp, "__version__")
         assert qe_lsp.__version__ == "0.1.0"
 
     def test_lazy_import_server(self):
@@ -140,24 +142,27 @@ class TestDataModuleCoverage:
     def test_get_param_doc_unknown_namelist(self):
         """Test get_param_doc with unknown namelist."""
         from qe_lsp.data import get_param_doc
+
         result = get_param_doc("unknown_namelist", "some_param")
         assert result is None
 
     def test_get_param_doc_unknown_param(self):
         """Test get_param_doc with unknown parameter."""
         from qe_lsp.data import get_param_doc
+
         result = get_param_doc("control", "unknown_param")
         assert result is None
 
     def test_format_param_hover_with_all_fields(self):
         """Test format_param_hover with all possible fields."""
         from qe_lsp.data import format_param_hover
+
         param_doc = {
             "description": "Test parameter",
             "type": "real",
             "required": True,
             "default": 1.0,
-            "values": ["'option1'", "'option2'"]
+            "values": ["'option1'", "'option2'"],
         }
         result = format_param_hover(param_doc)
         assert "Test parameter" in result
@@ -169,6 +174,7 @@ class TestDataModuleCoverage:
     def test_format_param_hover_minimal(self):
         """Test format_param_hover with minimal fields."""
         from qe_lsp.data import format_param_hover
+
         param_doc = {"description": "Simple param"}
         result = format_param_hover(param_doc)
         assert "Simple param" in result
@@ -177,11 +183,12 @@ class TestDataModuleCoverage:
     def test_format_card_hover_with_example(self):
         """Test format_card_hover with example field."""
         from qe_lsp.data import format_card_hover
+
         card_doc = {
             "description": "Test card",
             "format": "FORMAT",
             "example": "EXAMPLE",
-            "required_when": "always"
+            "required_when": "always",
         }
         result = format_card_hover(card_doc)
         assert "Test card" in result
@@ -192,6 +199,7 @@ class TestDataModuleCoverage:
     def test_format_card_hover_minimal(self):
         """Test format_card_hover with minimal fields."""
         from qe_lsp.data import format_card_hover
+
         card_doc = {"description": "Simple card"}
         result = format_card_hover(card_doc)
         assert "Simple card" in result
@@ -203,9 +211,11 @@ class TestServerCoverage:
     def test_get_word_at_position_empty_line(self):
         """Test get_word_at_position with empty line."""
         from qe_lsp.server import _get_word_at_position
+
         mock_doc = MagicMock()
         mock_doc.source = "\n\n"
         from lsprotocol.types import Position
+
         pos = Position(line=0, character=0)
         word, range_obj = _get_word_at_position(mock_doc, pos)
         assert word == ""
@@ -214,21 +224,21 @@ class TestServerCoverage:
         """Test hover when no namelist and word doesn't match."""
         from qe_lsp.server import hover
         from lsprotocol.types import TextDocumentPositionParams, Position
-        
+
         mock_doc = MagicMock()
         mock_doc.source = "random text here"
-        
+
         mock_workspace = MagicMock()
         mock_workspace.get_text_document.return_value = mock_doc
-        
-        with patch('qe_lsp.server._get_server') as mock_get_server:
+
+        with patch("qe_lsp.server._get_server") as mock_get_server:
             mock_server = MagicMock()
             mock_server.workspace = mock_workspace
             mock_get_server.return_value = mock_server
-            
+
             params = TextDocumentPositionParams(
                 text_document=MagicMock(uri="file:///test.in"),
-                position=Position(line=0, character=0)
+                position=Position(line=0, character=0),
             )
             result = hover(params)
             # Should return None for unknown word
@@ -238,21 +248,21 @@ class TestServerCoverage:
         """Test completion outside namelist with filter word."""
         from qe_lsp.server import completion
         from lsprotocol.types import CompletionParams, Position
-        
+
         mock_doc = MagicMock()
         mock_doc.source = "con"  # Partial match for 'control'
-        
+
         mock_workspace = MagicMock()
         mock_workspace.get_text_document.return_value = mock_doc
-        
-        with patch('qe_lsp.server._get_server') as mock_get_server:
+
+        with patch("qe_lsp.server._get_server") as mock_get_server:
             mock_server = MagicMock()
             mock_server.workspace = mock_workspace
             mock_get_server.return_value = mock_server
-            
+
             params = CompletionParams(
                 text_document=MagicMock(uri="file:///test.in"),
-                position=Position(line=0, character=3)
+                position=Position(line=0, character=3),
             )
             result = completion(params)
             assert result is not None
@@ -261,18 +271,18 @@ class TestServerCoverage:
     def test_diagnostic_with_errors(self):
         """Test diagnostic handler with parsing errors."""
         from qe_lsp.server import diagnostic
-        
+
         mock_doc = MagicMock()
         mock_doc.source = "&unknown_namelist\n/"  # Invalid namelist
-        
+
         mock_workspace = MagicMock()
         mock_workspace.get_text_document.return_value = mock_doc
-        
-        with patch('qe_lsp.server._get_server') as mock_get_server:
+
+        with patch("qe_lsp.server._get_server") as mock_get_server:
             mock_server = MagicMock()
             mock_server.workspace = mock_workspace
             mock_get_server.return_value = mock_server
-            
+
             params = MagicMock()
             params.text_document.uri = "file:///test.in"
             result = diagnostic(params)
@@ -282,18 +292,18 @@ class TestServerCoverage:
     def test_document_symbol_empty_file(self):
         """Test document_symbol with empty file."""
         from qe_lsp.server import document_symbol
-        
+
         mock_doc = MagicMock()
         mock_doc.source = ""
-        
+
         mock_workspace = MagicMock()
         mock_workspace.get_text_document.return_value = mock_doc
-        
-        with patch('qe_lsp.server._get_server') as mock_get_server:
+
+        with patch("qe_lsp.server._get_server") as mock_get_server:
             mock_server = MagicMock()
             mock_server.workspace = mock_workspace
             mock_get_server.return_value = mock_server
-            
+
             params = MagicMock()
             params.text_document.uri = "file:///test.in"
             result = document_symbol(params)
@@ -307,12 +317,12 @@ class TestMainFunction:
     def test_main_with_exception(self):
         """Test main function exception handling."""
         from qe_lsp.server import main
-        
-        with patch('qe_lsp.server._get_server') as mock_get_server:
+
+        with patch("qe_lsp.server._get_server") as mock_get_server:
             mock_server = MagicMock()
             mock_server.start_io.side_effect = KeyboardInterrupt()
             mock_get_server.return_value = mock_server
-            
+
             # Should handle KeyboardInterrupt gracefully
             with pytest.raises(KeyboardInterrupt):
                 main()
@@ -324,6 +334,7 @@ class TestAdditionalCoverage:
     def test_parser_error_with_token(self):
         """Test parser error method with token."""
         from qe_lsp.parser import QEParser
+
         parser = QEParser("test")
         parser.tokens = parser.lexer.tokenize()
         parser.error("test error", parser.current())
@@ -332,6 +343,7 @@ class TestAdditionalCoverage:
     def test_parser_current_no_tokens(self):
         """Test parser current with no tokens."""
         from qe_lsp.parser import QEParser, TokenType
+
         parser = QEParser("")
         parser.tokens = []
         token = parser.current()
@@ -340,6 +352,7 @@ class TestAdditionalCoverage:
     def test_parse_card_data_with_namelist_start(self):
         """Test parse_card_data stopping at namelist."""
         from qe_lsp.parser import QEParser
+
         text = """ATOMIC_SPECIES
 Si 28.085 Si.upf
 &control
@@ -353,6 +366,7 @@ Si 28.085 Si.upf
     def test_parse_card_data_with_card_name(self):
         """Test parse_card_data stopping at another card."""
         from qe_lsp.parser import QEParser
+
         text = """ATOMIC_SPECIES
 Si 28.085 Si.upf
 K_POINTS
@@ -366,6 +380,7 @@ K_POINTS
     def test_parse_card_with_empty_data(self):
         """Test parsing card with empty data lines."""
         from qe_lsp.parser import QEParser
+
         text = """ATOMIC_SPECIES
 
 &control
@@ -377,6 +392,7 @@ K_POINTS
     def test_lexer_skip_comment_at_end(self):
         """Test lexer skip comment at end of text."""
         from qe_lsp.parser import QELexer
+
         lexer = QELexer("! comment at end")
         lexer.skip_comment()
         assert lexer.peek() == ""
@@ -384,6 +400,7 @@ K_POINTS
     def test_parser_expect_wrong_type(self):
         """Test parser expect with wrong token type."""
         from qe_lsp.parser import QEParser, TokenType
+
         parser = QEParser("&control")
         parser.tokens = parser.lexer.tokenize()
         result = parser.expect(TokenType.CARD_NAME)
@@ -393,21 +410,21 @@ K_POINTS
         """Test server completion inside namelist with filter."""
         from qe_lsp.server import completion
         from lsprotocol.types import CompletionParams, Position
-        
+
         mock_doc = MagicMock()
         mock_doc.source = "&control\n  calc"  # Partial match for 'calculation'
-        
+
         mock_workspace = MagicMock()
         mock_workspace.get_text_document.return_value = mock_doc
-        
-        with patch('qe_lsp.server._get_server') as mock_get_server:
+
+        with patch("qe_lsp.server._get_server") as mock_get_server:
             mock_server = MagicMock()
             mock_server.workspace = mock_workspace
             mock_get_server.return_value = mock_server
-            
+
             params = CompletionParams(
                 text_document=MagicMock(uri="file:///test.in"),
-                position=Position(line=1, character=6)
+                position=Position(line=1, character=6),
             )
             result = completion(params)
             assert result is not None
@@ -417,21 +434,21 @@ K_POINTS
         """Test hover on card without documentation."""
         from qe_lsp.server import hover
         from lsprotocol.types import TextDocumentPositionParams, Position
-        
+
         mock_doc = MagicMock()
         mock_doc.source = "UNKNOWN_CARD"
-        
+
         mock_workspace = MagicMock()
         mock_workspace.get_text_document.return_value = mock_doc
-        
-        with patch('qe_lsp.server._get_server') as mock_get_server:
+
+        with patch("qe_lsp.server._get_server") as mock_get_server:
             mock_server = MagicMock()
             mock_server.workspace = mock_workspace
             mock_get_server.return_value = mock_server
-            
+
             params = TextDocumentPositionParams(
                 text_document=MagicMock(uri="file:///test.in"),
-                position=Position(line=0, character=0)
+                position=Position(line=0, character=0),
             )
             result = hover(params)
             # Should return None for unknown card without doc
@@ -444,12 +461,14 @@ class TestFinalCoverage:
     def test_init_main_import(self):
         """Test main import through __getattr__."""
         import qe_lsp
+
         main_func = qe_lsp.main
         assert main_func is not None
 
     def test_parser_parse_card_with_data_then_namelist(self):
         """Test parse card followed by namelist."""
         from qe_lsp.parser import QEParser
+
         text = """ATOMIC_SPECIES
 Si 28.085 Si.upf
 &control
@@ -463,6 +482,7 @@ Si 28.085 Si.upf
     def test_parse_value_array_notation(self):
         """Test parse value with array notation like celldm(1)."""
         from qe_lsp.parser import QEParser
+
         text = """
 &system
   celldm(1) = 10.26
@@ -475,26 +495,25 @@ Si 28.085 Si.upf
         """Test completion with card filtering."""
         from qe_lsp.server import completion
         from lsprotocol.types import CompletionParams, Position
-        
+
         mock_doc = MagicMock()
         mock_doc.source = "ATOM"  # Partial match for ATOMIC_SPECIES
-        
+
         mock_workspace = MagicMock()
         mock_workspace.get_text_document.return_value = mock_doc
-        
-        with patch('qe_lsp.server._get_server') as mock_get_server:
+
+        with patch("qe_lsp.server._get_server") as mock_get_server:
             mock_server = MagicMock()
             mock_server.workspace = mock_workspace
             mock_get_server.return_value = mock_server
-            
+
             params = CompletionParams(
                 text_document=MagicMock(uri="file:///test.in"),
-                position=Position(line=0, character=4)
+                position=Position(line=0, character=4),
             )
             result = completion(params)
             assert result is not None
             assert any("ATOMIC" in item.label for item in result.items)
-
 
 
 class TestDataBranchCoverage:
@@ -503,11 +522,12 @@ class TestDataBranchCoverage:
     def test_format_param_hover_no_type(self):
         """Test format_param_hover without type field (branch 373->376)."""
         from qe_lsp.data import format_param_hover
+
         param_doc = {
             "description": "Test description",
             "required": True,
             "default": 1.0,
-            "values": ["a", "b"]
+            "values": ["a", "b"],
         }
         result = format_param_hover(param_doc)
         assert "Test description" in result
@@ -517,10 +537,11 @@ class TestDataBranchCoverage:
     def test_format_card_hover_no_format(self):
         """Test format_card_hover without format field (branch 403->406)."""
         from qe_lsp.data import format_card_hover
+
         card_doc = {
             "description": "Simple card description",
             "example": "example content",
-            "required_when": "always"
+            "required_when": "always",
         }
         result = format_card_hover(card_doc)
         assert "Simple card description" in result
@@ -535,6 +556,7 @@ class TestParserBranchCoverage:
     def test_lexer_read_identifier_single_char(self):
         """Test lexer with single character after &."""
         from qe_lsp.parser import QELexer, TokenType
+
         lexer = QELexer("&x")
         token = lexer.read_identifier()
         assert token.type == TokenType.PARAMETER
@@ -542,6 +564,7 @@ class TestParserBranchCoverage:
     def test_parser_validate_control_namelist(self):
         """Test validation when control namelist exists."""
         from qe_lsp.parser import QEParser
+
         text = """&control
   calculation = 'scf'
   prefix = 'test'
@@ -561,6 +584,7 @@ class TestParserBranchCoverage:
     def test_parser_boolean_values(self):
         """Test parsing boolean values."""
         from qe_lsp.parser import QEParser
+
         text = """&control
   tstress = .true.
 /
@@ -576,19 +600,20 @@ class TestParserBranchCoverage:
         assert result.namelists["control"].parameters["tstress"] == True
 
 
-
 class TestFinalCoverage100:
     """Final tests to reach 100% coverage."""
 
     def test_init_attribute_error(self):
         """Test __init__.py AttributeError branch (lines 35-37)."""
         import qe_lsp
+
         with pytest.raises(AttributeError):
             _ = qe_lsp.nonexistent_attribute_xyz
 
     def test_format_param_hover_description_only(self):
         """Test format_param_hover with only description field."""
         from qe_lsp.data import format_param_hover
+
         param_doc = {"description": "Only description, no type"}
         result = format_param_hover(param_doc)
         assert "Only description" in result
@@ -597,6 +622,7 @@ class TestFinalCoverage100:
     def test_format_card_hover_description_only(self):
         """Test format_card_hover with only description field."""
         from qe_lsp.data import format_card_hover
+
         card_doc = {"description": "Only description, no format"}
         result = format_card_hover(card_doc)
         assert "Only description" in result
@@ -605,12 +631,14 @@ class TestFinalCoverage100:
     def test_server_main_function(self):
         """Test main function (line 320)."""
         from qe_lsp.server import main
+
         # Just verify it exists and is callable
         assert callable(main)
 
     def test_data_param_doc_no_type_branch(self):
         """Test param doc without type to cover branch 373->376."""
         from qe_lsp.data import format_param_hover
+
         # This should NOT have "type" key to cover the else branch
         doc = {"description": "Test"}
         result = format_param_hover(doc)
@@ -620,6 +648,7 @@ class TestFinalCoverage100:
     def test_data_card_doc_no_format_branch(self):
         """Test card doc without format to cover branch 403->406."""
         from qe_lsp.data import format_card_hover
+
         # This should NOT have "format" key to cover the else branch
         doc = {"description": "Test card"}
         result = format_card_hover(doc)
