@@ -25,3 +25,6 @@ build-backend = "hatchling.build"
 
 [project.scripts]
 qe-lsp = "qe_lsp.server:main"
+
+[tool.black]
+target-version = ["py39"]

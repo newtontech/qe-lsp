@@ -1,11 +1,17 @@
-"""
-qe Language Server Protocol implementation
-"""
+"""qe Language Server Protocol implementation."""
 
-try:
-    from pygls.lsp.server import LanguageServer
-except ImportError:
-    from pygls.server import LanguageServer
+from importlib import import_module
+from typing import Any
+
+
+def _load_language_server() -> Any:
+    try:
+        return import_module("pygls.lsp.server").LanguageServer
+    except ImportError:
+        return import_module("pygls.server").LanguageServer
+
+
+LanguageServer = _load_language_server()
 
 QE_KEYWORDS = [
     "&CONTROL",
@@ -27,6 +33,47 @@ QE_HOVER_DOCS = {
 
 server = LanguageServer("qe-lsp", "0.1.0")
 
+
+def _get_attr(params, name, default=None):
+    if params is None:
+        return default
+    if isinstance(params, dict):
+        return params.get(name, default)
+    return getattr(params, name, default)
+
+
+def _get_position(params):
+    position = _get_attr(params, "position", {})
+    if isinstance(position, dict):
+        return position.get("line", 0), position.get("character", 0)
+    return _get_attr(position, "line", 0), _get_attr(position, "character", 0)
+
+
+def _get_text(params):
+    text = _get_attr(params, "text")
+    if text is not None:
+        return text
+
+    text_document = _get_attr(params, "text_document")
+    return _get_attr(text_document, "text")
+
+
+def _word_at_position(text, line_number, character):
+    lines = text.splitlines()
+    if line_number < 0 or line_number >= len(lines):
+        return ""
+
+    line = lines[line_number]
+    character = max(0, min(character, len(line)))
+    start = character
+    while start > 0 and not line[start - 1].isspace():
+        start -= 1
+    end = character
+    while end < len(line) and not line[end].isspace():
+        end += 1
+    return line[start:end].strip(",")
+
+
 @server.feature("textDocument/completion")
 def completion(params):
     return [
@@ -38,9 +85,18 @@ def completion(params):
         for keyword in QE_KEYWORDS
     ]
 
+
 @server.feature("textDocument/hover")
 def hover(params):
-    keyword = next(iter(QE_HOVER_DOCS))
+    text = _get_text(params)
+    if not text:
+        return None
+
+    line_number, character = _get_position(params)
+    keyword = _word_at_position(text, line_number, character).upper()
+    if keyword not in QE_HOVER_DOCS:
+        return None
+
     return {
         "contents": {
             "kind": "markdown",
@@ -48,12 +104,46 @@ def hover(params):
         }
     }
 
+
 @server.feature("textDocument/diagnostic")
 def diagnostic(params):
-    return []
+    text = _get_text(params)
+    if not text:
+        return []
+
+    diagnostics = []
+    open_namelist = None
+    open_line = 0
+    for line_number, raw_line in enumerate(text.splitlines()):
+        line = raw_line.strip()
+        if not line or line.startswith("!"):
+            continue
+        if line.startswith("&"):
+            open_namelist = line.split()[0].upper()
+            open_line = line_number
+            continue
+        if line == "/" and open_namelist is not None:
+            open_namelist = None
+
+    if open_namelist is not None:
+        diagnostics.append(
+            {
+                "range": {
+                    "start": {"line": open_line, "character": 0},
+                    "end": {"line": open_line, "character": len(open_namelist)},
+                },
+                "severity": 1,
+                "message": f"Unclosed namelist {open_namelist}; expected '/'.",
+                "source": "qe-lsp",
+            }
+        )
+
+    return diagnostics
+
 
 def main():
     server.start_io()
+
 
 if __name__ == "__main__":
     main()
