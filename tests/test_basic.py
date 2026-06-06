@@ -2,6 +2,7 @@
 
 from qe_lsp import __version__
 from qe_lsp.server import QE_KEYWORDS, completion, diagnostic, hover, server
+from lsprotocol import types
 
 
 class Params:
@@ -19,22 +20,25 @@ def test_completion_returns_qe_keywords():
     """Completion should expose common Quantum ESPRESSO input sections."""
     items = completion(None)
 
-    labels = {item["label"] for item in items}
+    labels = {item.label for item in items}
     assert set(QE_KEYWORDS).issubset(labels)
     assert "&CONTROL" in labels
     assert "&SYSTEM" in labels
     assert "ATOMIC_POSITIONS" in labels
     assert "K_POINTS" in labels
-    assert all({"label", "kind", "detail"}.issubset(item) for item in items)
+    assert all(item.kind == types.CompletionItemKind.Keyword for item in items)
+    assert all(item.detail == "Quantum ESPRESSO input keyword" for item in items)
 
 
 def test_hover_returns_markdown_documentation_for_position():
     """Hover should return documentation for the symbol under the cursor."""
     result = hover(Params("&SYSTEM\n/", character=3))
 
-    assert result["contents"]["kind"] == "markdown"
-    assert "&SYSTEM" in result["contents"]["value"]
-    assert "System definition" in result["contents"]["value"]
+    assert isinstance(result, types.Hover)
+    assert isinstance(result.contents, types.MarkupContent)
+    assert result.contents.kind == types.MarkupKind.Markdown
+    assert "&SYSTEM" in result.contents.value
+    assert "System definition" in result.contents.value
 
 
 def test_hover_returns_none_for_unknown_content():
@@ -47,13 +51,19 @@ def test_diagnostic_returns_empty_for_valid_input():
     assert diagnostic(Params("&CONTROL\n/\n")) == []
 
 
+def test_diagnostic_allows_inline_comments_after_namelist_end():
+    """Comments after '/' should not hide a valid namelist terminator."""
+    assert diagnostic(Params("&CONTROL\n/ ! done\n")) == []
+
+
 def test_diagnostic_reports_unclosed_namelist():
     """An unclosed namelist should produce a diagnostic."""
     diagnostics = diagnostic(Params("&CONTROL\ncalculation = 'scf'\n"))
 
     assert len(diagnostics) == 1
-    assert "Unclosed namelist" in diagnostics[0]["message"]
-    assert diagnostics[0]["range"]["start"]["line"] == 0
+    assert diagnostics[0].severity == types.DiagnosticSeverity.Error
+    assert "Unclosed namelist" in diagnostics[0].message
+    assert diagnostics[0].range.start.line == 0
 
 
 def test_server_registers_lsp_features():

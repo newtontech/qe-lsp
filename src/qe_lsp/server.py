@@ -3,6 +3,8 @@
 from importlib import import_module
 from typing import Any
 
+from lsprotocol import types
+
 
 def _load_language_server() -> Any:
     try:
@@ -74,14 +76,18 @@ def _word_at_position(text, line_number, character):
     return line[start:end].strip(",")
 
 
+def _strip_inline_comment(line):
+    return line.split("!", 1)[0].strip()
+
+
 @server.feature("textDocument/completion")
 def completion(params):
     return [
-        {
-            "label": keyword,
-            "kind": 14,
-            "detail": "Quantum ESPRESSO input keyword",
-        }
+        types.CompletionItem(
+            label=keyword,
+            kind=types.CompletionItemKind.Keyword,
+            detail="Quantum ESPRESSO input keyword",
+        )
         for keyword in QE_KEYWORDS
     ]
 
@@ -97,12 +103,12 @@ def hover(params):
     if keyword not in QE_HOVER_DOCS:
         return None
 
-    return {
-        "contents": {
-            "kind": "markdown",
-            "value": f"**{keyword}**\n\n{QE_HOVER_DOCS[keyword]}",
-        }
-    }
+    return types.Hover(
+        contents=types.MarkupContent(
+            kind=types.MarkupKind.Markdown,
+            value=f"**{keyword}**\n\n{QE_HOVER_DOCS[keyword]}",
+        )
+    )
 
 
 @server.feature("textDocument/diagnostic")
@@ -115,27 +121,27 @@ def diagnostic(params):
     open_namelist = None
     open_line = 0
     for line_number, raw_line in enumerate(text.splitlines()):
-        line = raw_line.strip()
-        if not line or line.startswith("!"):
+        line = _strip_inline_comment(raw_line)
+        if not line:
             continue
         if line.startswith("&"):
             open_namelist = line.split()[0].upper()
             open_line = line_number
             continue
-        if line == "/" and open_namelist is not None:
+        if line.startswith("/") and open_namelist is not None:
             open_namelist = None
 
     if open_namelist is not None:
         diagnostics.append(
-            {
-                "range": {
-                    "start": {"line": open_line, "character": 0},
-                    "end": {"line": open_line, "character": len(open_namelist)},
-                },
-                "severity": 1,
-                "message": f"Unclosed namelist {open_namelist}; expected '/'.",
-                "source": "qe-lsp",
-            }
+            types.Diagnostic(
+                range=types.Range(
+                    start=types.Position(line=open_line, character=0),
+                    end=types.Position(line=open_line, character=len(open_namelist)),
+                ),
+                severity=types.DiagnosticSeverity.Error,
+                message=f"Unclosed namelist {open_namelist}; expected '/'.",
+                source="qe-lsp",
+            )
         )
 
     return diagnostics
