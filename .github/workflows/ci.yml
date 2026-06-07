@@ -62,5 +62,8 @@ jobs:
       - name: Type check
         run: mypy src tests
 
+      - name: Run pre-commit
+        run: pre-commit run --all-files
+
       - name: Build package
         run: python -m build --sdist --wheel

@@ -1,8 +1,10 @@
-"""Basic tests for qe-lsp."""
-
-from qe_lsp import __version__
-from qe_lsp.server import QE_KEYWORDS, completion, diagnostic, hover, server
 from lsprotocol import types
+from qe_lsp import __version__
+from qe_lsp.constants import QE_KEYWORDS
+from qe_lsp.handlers.completion import completion
+from qe_lsp.handlers.diagnostic import diagnostic
+from qe_lsp.handlers.hover import hover
+from qe_lsp.server import create_server, server
 
 
 class Params:
@@ -66,6 +68,67 @@ def test_diagnostic_reports_unclosed_namelist():
     assert diagnostics[0].range.start.line == 0
 
 
+def test_diagnostic_reports_ibrav_zero_without_cell_parameters():
+    """ibrav = 0 requires an explicit CELL_PARAMETERS card."""
+    diagnostics = diagnostic(Params("&SYSTEM\nibrav = 0\n/\n"))
+
+    assert len(diagnostics) == 1
+    assert diagnostics[0].severity == types.DiagnosticSeverity.Error
+    assert "CELL_PARAMETERS" in diagnostics[0].message
+
+
+def test_diagnostic_warns_when_lattice_constants_ignored():
+    """A, B, C, and cos* are ignored when ibrav is not zero."""
+    diagnostics = diagnostic(Params("&SYSTEM\nibrav = 1\nA = 7.5\n/\n"))
+
+    assert len(diagnostics) == 1
+    assert diagnostics[0].severity == types.DiagnosticSeverity.Warning
+    assert "ignored when ibrav is not 0" in diagnostics[0].message
+
+
+def test_diagnostic_warns_about_low_ecutrho_ratio():
+    """ecutrho should normally be at least 4x ecutwfc."""
+    diagnostics = diagnostic(Params("&SYSTEM\necutwfc = 60\necutrho = 120\n/\n"))
+
+    assert len(diagnostics) == 1
+    assert diagnostics[0].severity == types.DiagnosticSeverity.Warning
+    assert "at least 4x ecutwfc" in diagnostics[0].message
+
+
+def test_diagnostic_reports_pseudopotential_element_mismatch():
+    """The pseudo filename should match the declared element."""
+    diagnostics = diagnostic(
+        Params("ATOMIC_SPECIES\nO 15.999 Si.pbe-n-rrkjus_psl.1.0.0.UPF\n")
+    )
+
+    assert len(diagnostics) == 1
+    assert diagnostics[0].severity == types.DiagnosticSeverity.Error
+    assert "does not appear to match element O" in diagnostics[0].message
+
+
+def test_diagnostic_reports_atomic_positions_without_species():
+    """All positioned atoms need a matching ATOMIC_SPECIES entry."""
+    diagnostics = diagnostic(
+        Params(
+            "ATOMIC_SPECIES\nO 15.999 O.pbe.UPF\n"
+            "ATOMIC_POSITIONS {crystal}\nSi 0.0 0.0 0.0\n"
+        )
+    )
+
+    assert len(diagnostics) == 1
+    assert diagnostics[0].severity == types.DiagnosticSeverity.Error
+    assert "missing from ATOMIC_SPECIES" in diagnostics[0].message
+
+
+def test_diagnostic_warns_about_gamma_offsets():
+    """Gamma-only K_POINTS must not include non-zero offsets."""
+    diagnostics = diagnostic(Params("K_POINTS {gamma}\n1 1 1 0 0 1\n"))
+
+    assert len(diagnostics) == 1
+    assert diagnostics[0].severity == types.DiagnosticSeverity.Warning
+    assert "non-zero offset" in diagnostics[0].message
+
+
 def test_server_registers_lsp_features():
     """Handlers should be registered with pygls, not only callable directly."""
     features = server.protocol.fm.features
@@ -73,3 +136,11 @@ def test_server_registers_lsp_features():
     assert "textDocument/completion" in features
     assert "textDocument/hover" in features
     assert "textDocument/diagnostic" in features
+
+
+def test_create_server_uses_configured_version():
+    """Server creation should use the package version source of truth."""
+    created = create_server()
+
+    assert created.name == "qe-lsp"
+    assert created.version == __version__
