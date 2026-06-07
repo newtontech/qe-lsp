@@ -3,24 +3,24 @@
 ## Overview
 This is the development plan for qe-lsp.
 
-## Phase 1: Foundation (Week 1)
-- [ ] Setup project structure
-- [ ] Basic parser implementation
-- [ ] Initial test suite
+## Current MVP
+- [x] Setup project structure
+- [x] Basic parser implementation
+- [x] Initial test suite with coverage gate
+- [x] LSP server implementation
+- [x] Diagnostics support
+- [x] Completion provider
+- [x] Hover documentation
+- [x] Validation accuracy regression framework
 
-## Phase 2: Core Features (Week 2)
-- [ ] LSP server implementation
-- [ ] Diagnostics support
-- [ ] Completion provider
-
-## Phase 3: Advanced Features (Week 3)
-- [ ] Hover documentation
+## Later Candidates
 - [ ] Code formatting
 - [ ] Quick fixes
 
 ## Testing
 - Run tests: `pytest tests/`
 - Check coverage: `pytest --cov`
+- Run pre-commit: `pre-commit run --all-files`
 
 ## Maintenance
 - Nightly automated maintenance at random time

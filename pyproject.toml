@@ -13,10 +13,11 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest",
-    "pytest-asyncio",
+    "pytest-cov",
+    "pre-commit",
     "black",
     "ruff",
-    "mypy",
+    "mypy<2",
 ]
 
 [build-system]
@@ -28,3 +29,12 @@ qe-lsp = "qe_lsp.server:main"
 
 [tool.black]
 target-version = ["py39"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=qe_lsp --cov-report=term-missing --cov-fail-under=80"
+
+[tool.mypy]
+python_version = "3.9"
+warn_unused_configs = true
+warn_return_any = true
