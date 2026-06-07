@@ -97,9 +97,7 @@ def test_diagnostic_warns_about_low_ecutrho_ratio():
 
 def test_diagnostic_reports_pseudopotential_element_mismatch():
     """The pseudo filename should match the declared element."""
-    diagnostics = diagnostic(
-        Params("ATOMIC_SPECIES\nO 15.999 Si.pbe-n-rrkjus_psl.1.0.0.UPF\n")
-    )
+    diagnostics = diagnostic(Params("ATOMIC_SPECIES\nO 15.999 Si.pbe-n-rrkjus_psl.1.0.0.UPF\n"))
 
     assert len(diagnostics) == 1
     assert diagnostics[0].severity == types.DiagnosticSeverity.Error
@@ -110,8 +108,7 @@ def test_diagnostic_reports_atomic_positions_without_species():
     """All positioned atoms need a matching ATOMIC_SPECIES entry."""
     diagnostics = diagnostic(
         Params(
-            "ATOMIC_SPECIES\nO 15.999 O.pbe.UPF\n"
-            "ATOMIC_POSITIONS {crystal}\nSi 0.0 0.0 0.0\n"
+            "ATOMIC_SPECIES\nO 15.999 O.pbe.UPF\n" "ATOMIC_POSITIONS {crystal}\nSi 0.0 0.0 0.0\n"
         )
     )
 

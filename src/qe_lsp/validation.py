@@ -191,9 +191,7 @@ def _validate_atomic_positions(text: str) -> List[types.Diagnostic]:
             )
         if "CRYSTAL" in header:
             coordinates = [parse_number(value) for value in row.values[:3]]
-            if any(
-                value is not None and (value < 0 or value > 1) for value in coordinates
-            ):
+            if any(value is not None and (value < 0 or value > 1) for value in coordinates):
                 diagnostics.append(
                     _diagnostic(
                         row.line,

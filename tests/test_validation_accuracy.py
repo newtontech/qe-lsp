@@ -16,17 +16,13 @@ class ValidationCase:
 
 VALIDATION_CASES = [
     ValidationCase("valid_control", "&CONTROL\ncalculation = 'scf'\n/\n", []),
-    ValidationCase(
-        "unclosed_namelist", "&CONTROL\ncalculation = 'scf'\n", ["Unclosed"]
-    ),
+    ValidationCase("unclosed_namelist", "&CONTROL\ncalculation = 'scf'\n", ["Unclosed"]),
     ValidationCase(
         "duplicate_parameter",
         "&CONTROL\ncalculation = 'scf'\ncalculation = 'nscf'\n/\n",
         ["Duplicate parameter calculation"],
     ),
-    ValidationCase(
-        "ibrav_requires_cell", "&SYSTEM\nibrav = 0\n/\n", ["CELL_PARAMETERS"]
-    ),
+    ValidationCase("ibrav_requires_cell", "&SYSTEM\nibrav = 0\n/\n", ["CELL_PARAMETERS"]),
     ValidationCase(
         "ibrav_ignores_a",
         "&SYSTEM\nibrav = 1\nA = 7.5\n/\n",
@@ -39,8 +35,7 @@ VALIDATION_CASES = [
     ),
     ValidationCase(
         "paw_cutoff_ratio",
-        "&SYSTEM\necutwfc = 60\necutrho = 300\n/\n"
-        "ATOMIC_SPECIES\nO 15.999 O.paw.UPF\n",
+        "&SYSTEM\necutwfc = 60\necutrho = 300\n/\n" "ATOMIC_SPECIES\nO 15.999 O.paw.UPF\n",
         ["at least 8x ecutwfc"],
     ),
     ValidationCase(
@@ -60,14 +55,12 @@ VALIDATION_CASES = [
     ),
     ValidationCase(
         "position_species_mismatch",
-        "ATOMIC_SPECIES\nO 15.999 O.pbe.UPF\n"
-        "ATOMIC_POSITIONS {crystal}\nSi 0.0 0.0 0.0\n",
+        "ATOMIC_SPECIES\nO 15.999 O.pbe.UPF\n" "ATOMIC_POSITIONS {crystal}\nSi 0.0 0.0 0.0\n",
         ["missing from ATOMIC_SPECIES"],
     ),
     ValidationCase(
         "crystal_position_bounds",
-        "ATOMIC_SPECIES\nO 15.999 O.pbe.UPF\n"
-        "ATOMIC_POSITIONS {crystal}\nO 1.2 0.0 0.0\n",
+        "ATOMIC_SPECIES\nO 15.999 O.pbe.UPF\n" "ATOMIC_POSITIONS {crystal}\nO 1.2 0.0 0.0\n",
         ["between 0 and 1"],
     ),
     ValidationCase(
@@ -82,8 +75,7 @@ VALIDATION_CASES = [
     ),
     ValidationCase(
         "valid_species_and_positions",
-        "ATOMIC_SPECIES\nO 15.999 O.pbe.UPF\n"
-        "ATOMIC_POSITIONS {crystal}\nO 0.0 0.5 1.0\n",
+        "ATOMIC_SPECIES\nO 15.999 O.pbe.UPF\n" "ATOMIC_POSITIONS {crystal}\nO 0.0 0.5 1.0\n",
         [],
         "missing from ATOMIC_SPECIES",
     ),
