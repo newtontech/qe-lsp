@@ -2,6 +2,7 @@
 
 from typing import Any, Callable, List, Protocol, Tuple
 
+from .handlers.code_action import code_action
 from .handlers.completion import completion
 from .handlers.diagnostic import diagnostic
 from .handlers.hover import hover
@@ -18,6 +19,7 @@ def default_handlers() -> List[Tuple[str, Handler]]:
         ("textDocument/completion", completion),
         ("textDocument/hover", hover),
         ("textDocument/diagnostic", diagnostic),
+        ("textDocument/codeAction", code_action),
     ]
 
 

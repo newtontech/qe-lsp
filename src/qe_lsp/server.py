@@ -16,6 +16,7 @@ from lsprotocol.types import (
 
 from . import __version__
 from .constants import SERVER_NAME
+from .features.code_actions import CodeActionProvider
 from .features.diagnostic import DiagnosticProvider
 from .features.formatting import FormattingProvider
 from .features.lint import LintProvider
@@ -45,6 +46,9 @@ def create_server(name: str = SERVER_NAME, version: str = __version__) -> Any:
 
     # Attach typecheck provider for type-aware value validation
     lsp_server.typecheck_provider = TypecheckProvider()  # type: ignore[attr-defined]
+
+    # Attach code action provider for quick fixes
+    lsp_server.code_action_provider = CodeActionProvider()  # type: ignore[attr-defined]
 
     # Attach formatting provider for document and range formatting
     lsp_server.formatting_provider = FormattingProvider(lsp_server)  # type: ignore[attr-defined]
