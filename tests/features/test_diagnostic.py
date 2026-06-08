@@ -3,7 +3,10 @@
 import json
 
 import pytest
-from pygls.server import LanguageServer
+try:
+    from pygls.lsp.server import LanguageServer
+except ImportError:
+    from pygls.server import LanguageServer
 
 from qe_lsp.features.diagnostic import DiagnosticProvider
 

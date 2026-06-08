@@ -12,7 +12,10 @@ from lsprotocol.types import (
     Position,
     Range,
 )
-from pygls.server import LanguageServer
+try:
+    from pygls.lsp.server import LanguageServer
+except ImportError:
+    from pygls.server import LanguageServer
 
 from ..validation import validate_qe_input
 
