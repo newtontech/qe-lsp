@@ -14,6 +14,7 @@ from . import __version__
 from .constants import SERVER_NAME
 from .features.diagnostic import DiagnosticProvider
 from .features.lint import LintProvider
+from .features.typecheck import TypecheckProvider
 from .registry import register_handlers
 
 
@@ -35,7 +36,10 @@ def create_server(name: str = SERVER_NAME, version: str = __version__) -> Any:
     lsp_server.diagnostic_provider = DiagnosticProvider(lsp_server)  # type: ignore[attr-defined]
 
     # Attach lint provider for schema-aware static checks
-    lsp_server.lint_provider = LintProvider()  # type: ignore[attr-defined]
+    lsp_server.lint_provider = LintProvider()
+
+    # Attach typecheck provider for type-aware value validation
+    lsp_server.typecheck_provider = TypecheckProvider()  # type: ignore[attr-defined]
 
     # Document cache used by did_open / did_change handlers
     lsp_server.documents = {}  # type: ignore[attr-defined]
@@ -47,6 +51,7 @@ def create_server(name: str = SERVER_NAME, version: str = __version__) -> Any:
         lsp_server.documents[uri] = text  # type: ignore[attr-defined]
         diagnostics = lsp_server.diagnostic_provider.get_diagnostics(text)  # type: ignore[attr-defined]
         diagnostics.extend(lsp_server.lint_provider.lint(text))  # type: ignore[attr-defined]
+        diagnostics.extend(lsp_server.typecheck_provider.typecheck(text))  # type: ignore[attr-defined]
         lsp_server.publish_diagnostics(uri, diagnostics)
 
     @_register(lsp_server, TEXT_DOCUMENT_DID_CHANGE)
@@ -57,6 +62,7 @@ def create_server(name: str = SERVER_NAME, version: str = __version__) -> Any:
             lsp_server.documents[uri] = text  # type: ignore[attr-defined]
             diagnostics = lsp_server.diagnostic_provider.get_diagnostics(text)  # type: ignore[attr-defined]
             diagnostics.extend(lsp_server.lint_provider.lint(text))  # type: ignore[attr-defined]
+            diagnostics.extend(lsp_server.typecheck_provider.typecheck(text))  # type: ignore[attr-defined]
             lsp_server.publish_diagnostics(uri, diagnostics)
 
     return lsp_server
