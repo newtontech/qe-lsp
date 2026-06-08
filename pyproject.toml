@@ -1,7 +1,11 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "qe-lsp"
 version = "0.1.0"
-description = "Language Server Protocol for qe"
+description = "Language Server Protocol for Quantum ESPRESSO input files"
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
@@ -12,29 +16,53 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest",
-    "pytest-cov",
-    "pre-commit",
-    "black",
-    "ruff",
-    "mypy<2",
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "pre-commit>=3.0",
+    "black>=23.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0",
 ]
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
 
 [project.scripts]
 qe-lsp = "qe_lsp.server:main"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/qe_lsp"]
+
 [tool.black]
-target-version = ["py39"]
+line-length = 100
+target-version = ['py39']
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=qe_lsp --cov-report=term-missing --cov-fail-under=80"
+addopts = "--cov=src/qe_lsp --cov-report=term-missing --cov-report=html --cov-report=xml --cov-fail-under=80 -v"
+
+[tool.coverage.run]
+source = ["src"]
+omit = ["*/tests/*", "*/test_*", "*/__pycache__/*"]
+branch = true
+parallel = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "pass",
+    "..."
+]
+fail_under = 80
 
 [tool.mypy]
 python_version = "3.9"
-warn_unused_configs = true
 warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
