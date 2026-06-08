@@ -118,8 +118,11 @@ class RenameProvider:
 
         # Namelist parameter (assignment LHS)
         if "=" in raw_line:
-            stripped = strip_inline_comment(raw_line)
-            for match in ASSIGNMENT_RE.finditer(stripped):
+            # Strip the inline comment but preserve leading whitespace so that
+            # regex character offsets match the raw line positions.
+            comment_idx = raw_line.find("!")
+            test_line = raw_line[:comment_idx] if comment_idx >= 0 else raw_line
+            for match in ASSIGNMENT_RE.finditer(test_line):
                 name = match.group(1)
                 if match.start(1) <= character <= match.end(1):
                     return Range(
@@ -128,12 +131,13 @@ class RenameProvider:
                     )
 
         # Element symbol in card rows
-        stripped = strip_inline_comment(raw_line)
+        comment_idx = raw_line.find("!")
+        test_line = raw_line[:comment_idx] if comment_idx >= 0 else raw_line
         parsed = parse_qe_input(text)
         for card_name in ("ATOMIC_SPECIES", "ATOMIC_POSITIONS"):
             for row in parsed.cards.get(card_name, []):
                 if row.line == line:
-                    token = stripped.split()[0] if stripped.split() else ""
+                    token = test_line.split()[0] if test_line.split() else ""
                     if token and token == word:
                         return Range(
                             start=Position(line=line, character=0),
