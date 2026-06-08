@@ -4,23 +4,19 @@ from typing import Any, Optional
 
 from lsprotocol import types
 
-from qe_lsp.constants import QE_HOVER_DOCS
-from qe_lsp.text import get_position, get_text, word_at_position
+from qe_lsp.features.navigation import get_hover
+from qe_lsp.text import get_position, get_text
 
 
 def hover(params: Any) -> Optional[types.Hover]:
+    """Handle a textDocument/hover request.
+
+    Returns hover documentation for the symbol under the cursor, including
+    section-level docs and per-namelist parameter descriptions.
+    """
     text = get_text(params)
     if not text:
         return None
 
     line_number, character = get_position(params)
-    keyword = word_at_position(text, line_number, character).upper()
-    if keyword not in QE_HOVER_DOCS:
-        return None
-
-    return types.Hover(
-        contents=types.MarkupContent(
-            kind=types.MarkupKind.Markdown,
-            value=f"**{keyword}**\n\n{QE_HOVER_DOCS[keyword]}",
-        )
-    )
+    return get_hover(text, line_number, character)
