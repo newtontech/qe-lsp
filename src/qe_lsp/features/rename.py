@@ -61,7 +61,7 @@ def _word_at(text: str, line: int, character: int) -> str:
 
     while start > 0 and (raw[start - 1].isalnum() or raw[start - 1] in "_("):
         start -= 1
-    while end < len(raw) and (raw[end].isalnum() or raw[end] in "_)"):
+    while end < len(raw) and (raw[end].isalnum() or raw[end] in "_()"):
         end += 1
 
     return raw[start:end]
@@ -118,8 +118,9 @@ class RenameProvider:
 
         # Namelist parameter (assignment LHS)
         if "=" in raw_line:
-            stripped = strip_inline_comment(raw_line)
-            for match in ASSIGNMENT_RE.finditer(stripped):
+            # Strip only comments, preserve leading whitespace for correct positions
+            comment_stripped = raw_line.split("!", 1)[0]
+            for match in ASSIGNMENT_RE.finditer(comment_stripped):
                 name = match.group(1)
                 if match.start(1) <= character <= match.end(1):
                     return Range(
@@ -199,70 +200,60 @@ class RenameProvider:
         new_name: str,
     ) -> Optional[List[TextEdit]]:
         """Produce edits for all assignments of the same parameter in the
-        same namelist block."""
-        parsed = parse_qe_input(text)
+        same namelist block.
 
-        # Identify the namelist and parameter at the trigger position.
-        target_namelist: Optional[str] = None
-        target_param_lower: Optional[str] = None
+        Uses raw line scanning to get correct character positions (the parser
+        strips leading whitespace, so its ``param.character`` values are wrong
+        for indented namelist parameters).
+        """
+        lines = text.splitlines()
+        raw_line = lines[trigger_line] if trigger_line < len(lines) else ""
 
-        for nl_name, params in parsed.namelists.items():
-            for param_name, param in params.items():
-                if param.line == trigger_line:
-                    # Verify the character falls within the parameter name.
-                    if param.character <= trigger_char <= param.character + len(param.name):
-                        target_namelist = nl_name
-                        target_param_lower = param_name
-                        break
-            if target_namelist is not None:
+        # Find the parameter name at the trigger position using regex on raw line.
+        comment_stripped = raw_line.split("!", 1)[0]
+        target_param: Optional[str] = None
+        for match in ASSIGNMENT_RE.finditer(comment_stripped):
+            if match.start(1) <= trigger_char <= match.end(1):
+                target_param = match.group(1)
                 break
 
-        # Also check duplicate_parameters — the trigger might be on a dup.
-        if target_namelist is None:
-            for param in parsed.duplicate_parameters:
-                if param.line == trigger_line:
-                    if param.character <= trigger_char <= param.character + len(param.name):
-                        target_namelist = _namelist_for_line(text, param.line)
-                        target_param_lower = param.name
-                        break
-                if target_namelist is not None:
-                    break
-
-        if target_namelist is None or target_param_lower is None:
+        if target_param is None:
             return None
 
+        # Determine which namelist block the trigger line is in.
+        target_namelist = _namelist_for_line(text, trigger_line)
+        if target_namelist is None:
+            return None
+
+        # Scan the entire namelist block for all occurrences of this parameter.
         edits: List[TextEdit] = []
+        param_lower = target_param.lower()
+        in_target_block = False
 
-        # Primary parameters.
-        param = parsed.namelists.get(target_namelist, {}).get(target_param_lower)
-        if param is not None:
-            edits.append(
-                TextEdit(
-                    range=Range(
-                        start=Position(line=param.line, character=param.character),
-                        end=Position(line=param.line, character=param.character + len(param.name)),
-                    ),
-                    new_text=new_name,
-                )
-            )
-
-        # Duplicates of the same parameter in the same namelist.
-        for dup in parsed.duplicate_parameters:
-            if dup.name == target_param_lower:
-                dup_nl = _namelist_for_line(text, dup.line)
-                if dup_nl == target_namelist:
-                    edits.append(
-                        TextEdit(
-                            range=Range(
-                                start=Position(line=dup.line, character=dup.character),
-                                end=Position(
-                                    line=dup.line,
-                                    character=dup.character + len(dup.name),
+        for i, line in enumerate(lines):
+            stripped_upper = line.strip().upper()
+            if stripped_upper == target_namelist.upper():
+                in_target_block = True
+                continue
+            if in_target_block and stripped_upper == "/":
+                break
+            if in_target_block:
+                cs = line.split("!", 1)[0]
+                for match in ASSIGNMENT_RE.finditer(cs):
+                    if match.group(1).lower() == param_lower:
+                        edits.append(
+                            TextEdit(
+                                range=Range(
+                                    start=Position(
+                                        line=i, character=match.start(1)
+                                    ),
+                                    end=Position(
+                                        line=i, character=match.end(1)
+                                    ),
                                 ),
-                            ),
-                            new_text=new_name,
+                                new_text=new_name,
+                            )
                         )
-                    )
 
         return edits if edits else None
 

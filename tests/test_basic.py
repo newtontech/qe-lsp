@@ -128,7 +128,7 @@ def test_diagnostic_warns_about_gamma_offsets():
 
 def test_server_registers_lsp_features():
     """Handlers should be registered with pygls, not only callable directly."""
-    features = server.lsp.fm.features
+    features = server.protocol.fm.features
 
     assert "textDocument/completion" in features
     assert "textDocument/hover" in features

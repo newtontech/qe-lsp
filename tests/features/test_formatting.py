@@ -416,6 +416,6 @@ class TestServerRegistration:
     def test_server_registers_formatting_handlers(self) -> None:
         from qe_lsp.server import server
 
-        features = server.lsp.fm.features
+        features = server.protocol.fm.features
         assert "textDocument/formatting" in features
         assert "textDocument/rangeFormatting" in features
