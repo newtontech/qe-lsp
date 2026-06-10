@@ -405,23 +405,23 @@ class TestServerRegistration:
     def test_server_registers_definition(self) -> None:
         from qe_lsp.server import server
 
-        features = server.protocol.fm.features
+        features = server.lsp.fm.features
         assert "textDocument/definition" in features
 
     def test_server_registers_references(self) -> None:
         from qe_lsp.server import server
 
-        features = server.protocol.fm.features
+        features = server.lsp.fm.features
         assert "textDocument/references" in features
 
     def test_server_registers_document_symbol(self) -> None:
         from qe_lsp.server import server
 
-        features = server.protocol.fm.features
+        features = server.lsp.fm.features
         assert "textDocument/documentSymbol" in features
 
     def test_server_registers_hover(self) -> None:
         from qe_lsp.server import server
 
-        features = server.protocol.fm.features
+        features = server.lsp.fm.features
         assert "textDocument/hover" in features

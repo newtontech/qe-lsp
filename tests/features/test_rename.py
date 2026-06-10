@@ -489,13 +489,13 @@ class TestRenameServerRegistration:
     def test_server_registers_prepare_rename(self) -> None:
         from qe_lsp.server import server
 
-        features = server.protocol.fm.features
+        features = server.lsp.fm.features
         assert "textDocument/prepareRename" in features
 
     def test_server_registers_rename(self) -> None:
         from qe_lsp.server import server
 
-        features = server.protocol.fm.features
+        features = server.lsp.fm.features
         assert "textDocument/rename" in features
 
 

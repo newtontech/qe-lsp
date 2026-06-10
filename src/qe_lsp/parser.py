@@ -72,13 +72,16 @@ def parse_qe_input(text: str) -> ParsedInput:
             continue
 
         if open_namelist is not None:
+            # Compute the leading whitespace offset so that character
+            # positions are accurate relative to the raw (unstripped) line.
+            leading_ws = len(raw_line) - len(raw_line.lstrip())
             for match in ASSIGNMENT_RE.finditer(line):
                 name = match.group(1).lower()
                 parameter = Parameter(
                     name=name,
                     value=match.group(2).strip(),
                     line=line_number,
-                    character=match.start(1),
+                    character=leading_ws + match.start(1),
                 )
                 if name in parsed.namelists[open_namelist]:
                     parsed.duplicate_parameters.append(parameter)
