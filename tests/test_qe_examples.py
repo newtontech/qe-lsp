@@ -27,7 +27,7 @@ from qe_lsp.features.navigation import (
 try:
     from pygls.lsp.server import LanguageServer as PyglsLanguageServer
 except ImportError:
-    from pygls.server import LanguageServer as PyglsLanguageServer  # type: ignore[attr-defined]
+    from pygls.server import LanguageServer as PyglsLanguageServer  # type: ignore[attr-defined,no-redef]
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 

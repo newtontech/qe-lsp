@@ -10,4 +10,7 @@ def get_registered_features(server: Any) -> Any:
     lsp = getattr(server, "lsp", None)
     if lsp is not None:
         return lsp.fm.features
+    protocol = getattr(server, "protocol", None)
+    if protocol is not None:
+        return protocol.fm.features
     return server.fm.features
