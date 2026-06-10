@@ -1,12 +1,17 @@
 """Tests for the DiagnosticProvider live diagnostics snapshot."""
 
 import json
+from typing import TYPE_CHECKING
 
 import pytest
-try:
+
+if TYPE_CHECKING:
     from pygls.lsp.server import LanguageServer
-except ImportError:
-    from pygls.server import LanguageServer
+else:
+    try:
+        from pygls.lsp.server import LanguageServer
+    except ImportError:
+        from pygls.server import LanguageServer
 
 from qe_lsp.features.diagnostic import DiagnosticProvider
 
@@ -112,13 +117,7 @@ class TestSnapshot:
 
     def test_snapshot_deterministic_ordering(self, provider: DiagnosticProvider) -> None:
         """Two calls with the same text must produce the same output."""
-        text = (
-            "&SYSTEM\n"
-            "ibrav = 0\n"
-            "/\n"
-            "&CONTROL\n"
-            "calculation = 'scf'\n"
-        )
+        text = "&SYSTEM\n" "ibrav = 0\n" "/\n" "&CONTROL\n" "calculation = 'scf'\n"
         first = provider.snapshot(text)
         second = provider.snapshot(text)
         assert first == second

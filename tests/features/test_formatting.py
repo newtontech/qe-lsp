@@ -1,5 +1,7 @@
 """Tests for the FormattingProvider document and range formatting."""
 
+from typing import TYPE_CHECKING
+
 import pytest
 from lsprotocol.types import (
     DocumentFormattingParams,
@@ -12,10 +14,13 @@ from lsprotocol.types import (
 
 from qe_lsp.features.formatting import FormattingProvider, get_formatting_provider
 
-try:
+if TYPE_CHECKING:
     from pygls.lsp.server import LanguageServer
-except ImportError:
-    from pygls.server import LanguageServer
+else:
+    try:
+        from pygls.lsp.server import LanguageServer
+    except ImportError:
+        from pygls.server import LanguageServer
 
 
 # ------------------------------------------------------------------
@@ -95,32 +100,44 @@ class TestProviderCreation:
 
 
 class TestFormatDocument:
-    def test_empty_returns_empty(self, provider: FormattingProvider, fmt_params: DocumentFormattingParams) -> None:
+    def test_empty_returns_empty(
+        self, provider: FormattingProvider, fmt_params: DocumentFormattingParams
+    ) -> None:
         assert provider.format_document("", fmt_params) == []
 
-    def test_already_formatted_returns_empty(self, provider: FormattingProvider, fmt_params: DocumentFormattingParams) -> None:
+    def test_already_formatted_returns_empty(
+        self, provider: FormattingProvider, fmt_params: DocumentFormattingParams
+    ) -> None:
         text = "&CONTROL\n  calculation = 'scf'\n/\n"
         assert provider.format_document(text, fmt_params) == []
 
-    def test_single_line_no_change(self, provider: FormattingProvider, fmt_params: DocumentFormattingParams) -> None:
+    def test_single_line_no_change(
+        self, provider: FormattingProvider, fmt_params: DocumentFormattingParams
+    ) -> None:
         text = "ATOMIC_SPECIES\n"
         edits = provider.format_document(text, fmt_params)
         # Single card header with no body — already fine
         assert edits == []
 
-    def test_namelist_indentation(self, provider: FormattingProvider, fmt_params: DocumentFormattingParams) -> None:
+    def test_namelist_indentation(
+        self, provider: FormattingProvider, fmt_params: DocumentFormattingParams
+    ) -> None:
         text = "&CONTROL\ncalculation = 'scf'\n/\n"
         edits = provider.format_document(text, fmt_params)
         assert len(edits) == 1
         assert "  calculation = 'scf'" in edits[0].new_text
 
-    def test_card_indentation(self, provider: FormattingProvider, fmt_params: DocumentFormattingParams) -> None:
+    def test_card_indentation(
+        self, provider: FormattingProvider, fmt_params: DocumentFormattingParams
+    ) -> None:
         text = "ATOMIC_SPECIES\nSi 28.086 Si.pbe.UPF\n"
         edits = provider.format_document(text, fmt_params)
         assert len(edits) == 1
         assert "  Si 28.086 Si.pbe.UPF" in edits[0].new_text
 
-    def test_nested_namelists_and_cards(self, provider: FormattingProvider, fmt_params: DocumentFormattingParams) -> None:
+    def test_nested_namelists_and_cards(
+        self, provider: FormattingProvider, fmt_params: DocumentFormattingParams
+    ) -> None:
         text = (
             "&CONTROL\n"
             "calculation = 'scf'\n"
@@ -142,21 +159,25 @@ class TestFormatDocument:
         assert "  Si 28.086 Si.pbe.UPF" in formatted
         assert "  Si 0.0 0.0 0.0" in formatted
 
-    def test_4_space_indent(self, provider: FormattingProvider, fmt_params_4: DocumentFormattingParams) -> None:
+    def test_4_space_indent(
+        self, provider: FormattingProvider, fmt_params_4: DocumentFormattingParams
+    ) -> None:
         text = "&CONTROL\ncalculation = 'scf'\n/\n"
         edits = provider.format_document(text, fmt_params_4)
         assert len(edits) == 1
         assert "    calculation = 'scf'" in edits[0].new_text
 
-    def test_tab_indent(self, provider: FormattingProvider, fmt_params_tabs: DocumentFormattingParams) -> None:
+    def test_tab_indent(
+        self, provider: FormattingProvider, fmt_params_tabs: DocumentFormattingParams
+    ) -> None:
         text = "&CONTROL\ncalculation = 'scf'\n/\n"
         edits = provider.format_document(text, fmt_params_tabs)
         assert len(edits) == 1
         assert "\tcalculation = 'scf'" in edits[0].new_text
 
-    def test_trailing_newline_preserved(self, provider: FormattingProvider, fmt_params: DocumentFormattingParams) -> None:
-        text = "&CONTROL\ncalculation = 'scf'\n/\n"
-        edits = provider.format_document(text, fmt_params)
+    def test_trailing_newline_preserved(
+        self, provider: FormattingProvider, fmt_params: DocumentFormattingParams
+    ) -> None:
         # Already formatted — no edits
         # Let's use unformatted version
         text2 = "&CONTROL\ncalculation = 'scf'\n/\n"
@@ -164,7 +185,9 @@ class TestFormatDocument:
         if edits2:
             assert edits2[0].new_text.endswith("\n")
 
-    def test_idempotent(self, provider: FormattingProvider, fmt_params: DocumentFormattingParams) -> None:
+    def test_idempotent(
+        self, provider: FormattingProvider, fmt_params: DocumentFormattingParams
+    ) -> None:
         """Formatting the output of formatting again must produce no edits."""
         text = "&CONTROL\ncalculation = 'scf'\n/\n"
         first_edits = provider.format_document(text, fmt_params)
@@ -175,19 +198,25 @@ class TestFormatDocument:
 
 
 class TestFormatDocumentComments:
-    def test_comment_preserved(self, provider: FormattingProvider, fmt_params: DocumentFormattingParams) -> None:
+    def test_comment_preserved(
+        self, provider: FormattingProvider, fmt_params: DocumentFormattingParams
+    ) -> None:
         text = "! This is a comment\n&CONTROL\ncalculation = 'scf'\n/\n"
         edits = provider.format_document(text, fmt_params)
         assert len(edits) == 1
         assert "! This is a comment" in edits[0].new_text
 
-    def test_inline_comment_preserved(self, provider: FormattingProvider, fmt_params: DocumentFormattingParams) -> None:
+    def test_inline_comment_preserved(
+        self, provider: FormattingProvider, fmt_params: DocumentFormattingParams
+    ) -> None:
         text = "&CONTROL\ncalculation = 'scf' ! SCF run\n/\n"
         edits = provider.format_document(text, fmt_params)
         assert len(edits) == 1
         assert "! SCF run" in edits[0].new_text
 
-    def test_blank_lines_preserved(self, provider: FormattingProvider, fmt_params: DocumentFormattingParams) -> None:
+    def test_blank_lines_preserved(
+        self, provider: FormattingProvider, fmt_params: DocumentFormattingParams
+    ) -> None:
         text = "&CONTROL\n\ncalculation = 'scf'\n/\n"
         edits = provider.format_document(text, fmt_params)
         assert len(edits) == 1
@@ -197,19 +226,25 @@ class TestFormatDocumentComments:
 
 
 class TestFormatDocumentMalformed:
-    def test_unclosed_namelist(self, provider: FormattingProvider, fmt_params: DocumentFormattingParams) -> None:
+    def test_unclosed_namelist(
+        self, provider: FormattingProvider, fmt_params: DocumentFormattingParams
+    ) -> None:
         text = "&CONTROL\ncalculation = 'scf'\n"
         edits = provider.format_document(text, fmt_params)
         assert len(edits) == 1
         assert "  calculation = 'scf'" in edits[0].new_text
 
-    def test_stray_slash(self, provider: FormattingProvider, fmt_params: DocumentFormattingParams) -> None:
+    def test_stray_slash(
+        self, provider: FormattingProvider, fmt_params: DocumentFormattingParams
+    ) -> None:
         text = "/\n"
         edits = provider.format_document(text, fmt_params)
         # Slash without a namelist — should still format without error
         assert isinstance(edits, list)
 
-    def test_random_text(self, provider: FormattingProvider, fmt_params: DocumentFormattingParams) -> None:
+    def test_random_text(
+        self, provider: FormattingProvider, fmt_params: DocumentFormattingParams
+    ) -> None:
         text = "some random text\nmore random text\n"
         edits = provider.format_document(text, fmt_params)
         # Should not crash, and text without structure stays as-is
@@ -227,11 +262,7 @@ class TestFormatRange:
         assert provider.format_range("", params) == []
 
     def test_range_within_namelist(self, provider: FormattingProvider) -> None:
-        text = (
-            "&CONTROL\n"
-            "calculation = 'scf'\n"
-            "/\n"
-        )
+        text = "&CONTROL\n" "calculation = 'scf'\n" "/\n"
         # Format only line 1 (the assignment)
         params = _range_params(1, 1)
         edits = provider.format_range(text, params)
@@ -239,22 +270,14 @@ class TestFormatRange:
         assert "  calculation = 'scf'" in edits[0].new_text
 
     def test_range_includes_namelist_header(self, provider: FormattingProvider) -> None:
-        text = (
-            "&CONTROL\n"
-            "calculation = 'scf'\n"
-            "/\n"
-        )
+        text = "&CONTROL\n" "calculation = 'scf'\n" "/\n"
         # Format lines 0-2
         params = _range_params(0, 2)
         edits = provider.format_range(text, params)
         assert len(edits) == 1
 
     def test_already_formatted_range(self, provider: FormattingProvider) -> None:
-        text = (
-            "&CONTROL\n"
-            "  calculation = 'scf'\n"
-            "/\n"
-        )
+        text = "&CONTROL\n" "  calculation = 'scf'\n" "/\n"
         params = _range_params(1, 1)
         edits = provider.format_range(text, params)
         assert edits == []
@@ -268,14 +291,7 @@ class TestFormatRange:
 
     def test_range_preserves_surrounding_context(self, provider: FormattingProvider) -> None:
         """Range formatting must not affect lines outside the range."""
-        text = (
-            "&CONTROL\n"
-            "calculation = 'scf'\n"
-            "/\n"
-            "&SYSTEM\n"
-            "ibrav = 1\n"
-            "/\n"
-        )
+        text = "&CONTROL\n" "calculation = 'scf'\n" "/\n" "&SYSTEM\n" "ibrav = 1\n" "/\n"
         # Format only line 4 (ibrav = 1)
         params = _range_params(4, 4)
         edits = provider.format_range(text, params)

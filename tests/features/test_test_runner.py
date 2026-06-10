@@ -1,10 +1,12 @@
 """Tests for the QE test-runner / dry-run bridge."""
 
 import json
-import pytest
 from lsprotocol.types import DiagnosticSeverity
 from qe_lsp.features.test_runner import (
-    TestRunnerConfig, TestRunnerProvider, parse_solver_output, solver_output_to_diagnostics,
+    TestRunnerConfig,
+    TestRunnerProvider,
+    parse_solver_output,
+    solver_output_to_diagnostics,
     SolverOutput,
 )
 
@@ -43,14 +45,16 @@ class TestParseSolverOutput:
 
 class TestDiagnostics:
     def test_error_diagnostic(self):
-        diags = solver_output_to_diagnostics(SolverOutput(
-            errors=[{"message": "err", "line": 1, "source": "t"}]))
+        diags = solver_output_to_diagnostics(
+            SolverOutput(errors=[{"message": "err", "line": 1, "source": "t"}])
+        )
         assert diags[0].severity == DiagnosticSeverity.Error
         assert diags[0].code == "QE9001"
 
     def test_warning_diagnostic(self):
-        diags = solver_output_to_diagnostics(SolverOutput(
-            warnings=[{"message": "warn", "line": 0, "source": "t"}]))
+        diags = solver_output_to_diagnostics(
+            SolverOutput(warnings=[{"message": "warn", "line": 0, "source": "t"}])
+        )
         assert diags[0].severity == DiagnosticSeverity.Warning
         assert diags[0].code == "QE9002"
 
@@ -61,11 +65,15 @@ class TestProvider:
         assert diags[0].severity == DiagnosticSeverity.Information
 
     def test_no_exec(self):
-        diags = TestRunnerProvider(TestRunnerConfig(executable="", enabled=True)).run_validation("t")
+        diags = TestRunnerProvider(TestRunnerConfig(executable="", enabled=True)).run_validation(
+            "t"
+        )
         assert diags[0].severity == DiagnosticSeverity.Warning
 
     def test_missing_exec(self):
-        diags = TestRunnerProvider(TestRunnerConfig(executable="/no/such/bin", enabled=True)).run_validation("t")
+        diags = TestRunnerProvider(
+            TestRunnerConfig(executable="/no/such/bin", enabled=True)
+        ).run_validation("t")
         assert diags[0].severity == DiagnosticSeverity.Error
 
     def test_captured(self):
@@ -76,6 +84,8 @@ class TestProvider:
         assert len(TestRunnerProvider().run_with_captured_output("ok\n")) == 0
 
     def test_snapshot(self):
-        s = json.loads(TestRunnerProvider(TestRunnerConfig(executable="pw.x", enabled=True)).snapshot_config())
+        s = json.loads(
+            TestRunnerProvider(TestRunnerConfig(executable="pw.x", enabled=True)).snapshot_config()
+        )
         assert s["enabled"]
         assert s["executable"] == "pw.x"

@@ -21,6 +21,7 @@ from lsprotocol.types import Diagnostic, DiagnosticSeverity, Position, Range
 @dataclass
 class TestRunnerConfig:
     """Configuration for the QE test runner."""
+
     executable: str = ""
     timeout: float = 30.0
     enabled: bool = False
@@ -75,15 +76,31 @@ def parse_solver_output(raw: str) -> SolverOutput:
 def solver_output_to_diagnostics(output: SolverOutput) -> List[Diagnostic]:
     diagnostics: List[Diagnostic] = []
     for err in output.errors:
-        diagnostics.append(Diagnostic(
-            range=Range(start=Position(line=err["line"], character=0), end=Position(line=err["line"], character=999)),
-            message=err["message"], severity=DiagnosticSeverity.Error,
-            source="qe-test-runner", code="QE9001"))
+        diagnostics.append(
+            Diagnostic(
+                range=Range(
+                    start=Position(line=err["line"], character=0),
+                    end=Position(line=err["line"], character=999),
+                ),
+                message=err["message"],
+                severity=DiagnosticSeverity.Error,
+                source="qe-test-runner",
+                code="QE9001",
+            )
+        )
     for warn in output.warnings:
-        diagnostics.append(Diagnostic(
-            range=Range(start=Position(line=warn["line"], character=0), end=Position(line=warn["line"], character=999)),
-            message=warn["message"], severity=DiagnosticSeverity.Warning,
-            source="qe-test-runner", code="QE9002"))
+        diagnostics.append(
+            Diagnostic(
+                range=Range(
+                    start=Position(line=warn["line"], character=0),
+                    end=Position(line=warn["line"], character=999),
+                ),
+                message=warn["message"],
+                severity=DiagnosticSeverity.Warning,
+                source="qe-test-runner",
+                code="QE9002",
+            )
+        )
     return diagnostics
 
 
@@ -104,35 +121,70 @@ class TestRunnerProvider:
 
     def run_validation(self, source: str) -> List[Diagnostic]:
         if not self._config.enabled:
-            return [Diagnostic(range=Range(start=Position(0, 0), end=Position(0, 0)),
-                message="QE test runner is not enabled. Configure the executable path to enable.",
-                severity=DiagnosticSeverity.Information, source="qe-test-runner", code="QE9000")]
+            return [
+                Diagnostic(
+                    range=Range(start=Position(0, 0), end=Position(0, 0)),
+                    message="QE test runner is not enabled. Configure the executable path to enable.",
+                    severity=DiagnosticSeverity.Information,
+                    source="qe-test-runner",
+                    code="QE9000",
+                )
+            ]
         if not self._config.executable:
-            return [Diagnostic(range=Range(start=Position(0, 0), end=Position(0, 0)),
-                message="QE executable path is not configured.",
-                severity=DiagnosticSeverity.Warning, source="qe-test-runner", code="QE9000")]
+            return [
+                Diagnostic(
+                    range=Range(start=Position(0, 0), end=Position(0, 0)),
+                    message="QE executable path is not configured.",
+                    severity=DiagnosticSeverity.Warning,
+                    source="qe-test-runner",
+                    code="QE9000",
+                )
+            ]
         import shutil
+
         if not shutil.which(self._config.executable):
-            return [Diagnostic(range=Range(start=Position(0, 0), end=Position(0, 0)),
-                message=f"QE executable not found: {self._config.executable}",
-                severity=DiagnosticSeverity.Error, source="qe-test-runner", code="QE9000")]
+            return [
+                Diagnostic(
+                    range=Range(start=Position(0, 0), end=Position(0, 0)),
+                    message=f"QE executable not found: {self._config.executable}",
+                    severity=DiagnosticSeverity.Error,
+                    source="qe-test-runner",
+                    code="QE9000",
+                )
+            ]
         try:
             with tempfile.NamedTemporaryFile(mode="w", suffix=".in", delete=False) as f:
                 f.write(source)
                 temp_path = f.name
-            result = subprocess.run([self._config.executable, "-input", temp_path],
-                capture_output=True, text=True, timeout=self._config.timeout)
+            result = subprocess.run(
+                [self._config.executable, "-input", temp_path],
+                capture_output=True,
+                text=True,
+                timeout=self._config.timeout,
+            )
             raw_output = result.stdout + "\n" + result.stderr
             output = parse_solver_output(raw_output)
             return solver_output_to_diagnostics(output)
         except subprocess.TimeoutExpired:
-            return [Diagnostic(range=Range(start=Position(0, 0), end=Position(0, 0)),
-                message=f"QE validation timed out after {self._config.timeout}s.",
-                severity=DiagnosticSeverity.Warning, source="qe-test-runner", code="QE9003")]
+            return [
+                Diagnostic(
+                    range=Range(start=Position(0, 0), end=Position(0, 0)),
+                    message=f"QE validation timed out after {self._config.timeout}s.",
+                    severity=DiagnosticSeverity.Warning,
+                    source="qe-test-runner",
+                    code="QE9003",
+                )
+            ]
         except FileNotFoundError:
-            return [Diagnostic(range=Range(start=Position(0, 0), end=Position(0, 0)),
-                message=f"QE executable not found: {self._config.executable}",
-                severity=DiagnosticSeverity.Error, source="qe-test-runner", code="QE9000")]
+            return [
+                Diagnostic(
+                    range=Range(start=Position(0, 0), end=Position(0, 0)),
+                    message=f"QE executable not found: {self._config.executable}",
+                    severity=DiagnosticSeverity.Error,
+                    source="qe-test-runner",
+                    code="QE9000",
+                )
+            ]
         finally:
             try:
                 Path(temp_path).unlink()
@@ -144,6 +196,11 @@ class TestRunnerProvider:
         return solver_output_to_diagnostics(output)
 
     def snapshot_config(self) -> str:
-        return json.dumps({"enabled": self._config.enabled,
-            "executable": self._config.executable or "(not configured)",
-            "timeout": self._config.timeout}, indent=2)
+        return json.dumps(
+            {
+                "enabled": self._config.enabled,
+                "executable": self._config.executable or "(not configured)",
+                "timeout": self._config.timeout,
+            },
+            indent=2,
+        )

@@ -39,13 +39,13 @@ class TestLintEmpty:
 
     def test_comment_only_no_diagnostics(self, provider: LintProvider) -> None:
         assert provider.lint("! just a comment\n") == []
+
     def test_empty_namelist_reports_missing_required(self, provider: LintProvider) -> None:
         """An empty &CONTROL is treated as missing; &SYSTEM is also missing."""
         text = "&CONTROL\n/\n"
         diagnostics = provider.lint(text)
         codes = [d.code for d in diagnostics]
         assert RULE_MISSING_REQUIRED_SECTION in codes
-
 
     def test_minimal_valid_input_no_errors(self, provider: LintProvider) -> None:
         """A well-formed minimal input produces zero errors."""
@@ -228,13 +228,11 @@ class TestLintSourceAndCode:
         text = "&FOOBAR\nx = 1\n/\n"
         diagnostics = provider.lint(text)
         assert diagnostics[0].code is not None
+        assert isinstance(diagnostics[0].code, str)
         assert diagnostics[0].code.startswith("QE-")
 
     def test_valid_enum_values_no_error(self, provider: LintProvider) -> None:
-        text = (
-            "&CONTROL\ncalculation = 'scf'\n/\n"
-            "&ELECTRONS\nmixing_mode = 'plain'\n/\n"
-        )
+        text = "&CONTROL\ncalculation = 'scf'\n/\n" "&ELECTRONS\nmixing_mode = 'plain'\n/\n"
         diagnostics = provider.lint(text)
         invalids = [d for d in diagnostics if d.code == RULE_INVALID_KEYWORD_VALUE]
         assert invalids == []
@@ -308,10 +306,7 @@ class TestSnapshot:
         assert error_items[0]["code"].startswith("QE-")
 
     def test_snapshot_deterministic_ordering(self, provider: LintProvider) -> None:
-        text = (
-            "&FOOBAR\nx = 1\n/\n"
-            "&CONTROL\ncalculation = 'bogus'\n/\n"
-        )
+        text = "&FOOBAR\nx = 1\n/\n" "&CONTROL\ncalculation = 'bogus'\n/\n"
         first = provider.snapshot(text)
         second = provider.snapshot(text)
         assert first == second

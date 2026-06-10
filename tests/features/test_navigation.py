@@ -1,6 +1,5 @@
 """Tests for navigation features: definition, hover, references, symbols."""
 
-import pytest
 from lsprotocol import types
 
 from qe_lsp.features.navigation import (
@@ -14,7 +13,6 @@ from qe_lsp.handlers.definition import definition
 from qe_lsp.handlers.document_symbol import document_symbol
 from qe_lsp.handlers.hover import hover
 from qe_lsp.handlers.references import references
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -45,6 +43,13 @@ Si 0.25 0.25 0.25
 K_POINTS {automatic}
 4 4 4 0 0 0
 """
+
+
+def _hover_value(result: types.Hover) -> str:
+    assert isinstance(result.contents, types.MarkupContent)
+    return result.contents.value
+
+
 # Line index:
 #  0: &CONTROL
 #  1:   calculation = 'scf'
@@ -216,25 +221,25 @@ class TestHover:
         result = get_hover(SAMPLE_INPUT, 0, 2)
         assert result is not None
         assert isinstance(result.contents, types.MarkupContent)
-        assert "&CONTROL" in result.contents.value
+        assert "&CONTROL" in _hover_value(result)
 
     def test_hover_card(self) -> None:
         # ATOMIC_SPECIES at line 16
         result = get_hover(SAMPLE_INPUT, 16, 2)
         assert result is not None
-        assert "ATOMIC_SPECIES" in result.contents.value
+        assert "ATOMIC_SPECIES" in _hover_value(result)
 
     def test_hover_parameter_ecutwfc(self) -> None:
         # ecutwfc at line 9
         result = get_hover(SAMPLE_INPUT, 9, 2)
         assert result is not None
-        assert "ecutwfc" in result.contents.value.lower()
+        assert "ecutwfc" in _hover_value(result).lower()
 
     def test_hover_mixing_beta(self) -> None:
         # mixing_beta at line 14
         result = get_hover(SAMPLE_INPUT, 14, 2)
         assert result is not None
-        assert "mixing_beta" in result.contents.value.lower()
+        assert "mixing_beta" in _hover_value(result).lower()
 
     def test_hover_unknown_returns_none(self) -> None:
         # whitespace-only position
@@ -247,7 +252,7 @@ class TestHover:
         result = hover(params)
         assert result is not None
         assert isinstance(result, types.Hover)
-        assert "ecutwfc" in result.contents.value.lower()
+        assert "ecutwfc" in _hover_value(result).lower()
 
     def test_hover_handler_empty(self) -> None:
         result = hover(Params("", line=0, character=0))
@@ -257,25 +262,25 @@ class TestHover:
         # ion_dynamics at line 10 in MULTI_NAMELIST_INPUT
         result = get_hover(MULTI_NAMELIST_INPUT, 10, 2)
         assert result is not None
-        assert "ion_dynamics" in result.contents.value.lower()
+        assert "ion_dynamics" in _hover_value(result).lower()
 
     def test_hover_cell_dynamics(self) -> None:
         # cell_dynamics at line 13 in MULTI_NAMELIST_INPUT
         result = get_hover(MULTI_NAMELIST_INPUT, 13, 2)
         assert result is not None
-        assert "cell_dynamics" in result.contents.value.lower()
+        assert "cell_dynamics" in _hover_value(result).lower()
 
     def test_hover_system_parameter(self) -> None:
         # ibrav at line 5
         result = get_hover(SAMPLE_INPUT, 5, 2)
         assert result is not None
-        assert "ibrav" in result.contents.value.lower()
+        assert "ibrav" in _hover_value(result).lower()
 
     def test_hover_conv_thr(self) -> None:
         # conv_thr at line 13
         result = get_hover(SAMPLE_INPUT, 13, 2)
         assert result is not None
-        assert "conv_thr" in result.contents.value.lower()
+        assert "conv_thr" in _hover_value(result).lower()
 
 
 # ===========================================================================

@@ -5,10 +5,12 @@ from __future__ import annotations
 import pytest
 
 from lsprotocol.types import (
+    CodeAction,
     Diagnostic,
     DiagnosticSeverity,
     Position,
     Range,
+    TextEdit,
 )
 
 from qe_lsp.features.code_actions import CodeActionProvider
@@ -33,6 +35,12 @@ from qe_lsp.validation import validate_qe_input
 def provider() -> CodeActionProvider:
     """Create a CodeActionProvider instance."""
     return CodeActionProvider()
+
+
+def _text_edits(action: CodeAction) -> list[TextEdit]:
+    assert action.edit is not None
+    assert action.edit.changes is not None
+    return list(action.edit.changes["document"])
 
 
 @pytest.fixture
@@ -107,7 +115,9 @@ class TestFixUnknownKeyword:
 
     def test_no_action_for_very_short_unknown(self, provider: CodeActionProvider) -> None:
         diag = _diag(
-            line=1, char=2, length=1,
+            line=1,
+            char=2,
+            length=1,
             message="Unknown keyword 'x' in &CONTROL.",
             code=RULE_UNKNOWN_KEYWORD,
         )
@@ -152,7 +162,7 @@ class TestFixDeprecatedKeyword:
         assert any("Remove deprecated" in a.title for a in actions)
 
         action = next(a for a in actions if "deprecated" in a.title.lower())
-        text_edits = action.edit.changes["document"]
+        text_edits = _text_edits(action)
         # Removing the line produces an empty new_text
         assert text_edits[0].new_text == ""
 
@@ -174,7 +184,7 @@ class TestFixDuplicateParameter:
         assert any("duplicate" in a.title.lower() for a in actions)
 
         action = next(a for a in actions if "duplicate" in a.title.lower())
-        text_edits = action.edit.changes["document"]
+        text_edits = _text_edits(action)
         assert text_edits[0].new_text == ""
 
 
@@ -195,7 +205,7 @@ class TestFixMixingBeta:
         assert any("0.7" in a.title for a in actions)
 
         action = next(a for a in actions if "0.7" in a.title)
-        text_edits = action.edit.changes["document"]
+        text_edits = _text_edits(action)
         assert text_edits[0].new_text == "0.7"
 
 
@@ -206,13 +216,7 @@ class TestFixMixingBeta:
 
 class TestFixEcutrhoRatio:
     def test_adjusts_ecutrho_to_ratio(self, provider: CodeActionProvider) -> None:
-        source = (
-            "&SYSTEM\n"
-            "ibrav = 1\n"
-            "ecutwfc = 60.0\n"
-            "ecutrho = 100.0\n"
-            "/\n"
-        )
+        source = "&SYSTEM\n" "ibrav = 1\n" "ecutwfc = 60.0\n" "ecutrho = 100.0\n" "/\n"
         diags = validate_qe_input(source)
         ratio_warnings = [d for d in diags if "ecutrho should normally" in d.message]
         assert len(ratio_warnings) >= 1
@@ -222,7 +226,7 @@ class TestFixEcutrhoRatio:
         assert any("ecutrho" in a.title.lower() for a in actions)
 
         action = next(a for a in actions if "ecutrho" in a.title.lower())
-        text_edits = action.edit.changes["document"]
+        text_edits = _text_edits(action)
         # Should set to 4x60 = 240.0
         assert "240.0" in text_edits[0].new_text
 
@@ -244,7 +248,7 @@ class TestFixOrphanParameter:
         assert any("orphan" in a.title.lower() for a in actions)
 
         action = next(a for a in actions if "orphan" in a.title.lower())
-        text_edits = action.edit.changes["document"]
+        text_edits = _text_edits(action)
         assert text_edits[0].new_text == ""
 
 
@@ -343,8 +347,7 @@ class TestFixInconsistentSettings:
         )
         diags = LintProvider().lint(source)
         inconsistent = [
-            d for d in diags
-            if d.code == RULE_INCONSISTENT_SETTINGS and "&IONS" in d.message
+            d for d in diags if d.code == RULE_INCONSISTENT_SETTINGS and "&IONS" in d.message
         ]
         assert len(inconsistent) >= 1
 
@@ -368,8 +371,7 @@ class TestFixInconsistentSettings:
         )
         diags = LintProvider().lint(source)
         cell_diags = [
-            d for d in diags
-            if d.code == RULE_INCONSISTENT_SETTINGS and "&CELL" in d.message
+            d for d in diags if d.code == RULE_INCONSISTENT_SETTINGS and "&CELL" in d.message
         ]
         assert len(cell_diags) >= 1
 
@@ -423,7 +425,9 @@ class TestEdgeCases:
 
     def test_no_actions_for_unrelated_diagnostic(self, provider: CodeActionProvider) -> None:
         diag = _diag(
-            line=0, char=0, length=5,
+            line=0,
+            char=0,
+            length=5,
             message="Some unrelated issue",
             code="QE-Z999",
         )
@@ -506,11 +510,6 @@ class TestIntegration:
         assert len(unknowns) >= 1
 
         actions = provider.get_code_actions(source, diags)
-        # Should have an action for the unknown keyword
-        keyword_actions = [
-            a for a in actions
-            if "typo_param" in a.title or "Replace" in a.title
-        ]
         # Typo correction may or may not find a close match for "typo_param"
         # but the action should be attempted
         assert isinstance(actions, list)

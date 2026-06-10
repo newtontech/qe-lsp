@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from lsprotocol.types import (
-    Position,
     Range,
     WorkspaceEdit,
 )
@@ -75,7 +74,7 @@ def _get_document_text(params: Any) -> Optional[str]:
         try:
             from qe_lsp.server import server as _server
 
-            return _server.documents.get(uri, None)  # type: ignore[attr-defined]
+            return cast(Optional[str], _server.documents.get(uri, None))  # type: ignore[attr-defined]
         except (ImportError, AttributeError):
             pass
 
@@ -88,4 +87,4 @@ def _get_uri(params: Any) -> str:
         text_document = get_attr(params, "textDocument", None)
     if text_document is None:
         return ""
-    return get_attr(text_document, "uri", "")
+    return cast(str, get_attr(text_document, "uri", ""))

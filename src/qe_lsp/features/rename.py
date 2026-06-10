@@ -9,7 +9,7 @@ editor can present actionable feedback to the user.
 from __future__ import annotations
 
 import re
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional
 
 from lsprotocol.types import (
     Position,
@@ -27,14 +27,25 @@ from ..text import strip_inline_comment
 
 #: Namelist headers that the user should rename through code actions,
 #: not free-form rename.
-_NAMELIST_HEADERS = frozenset({
-    "&CONTROL", "&SYSTEM", "&ELECTRONS", "&IONS", "&CELL",
-})
+_NAMELIST_HEADERS = frozenset(
+    {
+        "&CONTROL",
+        "&SYSTEM",
+        "&ELECTRONS",
+        "&IONS",
+        "&CELL",
+    }
+)
 
 #: Card headers that are structural keywords.
-_CARD_HEADERS = frozenset({
-    "ATOMIC_SPECIES", "ATOMIC_POSITIONS", "K_POINTS", "CELL_PARAMETERS",
-})
+_CARD_HEADERS = frozenset(
+    {
+        "ATOMIC_SPECIES",
+        "ATOMIC_POSITIONS",
+        "K_POINTS",
+        "CELL_PARAMETERS",
+    }
+)
 
 
 # ------------------------------------------------------------------
@@ -121,7 +132,6 @@ class RenameProvider:
             # Strip only comments, preserve leading whitespace for correct positions
             comment_stripped = raw_line.split("!", 1)[0]
             for match in ASSIGNMENT_RE.finditer(comment_stripped):
-                name = match.group(1)
                 if match.start(1) <= character <= match.end(1):
                     return Range(
                         start=Position(line=line, character=match.start(1)),
@@ -167,7 +177,6 @@ class RenameProvider:
         if line < 0 or line >= len(lines):
             return None
 
-        raw_line = lines[line]
         word = _word_at(text, line, character)
         if not word:
             return None
@@ -244,12 +253,8 @@ class RenameProvider:
                         edits.append(
                             TextEdit(
                                 range=Range(
-                                    start=Position(
-                                        line=i, character=match.start(1)
-                                    ),
-                                    end=Position(
-                                        line=i, character=match.end(1)
-                                    ),
+                                    start=Position(line=i, character=match.start(1)),
+                                    end=Position(line=i, character=match.end(1)),
                                 ),
                                 new_text=new_name,
                             )

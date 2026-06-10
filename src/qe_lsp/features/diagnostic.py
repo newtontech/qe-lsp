@@ -2,20 +2,20 @@
 
 from __future__ import annotations
 
-import json
-from dataclasses import asdict
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from lsprotocol.types import (
     Diagnostic,
     DiagnosticSeverity,
-    Position,
-    Range,
 )
-try:
+
+if TYPE_CHECKING:
     from pygls.lsp.server import LanguageServer
-except ImportError:
-    from pygls.server import LanguageServer
+else:
+    try:
+        from pygls.lsp.server import LanguageServer
+    except ImportError:
+        from pygls.server import LanguageServer
 
 from ..validation import validate_qe_input
 
@@ -82,6 +82,8 @@ class DiagnosticProvider:
 
 def _severity_name(severity: DiagnosticSeverity | None) -> str:
     """Map a numeric severity to a human-readable label."""
+    if severity is None:
+        return "Information"
     mapping = {
         DiagnosticSeverity.Error: "Error",
         DiagnosticSeverity.Warning: "Warning",
