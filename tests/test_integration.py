@@ -10,7 +10,7 @@ import pytest
 try:
     from pygls.lsp.server import LanguageServer
 except ImportError:
-    from pygls.server import LanguageServer
+    from pygls.server import LanguageServer as LanguageServer  # type: ignore[attr-defined]
 
 from qe_lsp.parser import parse_qe_input, declared_species, normalize_value, parse_number
 from qe_lsp.text import strip_inline_comment, word_at_position
