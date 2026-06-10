@@ -13,6 +13,7 @@ from qe_lsp.handlers.definition import definition
 from qe_lsp.handlers.document_symbol import document_symbol
 from qe_lsp.handlers.hover import hover
 from qe_lsp.handlers.references import references
+from tests.lsp_compat import get_registered_features
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -405,23 +406,23 @@ class TestServerRegistration:
     def test_server_registers_definition(self) -> None:
         from qe_lsp.server import server
 
-        features = server.lsp.fm.features
+        features = get_registered_features(server)
         assert "textDocument/definition" in features
 
     def test_server_registers_references(self) -> None:
         from qe_lsp.server import server
 
-        features = server.lsp.fm.features
+        features = get_registered_features(server)
         assert "textDocument/references" in features
 
     def test_server_registers_document_symbol(self) -> None:
         from qe_lsp.server import server
 
-        features = server.lsp.fm.features
+        features = get_registered_features(server)
         assert "textDocument/documentSymbol" in features
 
     def test_server_registers_hover(self) -> None:
         from qe_lsp.server import server
 
-        features = server.lsp.fm.features
+        features = get_registered_features(server)
         assert "textDocument/hover" in features

@@ -8,9 +8,9 @@ from pathlib import Path
 import pytest
 
 try:
-    from pygls.lsp.server import LanguageServer
+    from pygls.lsp.server import LanguageServer as PyglsLanguageServer
 except ImportError:
-    from pygls.server import LanguageServer as LanguageServer  # type: ignore[attr-defined]
+    from pygls.server import LanguageServer as PyglsLanguageServer  # type: ignore[attr-defined]
 
 from qe_lsp.parser import parse_qe_input, declared_species, normalize_value, parse_number
 from qe_lsp.text import strip_inline_comment, word_at_position
@@ -21,6 +21,7 @@ from qe_lsp.features.typecheck import TypecheckProvider
 from qe_lsp.features.regression import RegressionHarness, GoldenFixture
 from qe_lsp.features.test_runner import TestRunnerProvider, TestRunnerConfig, parse_solver_output
 from qe_lsp.features.agent_api import AgentAPIProvider
+from tests.lsp_compat import get_registered_features
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -30,7 +31,7 @@ def _read_fixture(name: str) -> str:
 
 
 def _make_server():
-    return LanguageServer("test-qe-lsp", "0.1.0")
+    return PyglsLanguageServer("test-qe-lsp", "0.1.0")
 
 
 # ===================================================================
@@ -256,7 +257,7 @@ class TestServerLifecycle:
     def test_server_features_registered(self) -> None:
         from qe_lsp.server import server
 
-        features = server.lsp.fm.features
+        features = get_registered_features(server)
         expected = [
             "textDocument/completion",
             "textDocument/hover",

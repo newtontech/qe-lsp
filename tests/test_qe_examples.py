@@ -25,9 +25,9 @@ from qe_lsp.features.navigation import (
 )
 
 try:
-    from pygls.lsp.server import LanguageServer
+    from pygls.lsp.server import LanguageServer as PyglsLanguageServer
 except ImportError:
-    from pygls.server import LanguageServer as LanguageServer  # type: ignore[attr-defined]
+    from pygls.server import LanguageServer as PyglsLanguageServer  # type: ignore[attr-defined]
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -44,7 +44,7 @@ def _read_fixture(name: str) -> str:
 
 
 def _make_server():
-    return LanguageServer("test-qe-lsp", "0.1.0")
+    return PyglsLanguageServer("test-qe-lsp", "0.1.0")
 
 
 # ---------------------------------------------------------------------------

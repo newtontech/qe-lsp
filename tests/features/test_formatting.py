@@ -13,6 +13,7 @@ from lsprotocol.types import (
 )
 
 from qe_lsp.features.formatting import FormattingProvider, get_formatting_provider
+from tests.lsp_compat import get_registered_features
 
 if TYPE_CHECKING:
     from pygls.lsp.server import LanguageServer
@@ -432,6 +433,6 @@ class TestServerRegistration:
     def test_server_registers_formatting_handlers(self) -> None:
         from qe_lsp.server import server
 
-        features = server.lsp.fm.features
+        features = get_registered_features(server)
         assert "textDocument/formatting" in features
         assert "textDocument/rangeFormatting" in features
