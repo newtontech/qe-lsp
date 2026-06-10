@@ -4,6 +4,7 @@ from lsprotocol import types
 
 from qe_lsp.features.rename import RenameProvider, _namelist_for_line, _word_at
 from qe_lsp.handlers.rename import prepare_rename, rename
+from tests.lsp_compat import get_registered_features
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -489,13 +490,13 @@ class TestRenameServerRegistration:
     def test_server_registers_prepare_rename(self) -> None:
         from qe_lsp.server import server
 
-        features = server.protocol.fm.features
+        features = get_registered_features(server)
         assert "textDocument/prepareRename" in features
 
     def test_server_registers_rename(self) -> None:
         from qe_lsp.server import server
 
-        features = server.protocol.fm.features
+        features = get_registered_features(server)
         assert "textDocument/rename" in features
 
 

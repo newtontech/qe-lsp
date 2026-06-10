@@ -5,6 +5,7 @@ from qe_lsp.handlers.completion import completion
 from qe_lsp.handlers.diagnostic import diagnostic
 from qe_lsp.handlers.hover import hover
 from qe_lsp.server import create_server, server
+from tests.lsp_compat import get_registered_features
 
 
 class Params:
@@ -128,7 +129,7 @@ def test_diagnostic_warns_about_gamma_offsets():
 
 def test_server_registers_lsp_features():
     """Handlers should be registered with pygls, not only callable directly."""
-    features = server.protocol.fm.features
+    features = get_registered_features(server)
 
     assert "textDocument/completion" in features
     assert "textDocument/hover" in features
