@@ -2,7 +2,7 @@
 
 import re
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 from lsprotocol import types
 
@@ -47,7 +47,11 @@ def build_symbol_index(text: str) -> SymbolIndex:
         char = line.upper().find(name.upper())
         if char < 0:
             char = 0
-        index.add(SymbolInfo(name=name, kind="namelist", line=line_number, character=char, length=len(name)))
+        index.add(
+            SymbolInfo(
+                name=name, kind="namelist", line=line_number, character=char, length=len(name)
+            )
+        )
 
     # Index parameters inside namelists
     for namelist_name, parameters in parsed.namelists.items():
@@ -64,13 +68,13 @@ def build_symbol_index(text: str) -> SymbolIndex:
 
     # Index cards
     for card_name, card_header in parsed.card_headers.items():
-        line_number = _find_card_line(lines, card_name)
-        if line_number is not None:
+        card_line_number = _find_card_line(lines, card_name)
+        if card_line_number is not None:
             index.add(
                 SymbolInfo(
                     name=card_name,
                     kind="card",
-                    line=line_number,
+                    line=card_line_number,
                     character=0,
                     length=len(card_name),
                 )
@@ -121,7 +125,9 @@ def _get_uri(params: object) -> str:
 # ---------------------------------------------------------------------------
 
 
-def get_definition(text: str, line_number: int, character: int, uri: str) -> Optional[types.Location]:
+def get_definition(
+    text: str, line_number: int, character: int, uri: str
+) -> Optional[types.Location]:
     """Return the definition location for the symbol at the given position.
 
     Handles:
@@ -239,7 +245,9 @@ def get_references(
                 uri=uri,
                 range=types.Range(
                     start=types.Position(line=symbol.line, character=symbol.character),
-                    end=types.Position(line=symbol.line, character=symbol.character + symbol.length),
+                    end=types.Position(
+                        line=symbol.line, character=symbol.character + symbol.length
+                    ),
                 ),
             )
         )
@@ -372,11 +380,15 @@ def _namelist_parameter_symbols(
                 kind=types.SymbolKind.Field,
                 range=types.Range(
                     start=types.Position(line=parameter.line, character=parameter.character),
-                    end=types.Position(line=parameter.line, character=parameter.character + len(param_name)),
+                    end=types.Position(
+                        line=parameter.line, character=parameter.character + len(param_name)
+                    ),
                 ),
                 selection_range=types.Range(
                     start=types.Position(line=parameter.line, character=parameter.character),
-                    end=types.Position(line=parameter.line, character=parameter.character + len(param_name)),
+                    end=types.Position(
+                        line=parameter.line, character=parameter.character + len(param_name)
+                    ),
                 ),
             )
         )

@@ -20,9 +20,8 @@ from lsprotocol.types import (
     WorkspaceEdit,
 )
 
-from ..parser import normalize_value, parse_qe_input
+from ..parser import parse_qe_input
 from ..features.lint import (
-    DEPRECATED_KEYWORDS,
     KNOWN_PARAMETERS,
     VALID_NAMELISTS,
     RULE_DEPRECATED_KEYWORD,
@@ -58,7 +57,6 @@ _KEYWORD_TYPOS: dict[str, str] = {
     "ibrav": "ibrav",
     "ibrve": "ibrav",
     "ibarv": "ibrav",
-    "occupations": "occupations",
     "ocupations": "occupations",
     "occupaton": "occupations",
     "occupations": "occupations",
@@ -274,7 +272,6 @@ class CodeActionProvider:
 
         line = lines[line_num]
         raw_name = line.strip().split()[0] if line.strip() else ""
-        lower_name = raw_name.lower()
         upper_name = raw_name.upper()
 
         # Already valid (e.g. truly unknown, not just a casing issue)
@@ -286,7 +283,11 @@ class CodeActionProvider:
                     break
             if correct is not None and raw_name != correct:
                 return self._make_replacement(
-                    diagnostic, line_num, 0, len(raw_name), correct,
+                    diagnostic,
+                    line_num,
+                    0,
+                    len(raw_name),
+                    correct,
                     title=f"Change '{raw_name}' to '{correct}'",
                 )
         return None
@@ -339,18 +340,6 @@ class CodeActionProvider:
 
         line = lines[line_num]
 
-        # Extract the keyword name from the diagnostic range
-        col_start = diagnostic.range.start.character
-        col_end = diagnostic.range.end.character
-        keyword = line[col_start:col_end].strip().lower()
-
-        # Try extracting from message: "Invalid value 'foo' for 'bar'."
-        if "'" in message:
-            parts = message.split("'")
-            # Keyword is at index 3 (fourth segment): for 'bar'
-            if len(parts) >= 4:
-                keyword = parts[3].lower()
-
         # Extract the current invalid value
         from ..parser import ASSIGNMENT_RE
 
@@ -366,7 +355,7 @@ class CodeActionProvider:
         valid_values: set[str] = set()
         if "valid: " in message.lower():
             idx = message.lower().rfind("valid: ")
-            values_str = message[idx + 7:].rstrip(".")
+            values_str = message[idx + 7 :].rstrip(".")
             valid_values = {v.strip().strip("'\"") for v in values_str.split(",")}
 
         if not valid_values:
@@ -758,9 +747,7 @@ class CodeActionProvider:
                         TextEdit(
                             range=Range(
                                 start=Position(line=line, character=col_start),
-                                end=Position(
-                                    line=line, character=col_start + col_end_offset
-                                ),
+                                end=Position(line=line, character=col_start + col_end_offset),
                             ),
                             new_text=new_text,
                         )

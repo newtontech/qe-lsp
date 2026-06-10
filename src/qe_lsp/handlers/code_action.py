@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from lsprotocol.types import CodeAction, CodeActionParams
+from lsprotocol.types import CodeAction
 
 from qe_lsp.features.code_actions import CodeActionProvider
 

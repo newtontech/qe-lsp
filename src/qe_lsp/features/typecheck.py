@@ -11,7 +11,6 @@ incrementally extended as coverage grows without breaking existing checks.
 
 from __future__ import annotations
 
-import re
 from typing import Any
 
 from lsprotocol.types import (
@@ -70,9 +69,17 @@ KEYWORD_SCHEMA: dict[str, dict[str, Any]] = {
     # &CONTROL
     "calculation": {
         "type": TYPE_STRING,
-        "enum": frozenset({
-            "scf", "nscf", "bands", "relax", "md", "vc-relax", "vc-md",
-        }),
+        "enum": frozenset(
+            {
+                "scf",
+                "nscf",
+                "bands",
+                "relax",
+                "md",
+                "vc-relax",
+                "vc-md",
+            }
+        ),
     },
     "title": {"type": TYPE_STRING},
     "verbosity": {"type": TYPE_STRING, "enum": frozenset({"high", "low", "default", "xml"})},
@@ -125,18 +132,30 @@ KEYWORD_SCHEMA: dict[str, dict[str, Any]] = {
     "ecutrho": {"type": TYPE_FLOAT, "min": 0, "units": ENERGY_UNITS},
     "occupations": {
         "type": TYPE_STRING,
-        "enum": frozenset({
-            "smearing", "tetrahedra", "tetrahedra_lin",
-            "tetrahedra_opt", "fixed", "from_input",
-        }),
+        "enum": frozenset(
+            {
+                "smearing",
+                "tetrahedra",
+                "tetrahedra_lin",
+                "tetrahedra_opt",
+                "fixed",
+                "from_input",
+            }
+        ),
     },
     "degauss": {"type": TYPE_FLOAT, "min": 0, "units": ENERGY_UNITS},
     "smearing": {
         "type": TYPE_STRING,
-        "enum": frozenset({
-            "gaussian", "methfessel-paxton", "mp", "mv",
-            "fermi-dirac", "fd",
-        }),
+        "enum": frozenset(
+            {
+                "gaussian",
+                "methfessel-paxton",
+                "mp",
+                "mv",
+                "fermi-dirac",
+                "fd",
+            }
+        ),
     },
     "nspin": {"type": TYPE_INTEGER, "enum": frozenset({"1", "2", "4"})},
     "starting_magnetization": {"type": TYPE_FLOAT, "min": -1.0, "max": 1.0},
@@ -157,9 +176,16 @@ KEYWORD_SCHEMA: dict[str, dict[str, Any]] = {
     "scf_must_converge": {"type": TYPE_BOOLEAN},
     "diagonalization": {
         "type": TYPE_STRING,
-        "enum": frozenset({
-            "david", "cg", "ppcg", "paro", "rmm-davidson", "rmm-paro",
-        }),
+        "enum": frozenset(
+            {
+                "david",
+                "cg",
+                "ppcg",
+                "paro",
+                "rmm-davidson",
+                "rmm-paro",
+            }
+        ),
     },
     "mixing_mode": {
         "type": TYPE_STRING,
@@ -188,15 +214,25 @@ KEYWORD_SCHEMA: dict[str, dict[str, Any]] = {
     "ion_positions": {"type": TYPE_STRING, "enum": frozenset({"default", "from_input"})},
     "pot_extrapolation": {
         "type": TYPE_STRING,
-        "enum": frozenset({
-            "none", "atomic", "first_order", "second_order",
-        }),
+        "enum": frozenset(
+            {
+                "none",
+                "atomic",
+                "first_order",
+                "second_order",
+            }
+        ),
     },
     "wfc_extrapolation": {
         "type": TYPE_STRING,
-        "enum": frozenset({
-            "none", "atomic", "first_order", "second_order",
-        }),
+        "enum": frozenset(
+            {
+                "none",
+                "atomic",
+                "first_order",
+                "second_order",
+            }
+        ),
     },
     "remove_rigid_rot": {"type": TYPE_BOOLEAN},
     "bfgs_ndim": {"type": TYPE_INTEGER, "min": 1},
@@ -218,10 +254,22 @@ KEYWORD_SCHEMA: dict[str, dict[str, Any]] = {
     "press_conv_thr": {"type": TYPE_FLOAT, "min": 0},
     "cell_dofree": {
         "type": TYPE_STRING,
-        "enum": frozenset({
-            "all", "x", "y", "z", "xy", "xz", "yz", "xyz",
-            "shape", "volume", "2dxy", "2dshape",
-        }),
+        "enum": frozenset(
+            {
+                "all",
+                "x",
+                "y",
+                "z",
+                "xy",
+                "xz",
+                "yz",
+                "xyz",
+                "shape",
+                "volume",
+                "2dxy",
+                "2dshape",
+            }
+        ),
     },
     "isotropic": {"type": TYPE_BOOLEAN},
     "fix_volume": {"type": TYPE_BOOLEAN},
@@ -299,7 +347,7 @@ def _extract_unit_from_line(
     eq_pos = raw_line.find("=")
     if eq_pos < 0:
         return None
-    rhs = raw_line[eq_pos + 1:].strip()
+    rhs = raw_line[eq_pos + 1 :].strip()
     # Strip surrounding quotes from the first token
     rhs = rhs.strip("'\"")
     parts = rhs.split()
@@ -386,31 +434,37 @@ class TypecheckProvider:
 
         if expected_type == TYPE_BOOLEAN:
             if not _is_boolean(param.value):
-                diagnostics.append(_make_diagnostic(
-                    param,
-                    f"Expected boolean for '{param.name}', got '{raw_value}'. "
-                    f"Use .true. or .false.",
-                    DiagnosticSeverity.Error,
-                    RULE_TYPE_MISMATCH,
-                ))
+                diagnostics.append(
+                    _make_diagnostic(
+                        param,
+                        f"Expected boolean for '{param.name}', got '{raw_value}'. "
+                        f"Use .true. or .false.",
+                        DiagnosticSeverity.Error,
+                        RULE_TYPE_MISMATCH,
+                    )
+                )
 
         elif expected_type == TYPE_INTEGER:
             if not _is_integer(param.value):
-                diagnostics.append(_make_diagnostic(
-                    param,
-                    f"Expected integer for '{param.name}', got '{raw_value}'.",
-                    DiagnosticSeverity.Error,
-                    RULE_TYPE_MISMATCH,
-                ))
+                diagnostics.append(
+                    _make_diagnostic(
+                        param,
+                        f"Expected integer for '{param.name}', got '{raw_value}'.",
+                        DiagnosticSeverity.Error,
+                        RULE_TYPE_MISMATCH,
+                    )
+                )
 
         elif expected_type == TYPE_FLOAT:
             if not _is_float(param.value):
-                diagnostics.append(_make_diagnostic(
-                    param,
-                    f"Expected numeric value for '{param.name}', got '{raw_value}'.",
-                    DiagnosticSeverity.Error,
-                    RULE_TYPE_MISMATCH,
-                ))
+                diagnostics.append(
+                    _make_diagnostic(
+                        param,
+                        f"Expected numeric value for '{param.name}', got '{raw_value}'.",
+                        DiagnosticSeverity.Error,
+                        RULE_TYPE_MISMATCH,
+                    )
+                )
 
         elif expected_type == TYPE_STRING:
             # Strings in QE are always valid; enum validation is separate.
@@ -418,12 +472,14 @@ class TypecheckProvider:
 
         elif expected_type == TYPE_PATH:
             if not raw_value:
-                diagnostics.append(_make_diagnostic(
-                    param,
-                    f"Expected file path for '{param.name}', got empty value.",
-                    DiagnosticSeverity.Error,
-                    RULE_TYPE_MISMATCH,
-                ))
+                diagnostics.append(
+                    _make_diagnostic(
+                        param,
+                        f"Expected file path for '{param.name}', got empty value.",
+                        DiagnosticSeverity.Error,
+                        RULE_TYPE_MISMATCH,
+                    )
+                )
 
     def _check_enum_values(
         self,
@@ -443,13 +499,15 @@ class TypecheckProvider:
                 if normalized not in valid_values:
                     raw_display = param.value.strip().strip("'\"")
                     valid_str = ", ".join(sorted(valid_values))
-                    diagnostics.append(_make_diagnostic(
-                        param,
-                        f"Invalid value '{raw_display}' for '{_param_name}'. "
-                        f"Valid: {valid_str}.",
-                        DiagnosticSeverity.Error,
-                        RULE_ENUM_INVALID,
-                    ))
+                    diagnostics.append(
+                        _make_diagnostic(
+                            param,
+                            f"Invalid value '{raw_display}' for '{_param_name}'. "
+                            f"Valid: {valid_str}.",
+                            DiagnosticSeverity.Error,
+                            RULE_ENUM_INVALID,
+                        )
+                    )
 
     def _check_units(
         self,
@@ -479,21 +537,25 @@ class TypecheckProvider:
                 if unit not in allowed_units:
                     valid_str = ", ".join(sorted(allowed_units))
                     if unit in ALL_KNOWN_UNITS:
-                        diagnostics.append(_make_diagnostic(
-                            param,
-                            f"Unit '{unit}' is not valid for '{_param_name}'. "
-                            f"Expected one of: {valid_str}.",
-                            DiagnosticSeverity.Error,
-                            RULE_UNIT_UNKNOWN,
-                        ))
+                        diagnostics.append(
+                            _make_diagnostic(
+                                param,
+                                f"Unit '{unit}' is not valid for '{_param_name}'. "
+                                f"Expected one of: {valid_str}.",
+                                DiagnosticSeverity.Error,
+                                RULE_UNIT_UNKNOWN,
+                            )
+                        )
                     else:
-                        diagnostics.append(_make_diagnostic(
-                            param,
-                            f"Unknown unit '{unit}' for '{_param_name}'. "
-                            f"Known units: {valid_str}.",
-                            DiagnosticSeverity.Error,
-                            RULE_UNIT_UNKNOWN,
-                        ))
+                        diagnostics.append(
+                            _make_diagnostic(
+                                param,
+                                f"Unknown unit '{unit}' for '{_param_name}'. "
+                                f"Known units: {valid_str}.",
+                                DiagnosticSeverity.Error,
+                                RULE_UNIT_UNKNOWN,
+                            )
+                        )
 
     def _check_numeric_ranges(
         self,
@@ -516,21 +578,25 @@ class TypecheckProvider:
                     continue
 
                 if min_val is not None and numeric_value < min_val:
-                    diagnostics.append(_make_diagnostic(
-                        param,
-                        f"Value {numeric_value} for '{_param_name}' is below "
-                        f"minimum {min_val}.",
-                        DiagnosticSeverity.Warning,
-                        RULE_NUMERIC_RANGE,
-                    ))
+                    diagnostics.append(
+                        _make_diagnostic(
+                            param,
+                            f"Value {numeric_value} for '{_param_name}' is below "
+                            f"minimum {min_val}.",
+                            DiagnosticSeverity.Warning,
+                            RULE_NUMERIC_RANGE,
+                        )
+                    )
                 if max_val is not None and numeric_value > max_val:
-                    diagnostics.append(_make_diagnostic(
-                        param,
-                        f"Value {numeric_value} for '{_param_name}' exceeds "
-                        f"maximum {max_val}.",
-                        DiagnosticSeverity.Warning,
-                        RULE_NUMERIC_RANGE,
-                    ))
+                    diagnostics.append(
+                        _make_diagnostic(
+                            param,
+                            f"Value {numeric_value} for '{_param_name}' exceeds "
+                            f"maximum {max_val}.",
+                            DiagnosticSeverity.Warning,
+                            RULE_NUMERIC_RANGE,
+                        )
+                    )
 
     def _check_required_sections(
         self,
@@ -546,12 +612,14 @@ class TypecheckProvider:
         if ibrav is not None:
             ibrav_val = normalize_value(ibrav.value)
             if ibrav_val == "0" and "CELL_PARAMETERS" not in parsed.cards:
-                diagnostics.append(_make_diagnostic(
-                    ibrav,
-                    "ibrav = 0 requires an explicit CELL_PARAMETERS card.",
-                    DiagnosticSeverity.Error,
-                    RULE_REQUIRED_SECTION_MISSING,
-                ))
+                diagnostics.append(
+                    _make_diagnostic(
+                        ibrav,
+                        "ibrav = 0 requires an explicit CELL_PARAMETERS card.",
+                        DiagnosticSeverity.Error,
+                        RULE_REQUIRED_SECTION_MISSING,
+                    )
+                )
 
         # Check nat requires ATOMIC_SPECIES and ATOMIC_POSITIONS
         nat = system.get("nat")
@@ -561,19 +629,23 @@ class TypecheckProvider:
                 nat_int = int(float(nat_val))
                 if nat_int > 0:
                     if "ATOMIC_SPECIES" not in parsed.cards:
-                        diagnostics.append(_make_diagnostic(
-                            nat,
-                            "nat is set but ATOMIC_SPECIES card is missing.",
-                            DiagnosticSeverity.Error,
-                            RULE_REQUIRED_SECTION_MISSING,
-                        ))
+                        diagnostics.append(
+                            _make_diagnostic(
+                                nat,
+                                "nat is set but ATOMIC_SPECIES card is missing.",
+                                DiagnosticSeverity.Error,
+                                RULE_REQUIRED_SECTION_MISSING,
+                            )
+                        )
                     if "ATOMIC_POSITIONS" not in parsed.cards:
-                        diagnostics.append(_make_diagnostic(
-                            nat,
-                            "nat is set but ATOMIC_POSITIONS card is missing.",
-                            DiagnosticSeverity.Error,
-                            RULE_REQUIRED_SECTION_MISSING,
-                        ))
+                        diagnostics.append(
+                            _make_diagnostic(
+                                nat,
+                                "nat is set but ATOMIC_POSITIONS card is missing.",
+                                DiagnosticSeverity.Error,
+                                RULE_REQUIRED_SECTION_MISSING,
+                            )
+                        )
             except (ValueError, OverflowError):
                 pass
 
@@ -582,12 +654,14 @@ class TypecheckProvider:
         if calc is not None:
             calc_val = normalize_value(calc.value)
             if calc_val in ("vc-relax", "vc-md") and "&CELL" not in parsed.namelists:
-                diagnostics.append(_make_diagnostic(
-                    calc,
-                    f"calculation = '{calc_val}' requires the &CELL namelist.",
-                    DiagnosticSeverity.Error,
-                    RULE_REQUIRED_SECTION_MISSING,
-                ))
+                diagnostics.append(
+                    _make_diagnostic(
+                        calc,
+                        f"calculation = '{calc_val}' requires the &CELL namelist.",
+                        DiagnosticSeverity.Error,
+                        RULE_REQUIRED_SECTION_MISSING,
+                    )
+                )
 
 
 # ------------------------------------------------------------------

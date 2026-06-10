@@ -7,7 +7,7 @@ Formatting is purely cosmetic: no semantic rewrites are performed.
 
 from __future__ import annotations
 
-from typing import List
+from typing import TYPE_CHECKING, List
 
 from lsprotocol.types import (
     DocumentFormattingParams,
@@ -17,22 +17,21 @@ from lsprotocol.types import (
     TextEdit,
 )
 
-try:
+if TYPE_CHECKING:
     from pygls.lsp.server import LanguageServer
-except ImportError:
-    from pygls.server import LanguageServer
+else:
+    try:
+        from pygls.lsp.server import LanguageServer
+    except ImportError:
+        from pygls.server import LanguageServer
 
 from ..constants import QE_KEYWORDS
 
 #: Namelist headers that start an indented block.
-_NAMELIST_HEADERS: frozenset[str] = frozenset(
-    kw for kw in QE_KEYWORDS if kw.startswith("&")
-)
+_NAMELIST_HEADERS: frozenset[str] = frozenset(kw for kw in QE_KEYWORDS if kw.startswith("&"))
 
 #: Card headers that start an indented block.
-_CARD_HEADERS: frozenset[str] = frozenset(
-    kw for kw in QE_KEYWORDS if not kw.startswith("&")
-)
+_CARD_HEADERS: frozenset[str] = frozenset(kw for kw in QE_KEYWORDS if not kw.startswith("&"))
 
 
 class FormattingProvider:
@@ -41,9 +40,7 @@ class FormattingProvider:
     def __init__(self, server: LanguageServer) -> None:
         self.server = server
 
-    def format_document(
-        self, text: str, params: DocumentFormattingParams
-    ) -> List[TextEdit]:
+    def format_document(self, text: str, params: DocumentFormattingParams) -> List[TextEdit]:
         """Format the entire document.
 
         Args:
@@ -59,11 +56,7 @@ class FormattingProvider:
             return []
 
         indent_size = params.options.tab_size if params.options else 2
-        insert_spaces = (
-            params.options.insert_spaces
-            if params.options
-            else True
-        )
+        insert_spaces = params.options.insert_spaces if params.options else True
         indent_str = " " * indent_size if insert_spaces else "\t"
 
         formatted_lines = self._format_lines(lines, indent_str)
@@ -86,9 +79,7 @@ class FormattingProvider:
             )
         ]
 
-    def format_range(
-        self, text: str, params: DocumentRangeFormattingParams
-    ) -> List[TextEdit]:
+    def format_range(self, text: str, params: DocumentRangeFormattingParams) -> List[TextEdit]:
         """Format a contiguous range of lines.
 
         The range is expanded to include complete logical blocks so that
@@ -113,11 +104,7 @@ class FormattingProvider:
         end_line = max(0, min(end_line, len(lines) - 1))
 
         indent_size = params.options.tab_size if params.options else 2
-        insert_spaces = (
-            params.options.insert_spaces
-            if params.options
-            else True
-        )
+        insert_spaces = params.options.insert_spaces if params.options else True
         indent_str = " " * indent_size if insert_spaces else "\t"
 
         # Determine the indentation context at start_line by scanning

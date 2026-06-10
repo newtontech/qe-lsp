@@ -1,11 +1,9 @@
 """Tests for rename features: prepareRename, rename for QE variables and symbols."""
 
-import pytest
 from lsprotocol import types
 
 from qe_lsp.features.rename import RenameProvider, _namelist_for_line, _word_at
 from qe_lsp.handlers.rename import prepare_rename, rename
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -132,6 +130,16 @@ class Params:
 
 
 _provider = RenameProvider()
+
+
+def _edits(result: types.WorkspaceEdit, uri: str = URI) -> list[types.TextEdit]:
+    assert result.changes is not None
+    return list(result.changes[uri])
+
+
+def _changes(result: types.WorkspaceEdit):
+    assert result.changes is not None
+    return result.changes
 
 
 # ===========================================================================
@@ -263,7 +271,7 @@ class TestRenameNamelistParameter:
         result = _provider.rename(SAMPLE_INPUT, URI, 9, 2, "kinetic_cutoff")
         assert result is not None
         assert isinstance(result, types.WorkspaceEdit)
-        edits = result.changes[URI]
+        edits = _edits(result)
         assert len(edits) == 1
         assert edits[0].new_text == "kinetic_cutoff"
         assert edits[0].range.start.line == 9
@@ -272,7 +280,7 @@ class TestRenameNamelistParameter:
         """Rename calculation -> calc_type in &CONTROL."""
         result = _provider.rename(SAMPLE_INPUT, URI, 1, 2, "calc_type")
         assert result is not None
-        edits = result.changes[URI]
+        edits = _edits(result)
         assert len(edits) == 1
         assert edits[0].new_text == "calc_type"
         assert edits[0].range.start.line == 1
@@ -281,7 +289,7 @@ class TestRenameNamelistParameter:
         """Rename celldm(1) -> lattice_a produces one edit."""
         result = _provider.rename(SAMPLE_INPUT, URI, 6, 2, "lattice_a")
         assert result is not None
-        edits = result.changes[URI]
+        edits = _edits(result)
         assert len(edits) == 1
         assert edits[0].new_text == "lattice_a"
         assert edits[0].range.start.line == 6
@@ -290,7 +298,7 @@ class TestRenameNamelistParameter:
         """Rename of a duplicated parameter edits both occurrences."""
         result = _provider.rename(DUPLICATE_PARAM_INPUT, URI, 1, 2, "calc_type")
         assert result is not None
-        edits = result.changes[URI]
+        edits = _edits(result)
         assert len(edits) == 2
         edit_lines = {e.range.start.line for e in edits}
         assert edit_lines == {1, 2}
@@ -300,7 +308,7 @@ class TestRenameNamelistParameter:
         """Triggering rename on the duplicate line itself still works."""
         result = _provider.rename(DUPLICATE_PARAM_INPUT, URI, 2, 2, "calc_type")
         assert result is not None
-        edits = result.changes[URI]
+        edits = _edits(result)
         assert len(edits) == 2
 
     def test_rename_preserves_uri(self) -> None:
@@ -308,7 +316,7 @@ class TestRenameNamelistParameter:
         custom_uri = "file:///custom/path.in"
         result = _provider.rename(SAMPLE_INPUT, custom_uri, 9, 2, "new_name")
         assert result is not None
-        assert custom_uri in result.changes
+        assert custom_uri in _changes(result)
 
 
 # ===========================================================================
@@ -324,7 +332,7 @@ class TestRenameElementSymbol:
         """Renaming Si -> Ge edits all Si rows in both cards."""
         result = _provider.rename(SAMPLE_INPUT, URI, 17, 0, "Ge")
         assert result is not None
-        edits = result.changes[URI]
+        edits = _edits(result)
         # Si appears once in ATOMIC_SPECIES (line 17) and twice in
         # ATOMIC_POSITIONS (lines 19, 20).
         assert len(edits) == 3
@@ -336,14 +344,14 @@ class TestRenameElementSymbol:
         """Triggering rename from ATOMIC_POSITIONS still edits species too."""
         result = _provider.rename(SAMPLE_INPUT, URI, 19, 0, "Ge")
         assert result is not None
-        edits = result.changes[URI]
+        edits = _edits(result)
         assert len(edits) == 3
 
     def test_rename_multi_element_selective(self) -> None:
         """Renaming only Si leaves O untouched in MULTI_ELEMENT_INPUT."""
         result = _provider.rename(MULTI_ELEMENT_INPUT, URI, 10, 0, "Ge")
         assert result is not None
-        edits = result.changes[URI]
+        edits = _edits(result)
         # Si at lines 10 (species), 13, 14 (positions) -> 3 edits
         assert len(edits) == 3
         edit_lines = {e.range.start.line for e in edits}
@@ -355,7 +363,7 @@ class TestRenameElementSymbol:
         """Renaming O -> N in MULTI_ELEMENT_INPUT edits 3 rows."""
         result = _provider.rename(MULTI_ELEMENT_INPUT, URI, 11, 0, "N")
         assert result is not None
-        edits = result.changes[URI]
+        edits = _edits(result)
         # O at lines 11 (species), 15, 16 (positions)
         assert len(edits) == 3
         edit_lines = {e.range.start.line for e in edits}
@@ -443,8 +451,8 @@ class TestRenameHandler:
         result = rename(params)
         assert result is not None
         assert isinstance(result, types.WorkspaceEdit)
-        assert URI in result.changes
-        assert result.changes[URI][0].new_text == "kinetic_cutoff"
+        assert URI in _changes(result)
+        assert _edits(result)[0].new_text == "kinetic_cutoff"
 
     def test_handler_prepare_rename_rejects(self) -> None:
         """prepare_rename handler returns None for a namelist header."""
@@ -511,7 +519,7 @@ class TestRenameEdgeCases:
         """Rename should only edit the parameter name, not its value."""
         result = _provider.rename(SAMPLE_INPUT, URI, 1, 2, "calc_type")
         assert result is not None
-        edits = result.changes[URI]
+        edits = _edits(result)
         # Only one edit for the name itself (line 1, starting at char 2).
         assert len(edits) == 1
         edit = edits[0]
@@ -521,17 +529,10 @@ class TestRenameEdgeCases:
     def test_different_namelist_same_param_name_not_renamed(self) -> None:
         """A parameter in one namelist should NOT rename a parameter with
         the same name in a different namelist."""
-        text = (
-            "&CONTROL\n"
-            "  title = 'ctrl'\n"
-            "/\n"
-            "&SYSTEM\n"
-            "  ecutwfc = 60\n"
-            "/\n"
-        )
+        text = "&CONTROL\n" "  title = 'ctrl'\n" "/\n" "&SYSTEM\n" "  ecutwfc = 60\n" "/\n"
         # Rename ecutwfc in &SYSTEM — should only edit line 4.
         result = _provider.rename(text, URI, 4, 2, "cutoff")
         assert result is not None
-        edits = result.changes[URI]
+        edits = _edits(result)
         assert len(edits) == 1
         assert edits[0].range.start.line == 4

@@ -8,7 +8,6 @@ shared parser / keyword infrastructure.
 
 from __future__ import annotations
 
-import json
 from typing import Any
 
 from lsprotocol.types import (
@@ -18,7 +17,7 @@ from lsprotocol.types import (
     Range,
 )
 
-from ..parser import Parameter, normalize_value, parse_number, parse_qe_input
+from ..parser import normalize_value, parse_number, parse_qe_input
 
 # ------------------------------------------------------------------
 # Rule codes  (QE-Exxx = error, QE-Wxxx = warning, QE-Ixxx = info)
@@ -40,57 +39,175 @@ RULE_ORPHAN_PARAMETER = "QE-W004"
 # Schema data
 # ------------------------------------------------------------------
 
-VALID_NAMELISTS = frozenset({
-    "&CONTROL", "&SYSTEM", "&ELECTRONS", "&IONS", "&CELL",
-})
+VALID_NAMELISTS = frozenset(
+    {
+        "&CONTROL",
+        "&SYSTEM",
+        "&ELECTRONS",
+        "&IONS",
+        "&CELL",
+    }
+)
 
 #: Mapping of namelist -> set of recognised parameter names.
 #: This is intentionally a *subset* of the full QE grammar — it covers
 #: the most common keywords and is the set we lint against.  Unknown
 #: keywords outside this set trigger QE-W001.
 KNOWN_PARAMETERS: dict[str, frozenset[str]] = {
-    "&CONTROL": frozenset({
-        "calculation", "title", "verbosity", "restart_mode", "wf_collect",
-        "nstep", "iprint", "tstress", "tprnfor", "dt", "outdir",
-        "wfcdir", "prefix", "lkpoint_dir", "max_seconds", "etot_conv_thr",
-        "forc_conv_thr", "disk_io", "pseudo_dir", "tefield", "dipfield",
-        "lelfield", "nberrycyc", "lorbm", "lberry", "gdir", "nppstr",
-        "lfcpopt", "gate", "plane_axis",
-    }),
-    "&SYSTEM": frozenset({
-        "ibrav", "a", "b", "c", "cosab", "cosac", "cosbc",
-        "celldm", "celldm(1)", "celldm(2)", "celldm(3)",
-        "celldm(4)", "celldm(5)", "celldm(6)",
-        "nat", "ntyp", "nbnd", "tot_charge", "tot_magnetization",
-        "ecutwfc", "ecutrho", "occupations", "degauss", "smearing",
-        "nspin", "starting_magnetization", "nosym", "nosym_evc",
-        "noinv", "no_t_rev", "force_symmorphic", "use_all_frac",
-        "noncolin", "lspinorb", "lda_plus_u", "lda_plus_u_kind",
-        "hubbard_u", "hubbard_alpha", "hubbard_j", "starting_ns_eigenvalue",
-        "u_projection_type", "edir", "emaxpos", "eopreg", "eamp",
-        "angle1", "angle2", "report", "lxdm", "exx_fraction",
-        "ec_fixed", "screening_parameter", "gcscu", "gcscu2", "gcscu3",
-    }),
-    "&ELECTRONS": frozenset({
-        "conv_thr", "niter", "electron_maxstep", "scf_must_converge",
-        "adaptively", "diagonalization", "mixing_mode", "mixing_beta",
-        "mixing_ndim", "mixing_gg0", "tq_smoothing", "tbeta_smoothing",
-        "diago_thr_init", "diago_cg_maxiter", "diago_david_ndim",
-        "diago_rmm_ndim", "diago_rmm_conv", "diago_full_acc",
-        "efield", "efield_cart", "efield_phase", "startingpot",
-        "startingwfc", "tqr", "real_space",
-    }),
-    "&IONS": frozenset({
-        "ion_dynamics", "ion_positions", "pot_extrapolation",
-        "wfc_extrapolation", "remove_rigid_rot", "bfgs_ndim",
-        "bfgs_w1", "bfgs_w2", "trust_radius_max", "trust_radius_min",
-        "trust_radius_init", "upscale", "ion_nstepe",
-    }),
-    "&CELL": frozenset({
-        "cell_dynamics", "press", "wmass", "cell_factor",
-        "press_conv_thr", "cell_dofree", "isotropic",
-        "fix_volume", "fix_area", "taup", "taub",
-    }),
+    "&CONTROL": frozenset(
+        {
+            "calculation",
+            "title",
+            "verbosity",
+            "restart_mode",
+            "wf_collect",
+            "nstep",
+            "iprint",
+            "tstress",
+            "tprnfor",
+            "dt",
+            "outdir",
+            "wfcdir",
+            "prefix",
+            "lkpoint_dir",
+            "max_seconds",
+            "etot_conv_thr",
+            "forc_conv_thr",
+            "disk_io",
+            "pseudo_dir",
+            "tefield",
+            "dipfield",
+            "lelfield",
+            "nberrycyc",
+            "lorbm",
+            "lberry",
+            "gdir",
+            "nppstr",
+            "lfcpopt",
+            "gate",
+            "plane_axis",
+        }
+    ),
+    "&SYSTEM": frozenset(
+        {
+            "ibrav",
+            "a",
+            "b",
+            "c",
+            "cosab",
+            "cosac",
+            "cosbc",
+            "celldm",
+            "celldm(1)",
+            "celldm(2)",
+            "celldm(3)",
+            "celldm(4)",
+            "celldm(5)",
+            "celldm(6)",
+            "nat",
+            "ntyp",
+            "nbnd",
+            "tot_charge",
+            "tot_magnetization",
+            "ecutwfc",
+            "ecutrho",
+            "occupations",
+            "degauss",
+            "smearing",
+            "nspin",
+            "starting_magnetization",
+            "nosym",
+            "nosym_evc",
+            "noinv",
+            "no_t_rev",
+            "force_symmorphic",
+            "use_all_frac",
+            "noncolin",
+            "lspinorb",
+            "lda_plus_u",
+            "lda_plus_u_kind",
+            "hubbard_u",
+            "hubbard_alpha",
+            "hubbard_j",
+            "starting_ns_eigenvalue",
+            "u_projection_type",
+            "edir",
+            "emaxpos",
+            "eopreg",
+            "eamp",
+            "angle1",
+            "angle2",
+            "report",
+            "lxdm",
+            "exx_fraction",
+            "ec_fixed",
+            "screening_parameter",
+            "gcscu",
+            "gcscu2",
+            "gcscu3",
+        }
+    ),
+    "&ELECTRONS": frozenset(
+        {
+            "conv_thr",
+            "niter",
+            "electron_maxstep",
+            "scf_must_converge",
+            "adaptively",
+            "diagonalization",
+            "mixing_mode",
+            "mixing_beta",
+            "mixing_ndim",
+            "mixing_gg0",
+            "tq_smoothing",
+            "tbeta_smoothing",
+            "diago_thr_init",
+            "diago_cg_maxiter",
+            "diago_david_ndim",
+            "diago_rmm_ndim",
+            "diago_rmm_conv",
+            "diago_full_acc",
+            "efield",
+            "efield_cart",
+            "efield_phase",
+            "startingpot",
+            "startingwfc",
+            "tqr",
+            "real_space",
+        }
+    ),
+    "&IONS": frozenset(
+        {
+            "ion_dynamics",
+            "ion_positions",
+            "pot_extrapolation",
+            "wfc_extrapolation",
+            "remove_rigid_rot",
+            "bfgs_ndim",
+            "bfgs_w1",
+            "bfgs_w2",
+            "trust_radius_max",
+            "trust_radius_min",
+            "trust_radius_init",
+            "upscale",
+            "ion_nstepe",
+        }
+    ),
+    "&CELL": frozenset(
+        {
+            "cell_dynamics",
+            "press",
+            "wmass",
+            "cell_factor",
+            "press_conv_thr",
+            "cell_dofree",
+            "isotropic",
+            "fix_volume",
+            "fix_area",
+            "taup",
+            "taub",
+        }
+    ),
 }
 
 #: Keywords that are deprecated or have recommended replacements.
@@ -100,32 +217,91 @@ DEPRECATED_KEYWORDS: dict[str, str] = {
 }
 
 #: Enum-like value sets for specific keywords.
-VALID_CALCULATIONS = frozenset({
-    "scf", "nscf", "bands", "relax", "md", "vc-relax", "vc-md",
-})
-VALID_DIAGALIZATIONS = frozenset({
-    "david", "cg", "ppcg", "paro", "rmm-davidson", "rmm-paro",
-})
-VALID_MIXING_MODES = frozenset({
-    "plain", "tf", "local-tf",
-})
-VALID_SMEARING = frozenset({
-    "gaussian", "methfessel-paxton", "mp", "mv", "fermi-dirac", "fd",
-})
-VALID_OCCUPATIONS = frozenset({
-    "smearing", "tetrahedra", "tetrahedra_lin", "tetrahedra_opt",
-    "fixed", "from_input",
-})
-VALID_ION_DYNAMICS = frozenset({
-    "none", "bfgs", "damp", "verlet", "langevin", "beeman",
-})
-VALID_CELL_DYNAMICS = frozenset({
-    "none", "sd", "damp-pr", "damp-w", "bfgs", "pr", "w",
-})
-VALID_CELL_DOFREE = frozenset({
-    "all", "x", "y", "z", "xy", "xz", "yz", "xyz", "shape", "volume",
-    "2dxy", "2dshape",
-})
+VALID_CALCULATIONS = frozenset(
+    {
+        "scf",
+        "nscf",
+        "bands",
+        "relax",
+        "md",
+        "vc-relax",
+        "vc-md",
+    }
+)
+VALID_DIAGALIZATIONS = frozenset(
+    {
+        "david",
+        "cg",
+        "ppcg",
+        "paro",
+        "rmm-davidson",
+        "rmm-paro",
+    }
+)
+VALID_MIXING_MODES = frozenset(
+    {
+        "plain",
+        "tf",
+        "local-tf",
+    }
+)
+VALID_SMEARING = frozenset(
+    {
+        "gaussian",
+        "methfessel-paxton",
+        "mp",
+        "mv",
+        "fermi-dirac",
+        "fd",
+    }
+)
+VALID_OCCUPATIONS = frozenset(
+    {
+        "smearing",
+        "tetrahedra",
+        "tetrahedra_lin",
+        "tetrahedra_opt",
+        "fixed",
+        "from_input",
+    }
+)
+VALID_ION_DYNAMICS = frozenset(
+    {
+        "none",
+        "bfgs",
+        "damp",
+        "verlet",
+        "langevin",
+        "beeman",
+    }
+)
+VALID_CELL_DYNAMICS = frozenset(
+    {
+        "none",
+        "sd",
+        "damp-pr",
+        "damp-w",
+        "bfgs",
+        "pr",
+        "w",
+    }
+)
+VALID_CELL_DOFREE = frozenset(
+    {
+        "all",
+        "x",
+        "y",
+        "z",
+        "xy",
+        "xz",
+        "yz",
+        "xyz",
+        "shape",
+        "volume",
+        "2dxy",
+        "2dshape",
+    }
+)
 
 #: Keyword -> (valid values, rule code for invalid value)
 VALUE_CONSTRAINTS: dict[str, tuple[frozenset[str], str]] = {
@@ -214,53 +390,77 @@ class LintProvider:
 
         control = namelists.get("&CONTROL", {})
         if not control:
-            diagnostics.append(self._make(
-                line=0, char=0, length=0,
-                message="Missing required namelist &CONTROL.",
-                severity=DiagnosticSeverity.Error,
-                code=RULE_MISSING_REQUIRED_SECTION,
-            ))
+            diagnostics.append(
+                self._make(
+                    line=0,
+                    char=0,
+                    length=0,
+                    message="Missing required namelist &CONTROL.",
+                    severity=DiagnosticSeverity.Error,
+                    code=RULE_MISSING_REQUIRED_SECTION,
+                )
+            )
         elif "calculation" not in control:
-            diagnostics.append(self._make(
-                line=0, char=0, length=0,
-                message="Missing required parameter 'calculation' in &CONTROL.",
-                severity=DiagnosticSeverity.Error,
-                code=RULE_MISSING_CONTROL_CALC,
-            ))
+            diagnostics.append(
+                self._make(
+                    line=0,
+                    char=0,
+                    length=0,
+                    message="Missing required parameter 'calculation' in &CONTROL.",
+                    severity=DiagnosticSeverity.Error,
+                    code=RULE_MISSING_CONTROL_CALC,
+                )
+            )
 
         system = namelists.get("&SYSTEM", {})
         if not system:
-            diagnostics.append(self._make(
-                line=0, char=0, length=0,
-                message="Missing required namelist &SYSTEM.",
-                severity=DiagnosticSeverity.Error,
-                code=RULE_MISSING_REQUIRED_SECTION,
-            ))
+            diagnostics.append(
+                self._make(
+                    line=0,
+                    char=0,
+                    length=0,
+                    message="Missing required namelist &SYSTEM.",
+                    severity=DiagnosticSeverity.Error,
+                    code=RULE_MISSING_REQUIRED_SECTION,
+                )
+            )
         elif "ecutwfc" not in system and "nat" not in system:
-            diagnostics.append(self._make(
-                line=0, char=0, length=0,
-                message="Missing required parameter 'ecutwfc' in &SYSTEM.",
-                severity=DiagnosticSeverity.Error,
-                code=RULE_MISSING_SYSTEM_ECUTWFC,
-            ))
+            diagnostics.append(
+                self._make(
+                    line=0,
+                    char=0,
+                    length=0,
+                    message="Missing required parameter 'ecutwfc' in &SYSTEM.",
+                    severity=DiagnosticSeverity.Error,
+                    code=RULE_MISSING_SYSTEM_ECUTWFC,
+                )
+            )
 
         has_species = "ATOMIC_SPECIES" in parsed.cards
         has_positions = "ATOMIC_POSITIONS" in parsed.cards
         if system and "nat" in system:
             if not has_species:
-                diagnostics.append(self._make(
-                    line=0, char=0, length=0,
-                    message="Missing required card ATOMIC_SPECIES (nat is set).",
-                    severity=DiagnosticSeverity.Error,
-                    code=RULE_MISSING_ATOMIC_SPECIES,
-                ))
+                diagnostics.append(
+                    self._make(
+                        line=0,
+                        char=0,
+                        length=0,
+                        message="Missing required card ATOMIC_SPECIES (nat is set).",
+                        severity=DiagnosticSeverity.Error,
+                        code=RULE_MISSING_ATOMIC_SPECIES,
+                    )
+                )
             if not has_positions:
-                diagnostics.append(self._make(
-                    line=0, char=0, length=0,
-                    message="Missing required card ATOMIC_POSITIONS (nat is set).",
-                    severity=DiagnosticSeverity.Error,
-                    code=RULE_MISSING_ATOMIC_POSITIONS,
-                ))
+                diagnostics.append(
+                    self._make(
+                        line=0,
+                        char=0,
+                        length=0,
+                        message="Missing required card ATOMIC_POSITIONS (nat is set).",
+                        severity=DiagnosticSeverity.Error,
+                        code=RULE_MISSING_ATOMIC_POSITIONS,
+                    )
+                )
 
     def _check_unknown_namelists(
         self,
@@ -270,12 +470,16 @@ class LintProvider:
         """Flag namelists outside the QE grammar."""
         for name, line_num in parsed.namelist_lines.items():
             if name not in VALID_NAMELISTS:
-                diagnostics.append(self._make(
-                    line=line_num, char=0, length=len(name),
-                    message=f"Unknown namelist {name}.",
-                    severity=DiagnosticSeverity.Error,
-                    code=RULE_UNKNOWN_NAMELIST,
-                ))
+                diagnostics.append(
+                    self._make(
+                        line=line_num,
+                        char=0,
+                        length=len(name),
+                        message=f"Unknown namelist {name}.",
+                        severity=DiagnosticSeverity.Error,
+                        code=RULE_UNKNOWN_NAMELIST,
+                    )
+                )
 
     def _check_unknown_keywords(
         self,
@@ -289,14 +493,16 @@ class LintProvider:
                 continue
             for param_name, param in params.items():
                 if param_name not in known:
-                    diagnostics.append(self._make(
-                        line=param.line,
-                        char=param.character,
-                        length=len(param_name),
-                        message=f"Unknown keyword '{param_name}' in {namelist_name}.",
-                        severity=DiagnosticSeverity.Warning,
-                        code=RULE_UNKNOWN_KEYWORD,
-                    ))
+                    diagnostics.append(
+                        self._make(
+                            line=param.line,
+                            char=param.character,
+                            length=len(param_name),
+                            message=f"Unknown keyword '{param_name}' in {namelist_name}.",
+                            severity=DiagnosticSeverity.Warning,
+                            code=RULE_UNKNOWN_KEYWORD,
+                        )
+                    )
 
     def _check_invalid_values(
         self,
@@ -315,17 +521,18 @@ class LintProvider:
                     raw_display = _strip_quotes(param.value)
                     valid_str = ", ".join(sorted(valid_values))
                     msg = (
-                        f"Invalid value '{raw_display}' for '{param_name}'. "
-                        f"Valid: {valid_str}."
+                        f"Invalid value '{raw_display}' for '{param_name}'. " f"Valid: {valid_str}."
                     )
-                    diagnostics.append(self._make(
-                        line=param.line,
-                        char=param.character,
-                        length=len(param_name),
-                        message=msg,
-                        severity=DiagnosticSeverity.Error,
-                        code=rule_code,
-                    ))
+                    diagnostics.append(
+                        self._make(
+                            line=param.line,
+                            char=param.character,
+                            length=len(param_name),
+                            message=msg,
+                            severity=DiagnosticSeverity.Error,
+                            code=rule_code,
+                        )
+                    )
 
     def _check_deprecated_keywords(
         self,
@@ -337,14 +544,16 @@ class LintProvider:
             for param_name, param in params.items():
                 hint = DEPRECATED_KEYWORDS.get(param_name)
                 if hint is not None:
-                    diagnostics.append(self._make(
-                        line=param.line,
-                        char=param.character,
-                        length=len(param_name),
-                        message=f"Deprecated keyword '{param_name}'. {hint}",
-                        severity=DiagnosticSeverity.Warning,
-                        code=RULE_DEPRECATED_KEYWORD,
-                    ))
+                    diagnostics.append(
+                        self._make(
+                            line=param.line,
+                            char=param.character,
+                            length=len(param_name),
+                            message=f"Deprecated keyword '{param_name}'. {hint}",
+                            severity=DiagnosticSeverity.Warning,
+                            code=RULE_DEPRECATED_KEYWORD,
+                        )
+                    )
 
     def _check_inconsistent_settings(
         self,
@@ -356,7 +565,6 @@ class LintProvider:
         system = parsed.namelists.get("&SYSTEM", {})
         ions = parsed.namelists.get("&IONS", {})
         cell = parsed.namelists.get("&CELL", {})
-        electrons = parsed.namelists.get("&ELECTRONS", {})
 
         calc_param = control.get("calculation")
         if calc_param is None:
@@ -365,20 +573,28 @@ class LintProvider:
         calc = normalize_value(calc_param.value)
 
         if calc in ("relax", "vc-relax") and not ions:
-            diagnostics.append(self._make(
-                line=0, char=0, length=0,
-                message=f"&IONS namelist is recommended for calculation='{calc}'.",
-                severity=DiagnosticSeverity.Warning,
-                code=RULE_INCONSISTENT_SETTINGS,
-            ))
+            diagnostics.append(
+                self._make(
+                    line=0,
+                    char=0,
+                    length=0,
+                    message=f"&IONS namelist is recommended for calculation='{calc}'.",
+                    severity=DiagnosticSeverity.Warning,
+                    code=RULE_INCONSISTENT_SETTINGS,
+                )
+            )
 
         if calc in ("vc-relax", "vc-md") and not cell:
-            diagnostics.append(self._make(
-                line=0, char=0, length=0,
-                message=f"&CELL namelist is required for calculation='{calc}'.",
-                severity=DiagnosticSeverity.Error,
-                code=RULE_INCONSISTENT_SETTINGS,
-            ))
+            diagnostics.append(
+                self._make(
+                    line=0,
+                    char=0,
+                    length=0,
+                    message=f"&CELL namelist is required for calculation='{calc}'.",
+                    severity=DiagnosticSeverity.Error,
+                    code=RULE_INCONSISTENT_SETTINGS,
+                )
+            )
 
         nspin_param = system.get("nspin")
         if nspin_param is not None:
@@ -389,32 +605,39 @@ class LintProvider:
                 noncolin_param = system.get("noncolin")
                 if noncolin_param is not None:
                     has_nc_val = normalize_value(noncolin_param.value) in (
-                        ".true.", "true", "t",
+                        ".true.",
+                        "true",
+                        "t",
                     )
                 if not has_mag and not has_nc_val:
-                    diagnostics.append(self._make(
-                        line=nspin_param.line,
-                        char=nspin_param.character,
-                        length=len("nspin"),
-                        message=(
-                            "nspin > 1 but no starting_magnetization or "
-                            "noncolin = .true. set in &SYSTEM."
-                        ),
-                        severity=DiagnosticSeverity.Warning,
-                        code=RULE_INCONSISTENT_SETTINGS,
-                    ))
+                    diagnostics.append(
+                        self._make(
+                            line=nspin_param.line,
+                            char=nspin_param.character,
+                            length=len("nspin"),
+                            message=(
+                                "nspin > 1 but no starting_magnetization or "
+                                "noncolin = .true. set in &SYSTEM."
+                            ),
+                            severity=DiagnosticSeverity.Warning,
+                            code=RULE_INCONSISTENT_SETTINGS,
+                        )
+                    )
 
         if calc in ("nscf", "bands"):
             if "nbnd" not in system:
-                diagnostics.append(self._make(
-                    line=0, char=0, length=0,
-                    message=(
-                        f"calculation='{calc}' usually requires explicit "
-                        "nbnd in &SYSTEM."
-                    ),
-                    severity=DiagnosticSeverity.Warning,
-                    code=RULE_INCONSISTENT_SETTINGS,
-                ))
+                diagnostics.append(
+                    self._make(
+                        line=0,
+                        char=0,
+                        length=0,
+                        message=(
+                            f"calculation='{calc}' usually requires explicit " "nbnd in &SYSTEM."
+                        ),
+                        severity=DiagnosticSeverity.Warning,
+                        code=RULE_INCONSISTENT_SETTINGS,
+                    )
+                )
 
     def _check_orphan_parameters(
         self,
@@ -440,14 +663,16 @@ class LintProvider:
             if not in_namelist:
                 for match in ASSIGNMENT_RE.finditer(line):
                     name = match.group(1)
-                    diagnostics.append(self._make(
-                        line=line_number,
-                        char=match.start(1),
-                        length=len(name),
-                        message=f"Parameter '{name}' is outside any namelist.",
-                        severity=DiagnosticSeverity.Warning,
-                        code=RULE_ORPHAN_PARAMETER,
-                    ))
+                    diagnostics.append(
+                        self._make(
+                            line=line_number,
+                            char=match.start(1),
+                            length=len(name),
+                            message=f"Parameter '{name}' is outside any namelist.",
+                            severity=DiagnosticSeverity.Warning,
+                            code=RULE_ORPHAN_PARAMETER,
+                        )
+                    )
 
     # ------------------------------------------------------------------
     # Helpers

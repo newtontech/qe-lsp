@@ -323,10 +323,7 @@ class TestRequiredSections:
         assert section_errors == []
 
     def test_vc_relax_without_cell_namelist(self, provider: TypecheckProvider) -> None:
-        text = (
-            "&CONTROL\ncalculation = 'vc-relax'\n/\n"
-            "&SYSTEM\nibrav = 1\necutwfc = 60\n/\n"
-        )
+        text = "&CONTROL\ncalculation = 'vc-relax'\n/\n" "&SYSTEM\nibrav = 1\necutwfc = 60\n/\n"
         diagnostics = provider.typecheck(text)
         section_errors = [d for d in diagnostics if d.code == RULE_REQUIRED_SECTION_MISSING]
         assert any("&CELL" in d.message for d in section_errors)
@@ -481,10 +478,7 @@ class TestSnapshot:
         assert items[0]["code"].startswith("QE-")
 
     def test_snapshot_deterministic_ordering(self, provider: TypecheckProvider) -> None:
-        text = (
-            "&SYSTEM\nibrav = abc\n/\n"
-            "&CONTROL\ncalculation = 'bogus'\n/\n"
-        )
+        text = "&SYSTEM\nibrav = abc\n/\n" "&CONTROL\ncalculation = 'bogus'\n/\n"
         first = provider.snapshot(text)
         second = provider.snapshot(text)
         assert first == second

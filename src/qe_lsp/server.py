@@ -83,7 +83,10 @@ def create_server(name: str = SERVER_NAME, version: str = __version__) -> Any:
         text = lsp_server.documents.get(uri, "")  # type: ignore[attr-defined]
         if not text:
             return []
-        return lsp_server.formatting_provider.format_document(text, params)  # type: ignore[attr-defined]
+        return cast(
+            list,
+            lsp_server.formatting_provider.format_document(text, params),  # type: ignore[attr-defined]
+        )
 
     @_register(lsp_server, TEXT_DOCUMENT_RANGE_FORMATTING)
     def range_formatting(params: DocumentRangeFormattingParams) -> list:
@@ -91,7 +94,10 @@ def create_server(name: str = SERVER_NAME, version: str = __version__) -> Any:
         text = lsp_server.documents.get(uri, "")  # type: ignore[attr-defined]
         if not text:
             return []
-        return lsp_server.formatting_provider.format_range(text, params)  # type: ignore[attr-defined]
+        return cast(
+            list,
+            lsp_server.formatting_provider.format_range(text, params),  # type: ignore[attr-defined]
+        )
 
     return lsp_server
 
