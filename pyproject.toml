@@ -26,6 +26,7 @@ dev = [
 
 [project.scripts]
 qe-lsp = "qe_lsp.server:main"
+qe-lsp-tool = "qe_lsp.tool:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/qe_lsp"]
@@ -66,3 +67,4 @@ python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
+
