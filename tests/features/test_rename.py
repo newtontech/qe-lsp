@@ -530,7 +530,7 @@ class TestRenameEdgeCases:
     def test_different_namelist_same_param_name_not_renamed(self) -> None:
         """A parameter in one namelist should NOT rename a parameter with
         the same name in a different namelist."""
-        text = "&CONTROL\n" "  title = 'ctrl'\n" "/\n" "&SYSTEM\n" "  ecutwfc = 60\n" "/\n"
+        text = "&CONTROL\n  title = 'ctrl'\n/\n&SYSTEM\n  ecutwfc = 60\n/\n"
         # Rename ecutwfc in &SYSTEM — should only edit line 4.
         result = _provider.rename(text, URI, 4, 2, "cutoff")
         assert result is not None

@@ -351,9 +351,7 @@ class TestAgentAPIWithFixtures:
 
 class TestTestRunnerProviderIntegration:
     def test_parse_output_from_real_error(self) -> None:
-        output = (
-            "     from line  10 : calculation type not implemented\n" "% error in calculation\n"
-        )
+        output = "     from line  10 : calculation type not implemented\n% error in calculation\n"
         result = parse_solver_output(output)
         assert not result.success
 
@@ -397,5 +395,5 @@ class TestCrossProviderAgreement:
         all_diags = validation_diags + lint_diags + typecheck_diags
         errors = [d for d in all_diags if d.severity is not None and d.severity.value == 1]
         assert errors == [], (
-            f"Unexpected errors in {fixture_name}: " f"{[(d.source, d.message) for d in errors]}"
+            f"Unexpected errors in {fixture_name}: {[(d.source, d.message) for d in errors]}"
         )

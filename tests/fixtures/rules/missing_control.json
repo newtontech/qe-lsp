@@ -1,0 +1,6 @@
+{
+  "rule_id": "qe.input.missing_control",
+  "diagnostic_code": "QE-E008",
+  "severity": "error",
+  "message_pattern": "CONTROL"
+}

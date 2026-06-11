@@ -11,6 +11,7 @@ from qe_lsp.features.lint import (
     RULE_INVALID_KEYWORD_VALUE,
     RULE_MISSING_ATOMIC_POSITIONS,
     RULE_MISSING_ATOMIC_SPECIES,
+    RULE_MISSING_CONTROL,
     RULE_MISSING_CONTROL_CALC,
     RULE_MISSING_REQUIRED_SECTION,
     RULE_MISSING_SYSTEM_ECUTWFC,
@@ -177,6 +178,30 @@ class TestLintErrors:
         codes = [d.code for d in diagnostics]
         assert RULE_MISSING_CONTROL_CALC in codes
 
+    def test_rule_missing_control_namelist(self, provider: LintProvider) -> None:
+        """RULE qe.input.missing_control: error when &CONTROL namelist is absent."""
+        text = "&SYSTEM\n  ibrav = 2,\n/\n"
+        diagnostics = provider.lint(text)
+        missing = [d for d in diagnostics if d.code == RULE_MISSING_CONTROL]
+        assert len(missing) == 1
+        assert "CONTROL" in missing[0].message
+        assert missing[0].severity is not None
+        assert missing[0].severity.value == 1  # Error
+
+    def test_missing_control_with_only_electrons(self, provider: LintProvider) -> None:
+        """Even &ELECTRONS alone should trigger missing &CONTROL."""
+        text = "&ELECTRONS\nconv_thr = 1e-8\n/\n"
+        diagnostics = provider.lint(text)
+        missing = [d for d in diagnostics if d.code == RULE_MISSING_CONTROL]
+        assert len(missing) == 1
+
+    def test_control_present_no_missing_control_error(self, provider: LintProvider) -> None:
+        """When &CONTROL exists, RULE_MISSING_CONTROL should NOT fire."""
+        text = "&CONTROL\ncalculation = 'scf'\n/\n"
+        diagnostics = provider.lint(text)
+        missing = [d for d in diagnostics if d.code == RULE_MISSING_CONTROL]
+        assert missing == []
+
     def test_missing_system_ecutwfc(self, provider: LintProvider) -> None:
         text = "&CONTROL\ncalculation = 'scf'\n/\n&SYSTEM\nibrav = 1\n/\n"
         diagnostics = provider.lint(text)
@@ -184,15 +209,7 @@ class TestLintErrors:
         assert RULE_MISSING_SYSTEM_ECUTWFC in codes
 
     def test_vc_relax_without_cell_namelist(self, provider: LintProvider) -> None:
-        text = (
-            "&CONTROL\n"
-            "  calculation = 'vc-relax'\n"
-            "/\n"
-            "&SYSTEM\n"
-            "  ibrav = 1\n"
-            "  ecutwfc = 60\n"
-            "/\n"
-        )
+        text = "&CONTROL\n  calculation = 'vc-relax'\n/\n&SYSTEM\n  ibrav = 1\n  ecutwfc = 60\n/\n"
         diagnostics = provider.lint(text)
         errors = [d for d in diagnostics if d.code == RULE_INCONSISTENT_SETTINGS]
         assert any("&CELL" in d.message for d in errors)
@@ -232,7 +249,7 @@ class TestLintSourceAndCode:
         assert diagnostics[0].code.startswith("QE-")
 
     def test_valid_enum_values_no_error(self, provider: LintProvider) -> None:
-        text = "&CONTROL\ncalculation = 'scf'\n/\n" "&ELECTRONS\nmixing_mode = 'plain'\n/\n"
+        text = "&CONTROL\ncalculation = 'scf'\n/\n&ELECTRONS\nmixing_mode = 'plain'\n/\n"
         diagnostics = provider.lint(text)
         invalids = [d for d in diagnostics if d.code == RULE_INVALID_KEYWORD_VALUE]
         assert invalids == []
@@ -306,7 +323,7 @@ class TestSnapshot:
         assert error_items[0]["code"].startswith("QE-")
 
     def test_snapshot_deterministic_ordering(self, provider: LintProvider) -> None:
-        text = "&FOOBAR\nx = 1\n/\n" "&CONTROL\ncalculation = 'bogus'\n/\n"
+        text = "&FOOBAR\nx = 1\n/\n&CONTROL\ncalculation = 'bogus'\n/\n"
         first = provider.snapshot(text)
         second = provider.snapshot(text)
         assert first == second

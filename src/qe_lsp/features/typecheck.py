@@ -591,8 +591,7 @@ class TypecheckProvider:
                     diagnostics.append(
                         _make_diagnostic(
                             param,
-                            f"Value {numeric_value} for '{_param_name}' exceeds "
-                            f"maximum {max_val}.",
+                            f"Value {numeric_value} for '{_param_name}' exceeds maximum {max_val}.",
                             DiagnosticSeverity.Warning,
                             RULE_NUMERIC_RANGE,
                         )

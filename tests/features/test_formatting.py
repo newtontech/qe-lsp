@@ -263,7 +263,7 @@ class TestFormatRange:
         assert provider.format_range("", params) == []
 
     def test_range_within_namelist(self, provider: FormattingProvider) -> None:
-        text = "&CONTROL\n" "calculation = 'scf'\n" "/\n"
+        text = "&CONTROL\ncalculation = 'scf'\n/\n"
         # Format only line 1 (the assignment)
         params = _range_params(1, 1)
         edits = provider.format_range(text, params)
@@ -271,14 +271,14 @@ class TestFormatRange:
         assert "  calculation = 'scf'" in edits[0].new_text
 
     def test_range_includes_namelist_header(self, provider: FormattingProvider) -> None:
-        text = "&CONTROL\n" "calculation = 'scf'\n" "/\n"
+        text = "&CONTROL\ncalculation = 'scf'\n/\n"
         # Format lines 0-2
         params = _range_params(0, 2)
         edits = provider.format_range(text, params)
         assert len(edits) == 1
 
     def test_already_formatted_range(self, provider: FormattingProvider) -> None:
-        text = "&CONTROL\n" "  calculation = 'scf'\n" "/\n"
+        text = "&CONTROL\n  calculation = 'scf'\n/\n"
         params = _range_params(1, 1)
         edits = provider.format_range(text, params)
         assert edits == []
@@ -292,7 +292,7 @@ class TestFormatRange:
 
     def test_range_preserves_surrounding_context(self, provider: FormattingProvider) -> None:
         """Range formatting must not affect lines outside the range."""
-        text = "&CONTROL\n" "calculation = 'scf'\n" "/\n" "&SYSTEM\n" "ibrav = 1\n" "/\n"
+        text = "&CONTROL\ncalculation = 'scf'\n/\n&SYSTEM\nibrav = 1\n/\n"
         # Format only line 4 (ibrav = 1)
         params = _range_params(4, 4)
         edits = provider.format_range(text, params)
@@ -300,12 +300,7 @@ class TestFormatRange:
         assert "  ibrav = 1" in edits[0].new_text
 
     def test_range_with_card(self, provider: FormattingProvider) -> None:
-        text = (
-            "ATOMIC_SPECIES\n"
-            "Si 28.086 Si.pbe.UPF\n"
-            "ATOMIC_POSITIONS {crystal}\n"
-            "Si 0.0 0.0 0.0\n"
-        )
+        text = "ATOMIC_SPECIES\nSi 28.086 Si.pbe.UPF\nATOMIC_POSITIONS {crystal}\nSi 0.0 0.0 0.0\n"
         # Format lines 1 and 3 (card data rows)
         params = _range_params(1, 1)
         edits = provider.format_range(text, params)
