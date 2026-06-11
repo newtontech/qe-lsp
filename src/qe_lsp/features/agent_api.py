@@ -322,6 +322,67 @@ def describe_domain_language() -> Dict[str, Any]:
     }
 
 
+def lookup_namelist(name: str) -> Optional[Dict[str, Any]]:
+    """Return schema for a QE namelist by name.
+
+    Returns a dict with:
+      - name: the namelist name (uppercased)
+      - description: short description of the namelist
+      - keywords: dict mapping keyword name to its schema (type, description,
+        default_value, valid_values, required)
+    Returns None if the namelist is not found.
+    """
+    domain = describe_domain_language()
+    nl = domain["namelists"].get(name.upper())
+    if nl is None:
+        return None
+    keywords: Dict[str, Any] = {}
+    for kw_name, kw_schema in nl["keywords"].items():
+        keywords[kw_name] = {
+            "type": kw_schema.get("type"),
+            "description": kw_schema.get("description", ""),
+            "default_value": kw_schema.get("default_value"),
+            "valid_values": kw_schema.get("enum"),
+            "required": kw_schema.get("required", False),
+        }
+    return {
+        "name": name.upper(),
+        "description": nl.get("description", ""),
+        "keywords": keywords,
+    }
+
+
+def lookup_keyword(namelist: str, keyword: str) -> Optional[Dict[str, Any]]:
+    """Return schema for a specific keyword within a namelist.
+
+    Returns a dict with:
+      - namelist: parent namelist name
+      - name: keyword name
+      - type: value type (string, integer, float, logical, etc.)
+      - description: short description
+      - default_value: default value if known, else None
+      - valid_values: list of valid values for enum types, else None
+      - required: whether this keyword is required
+    Returns None if the namelist or keyword is not found.
+    """
+    domain = describe_domain_language()
+    nl = domain["namelists"].get(namelist.upper())
+    if nl is None:
+        return None
+    kw_schema = nl["keywords"].get(keyword)
+    if kw_schema is None:
+        return None
+    return {
+        "namelist": namelist.upper(),
+        "name": keyword,
+        "type": kw_schema.get("type"),
+        "description": kw_schema.get("description", ""),
+        "default_value": kw_schema.get("default_value"),
+        "valid_values": kw_schema.get("enum"),
+        "required": kw_schema.get("required", False),
+    }
+
+
 class AgentAPIProvider:
     def __init__(self) -> None:
         pass

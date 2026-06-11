@@ -4,6 +4,8 @@ from qe_lsp.features.agent_api import (
     AgentAPIProvider,
     AgentAPISnapshot,
     describe_domain_language,
+    lookup_keyword,
+    lookup_namelist,
 )
 
 
@@ -91,3 +93,109 @@ class TestDescribeDomainLanguage:
         assert "bogus" not in describe_domain_language()["namelists"]["CONTROL"][
             "keywords"
         ]["calculation"]["enum"]
+
+
+class TestLookupNamelist:
+    def test_returns_schema_for_control(self):
+        result = lookup_namelist("CONTROL")
+        assert result is not None
+        assert result["name"] == "CONTROL"
+        assert "description" in result
+        assert "keywords" in result
+        assert isinstance(result["keywords"], dict)
+
+    def test_case_insensitive_lookup(self):
+        result = lookup_namelist("control")
+        assert result is not None
+        assert result["name"] == "CONTROL"
+
+    def test_returns_none_for_unknown_namelist(self):
+        assert lookup_namelist("BOGUS") is None
+
+    def test_keyword_schemas_have_required_fields(self):
+        result = lookup_namelist("CONTROL")
+        assert result is not None
+        for kw_name, kw in result["keywords"].items():
+            assert "type" in kw, f"CONTROL.{kw_name} missing type"
+            assert "description" in kw, f"CONTROL.{kw_name} missing description"
+            assert "default_value" in kw, f"CONTROL.{kw_name} missing default_value"
+            assert "valid_values" in kw, f"CONTROL.{kw_name} missing valid_values"
+            assert "required" in kw, f"CONTROL.{kw_name} missing required"
+
+    def test_enum_keyword_has_valid_values(self):
+        result = lookup_namelist("CONTROL")
+        assert result is not None
+        calc_kw = result["keywords"]["calculation"]
+        assert calc_kw["valid_values"] is not None
+        assert "scf" in calc_kw["valid_values"]
+        assert "vc-relax" in calc_kw["valid_values"]
+
+    def test_non_enum_keyword_valid_values_is_none(self):
+        result = lookup_namelist("CONTROL")
+        assert result is not None
+        prefix_kw = result["keywords"]["prefix"]
+        assert prefix_kw["valid_values"] is None
+
+    def test_all_five_namelists_found(self):
+        for name in ("CONTROL", "SYSTEM", "ELECTRONS", "IONS", "CELL"):
+            result = lookup_namelist(name)
+            assert result is not None, f"Namelist {name} not found"
+            assert result["name"] == name
+
+
+class TestLookupKeyword:
+    def test_returns_schema_for_calculation(self):
+        result = lookup_keyword("CONTROL", "calculation")
+        assert result is not None
+        assert result["namelist"] == "CONTROL"
+        assert result["name"] == "calculation"
+        assert result["type"] == "string"
+        assert result["valid_values"] is not None
+        assert "scf" in result["valid_values"]
+
+    def test_case_insensitive_namelist(self):
+        result = lookup_keyword("system", "ecutwfc")
+        assert result is not None
+        assert result["namelist"] == "SYSTEM"
+        assert result["type"] == "float"
+
+    def test_returns_none_for_unknown_namelist(self):
+        assert lookup_keyword("BOGUS", "something") is None
+
+    def test_returns_none_for_unknown_keyword(self):
+        assert lookup_keyword("CONTROL", "nonexistent_keyword") is None
+
+    def test_non_enum_keyword_has_none_valid_values(self):
+        result = lookup_keyword("CONTROL", "prefix")
+        assert result is not None
+        assert result["valid_values"] is None
+        assert result["type"] == "string"
+
+    def test_enum_keyword_has_valid_values_list(self):
+        result = lookup_keyword("ELECTRONS", "diagonalization")
+        assert result is not None
+        assert result["valid_values"] is not None
+        assert "david" in result["valid_values"]
+        assert "cg" in result["valid_values"]
+
+    def test_logical_keyword(self):
+        result = lookup_keyword("CONTROL", "tprnfor")
+        assert result is not None
+        assert result["type"] == "logical"
+
+    def test_required_field_exists(self):
+        result = lookup_keyword("CONTROL", "calculation")
+        assert result is not None
+        assert "required" in result
+        assert isinstance(result["required"], bool)
+
+    def test_default_value_field_exists(self):
+        result = lookup_keyword("CONTROL", "calculation")
+        assert result is not None
+        assert "default_value" in result
+
+    def test_description_present(self):
+        result = lookup_keyword("SYSTEM", "ecutwfc")
+        assert result is not None
+        assert "description" in result
+        assert "cutoff" in result["description"].lower()
