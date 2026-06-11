@@ -11,6 +11,7 @@ from qe_lsp.features.lint import (
     RULE_DEPRECATED_KEYWORD,
     RULE_ECUTRHO_INCONSISTENT,
     RULE_INCONSISTENT_SETTINGS,
+    RULE_INVALID_KPOINTS_CARD,
     RULE_INVALID_KEYWORD_VALUE,
     RULE_MISSING_ATOMIC_POSITIONS,
     RULE_MISSING_ATOMIC_SPECIES,
@@ -663,3 +664,105 @@ class TestOccupationsDegaussMismatch:
         degauss_items = [i for i in items if i["code"] == RULE_OCCUPATIONS_DEGAUSS_MISMATCH]
         assert len(degauss_items) == 1
         assert degauss_items[0]["severity"] == "Warning"
+
+
+class TestInvalidKpointsCard:
+    """RULE qe.kpoints.invalid_card (QE-E013): error on invalid K_POINTS card type."""
+
+    def test_invalid_kpoints_type_triggers_error(self, provider: LintProvider) -> None:
+        text = (
+            "&CONTROL\n"
+            "  calculation = 'scf'\n"
+            "/\n"
+            "&SYSTEM\n"
+            "  ibrav = 1\n"
+            "  ecutwfc = 60\n"
+            "  nat = 1\n"
+            "  ntyp = 1\n"
+            "/\n"
+            "K_POINTS {bogus}\n"
+            "4 4 4 0 0 0\n"
+        )
+        diagnostics = provider.lint(text)
+        errors = [d for d in diagnostics if d.code == RULE_INVALID_KPOINTS_CARD]
+        assert len(errors) == 1
+        assert "BOGUS" in errors[0].message
+        assert errors[0].severity is not None
+        assert errors[0].severity.value == 1  # Error
+
+    def test_valid_kpoints_automatic_no_error(self, provider: LintProvider) -> None:
+        text = (
+            "&CONTROL\n"
+            "  calculation = 'scf'\n"
+            "/\n"
+            "&SYSTEM\n"
+            "  ibrav = 1\n"
+            "  ecutwfc = 60\n"
+            "  nat = 1\n"
+            "  ntyp = 1\n"
+            "/\n"
+            "K_POINTS {automatic}\n"
+            "4 4 4 0 0 0\n"
+        )
+        diagnostics = provider.lint(text)
+        errors = [d for d in diagnostics if d.code == RULE_INVALID_KPOINTS_CARD]
+        assert errors == []
+
+    def test_valid_kpoints_tpiba_no_error(self, provider: LintProvider) -> None:
+        text = "K_POINTS {tpiba}\n4\n  0.0 0.0 0.0 1.0\n"
+        diagnostics = provider.lint(text)
+        errors = [d for d in diagnostics if d.code == RULE_INVALID_KPOINTS_CARD]
+        assert errors == []
+
+    def test_valid_kpoints_crystal_no_error(self, provider: LintProvider) -> None:
+        text = "K_POINTS {crystal}\n4\n  0.0 0.0 0.0 1.0\n"
+        diagnostics = provider.lint(text)
+        errors = [d for d in diagnostics if d.code == RULE_INVALID_KPOINTS_CARD]
+        assert errors == []
+
+    def test_valid_kpoints_gamma_no_error(self, provider: LintProvider) -> None:
+        text = "K_POINTS {gamma}\n"
+        diagnostics = provider.lint(text)
+        errors = [d for d in diagnostics if d.code == RULE_INVALID_KPOINTS_CARD]
+        assert errors == []
+
+    def test_kpoints_without_braces_no_error(self, provider: LintProvider) -> None:
+        """K_POINTS without a type specifier defaults to tpiba and is valid."""
+        text = "K_POINTS\n4\n  0.0 0.0 0.0 1.0\n"
+        diagnostics = provider.lint(text)
+        errors = [d for d in diagnostics if d.code == RULE_INVALID_KPOINTS_CARD]
+        assert errors == []
+
+    def test_all_valid_types_no_error(self, provider: LintProvider) -> None:
+        """Every recognised K_POINTS type should be accepted."""
+        for ktype in ("tpiba", "automatic", "crystal", "gamma",
+                      "tpiba_b", "crystal_b", "tpiba_c", "crystal_c"):
+            text = f"K_POINTS {{{ktype}}}\n"
+            diagnostics = provider.lint(text)
+            errors = [d for d in diagnostics if d.code == RULE_INVALID_KPOINTS_CARD]
+            assert errors == [], f"K_POINTS {{{ktype}}} should be valid"
+
+    def test_snapshot_includes_kpoints_error(self, provider: LintProvider) -> None:
+        text = "K_POINTS {nonsense}\n4 4 4 0 0 0\n"
+        items = provider.snapshot(text)
+        kpoints_items = [i for i in items if i["code"] == RULE_INVALID_KPOINTS_CARD]
+        assert len(kpoints_items) == 1
+        assert kpoints_items[0]["severity"] == "Error"
+
+    def test_no_kpoints_card_no_error(self, provider: LintProvider) -> None:
+        """Input without K_POINTS should not trigger the check."""
+        text = (
+            "&CONTROL\n"
+            "  calculation = 'scf'\n"
+            "/\n"
+        )
+        diagnostics = provider.lint(text)
+        errors = [d for d in diagnostics if d.code == RULE_INVALID_KPOINTS_CARD]
+        assert errors == []
+
+    def test_case_insensitive_type(self, provider: LintProvider) -> None:
+        """K_POINTS type is stored uppercase by the parser; check should be case-insensitive."""
+        text = "K_POINTS {Automatic}\n4 4 4 0 0 0\n"
+        diagnostics = provider.lint(text)
+        errors = [d for d in diagnostics if d.code == RULE_INVALID_KPOINTS_CARD]
+        assert errors == []

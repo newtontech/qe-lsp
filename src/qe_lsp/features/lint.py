@@ -39,6 +39,7 @@ RULE_BAD_CALCULATION = "QE-E009"
 RULE_CONV_THR_LOOSE = "QE-W010"
 RULE_ECUTRHO_INCONSISTENT = "QE-W011"
 RULE_OCCUPATIONS_DEGAUSS_MISMATCH = "QE-W012"
+RULE_INVALID_KPOINTS_CARD = "QE-E013"
 
 # ------------------------------------------------------------------
 # Schema data
@@ -310,6 +311,19 @@ VALID_CELL_DOFREE = frozenset(
     }
 )
 
+VALID_KPOINTS_TYPES = frozenset(
+    {
+        "tpiba",
+        "automatic",
+        "crystal",
+        "gamma",
+        "tpiba_b",
+        "crystal_b",
+        "tpiba_c",
+        "crystal_c",
+    }
+)
+
 #: Keyword -> (valid values, rule code for invalid value)
 VALUE_CONSTRAINTS: dict[str, tuple[frozenset[str], str]] = {
     "calculation": (VALID_CALCULATIONS, RULE_BAD_CALCULATION),
@@ -369,6 +383,7 @@ class LintProvider:
         self._check_ecutrho_inconsistent(parsed, diagnostics)
         self._check_occupations_degauss_mismatch(parsed, diagnostics)
         self._check_orphan_parameters(parsed, text, diagnostics)
+        self._check_invalid_kpoints_card(parsed, text, diagnostics)
 
         return diagnostics
 
@@ -815,6 +830,52 @@ class LintProvider:
                             code=RULE_ORPHAN_PARAMETER,
                         )
                     )
+
+    def _check_invalid_kpoints_card(
+        self,
+        parsed: Any,
+        text: str,
+        diagnostics: list[Diagnostic],
+    ) -> None:
+        """Emit QE-E013 when K_POINTS card has an invalid type specifier."""
+        import re
+
+        header = parsed.card_headers.get("K_POINTS")
+        if header is None:
+            return
+
+        # header is the full uppercase line, e.g. "K_POINTS {TPIBA}" or "K_POINTS"
+        match = re.match(r"K_POINTS\s*(?:\{(\w+)\})?", header)
+        if match is None:
+            return
+
+        card_type = match.group(1)
+        # K_POINTS without braces is valid (defaults to tpiba)
+        if card_type is None:
+            return
+
+        if card_type.lower() not in VALID_KPOINTS_TYPES:
+            # Find the line number for the K_POINTS card
+            kpoints_line = 0
+            for line_number, raw_line in enumerate(text.splitlines()):
+                upper = raw_line.upper().split()
+                if upper and upper[0] == "K_POINTS":
+                    kpoints_line = line_number
+                    break
+
+            diagnostics.append(
+                self._make(
+                    line=kpoints_line,
+                    char=0,
+                    length=len("K_POINTS"),
+                    message=(
+                        f"Invalid K_POINTS card type '{{{card_type}}}'. "
+                        f"Valid types: {', '.join(sorted(VALID_KPOINTS_TYPES))}."
+                    ),
+                    severity=DiagnosticSeverity.Error,
+                    code=RULE_INVALID_KPOINTS_CARD,
+                )
+            )
 
     # ------------------------------------------------------------------
     # Helpers
