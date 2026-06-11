@@ -9,6 +9,7 @@ from qe_lsp.features.lint import (
     RULE_BAD_CALCULATION,
     RULE_CONV_THR_LOOSE,
     RULE_DEPRECATED_KEYWORD,
+    RULE_ECUTRHO_INCONSISTENT,
     RULE_INCONSISTENT_SETTINGS,
     RULE_INVALID_KEYWORD_VALUE,
     RULE_MISSING_ATOMIC_POSITIONS,
@@ -298,6 +299,156 @@ class TestConvThrLoose:
         loose_items = [i for i in items if i["code"] == RULE_CONV_THR_LOOSE]
         assert len(loose_items) == 1
         assert loose_items[0]["severity"] == "Warning"
+
+
+class TestEcutrhoInconsistent:
+    """RULE qe.cutoff.ecutrho_inconsistent (QE-W011): warn when ecutrho is
+    outside the 4x-16x ecutwfc range."""
+
+    def test_ecutrho_too_low_triggers_warning(self, provider: LintProvider) -> None:
+        """ecutrho = 2*ecutwfc is below the 4x minimum."""
+        text = (
+            "&CONTROL\n"
+            "  calculation = 'scf'\n"
+            "/\n"
+            "&SYSTEM\n"
+            "  ibrav = 1\n"
+            "  ecutwfc = 60.0\n"
+            "  ecutrho = 120.0\n"
+            "  nat = 1\n"
+            "  ntyp = 1\n"
+            "/\n"
+        )
+        diagnostics = provider.lint(text)
+        warnings = [d for d in diagnostics if d.code == RULE_ECUTRHO_INCONSISTENT]
+        assert len(warnings) == 1
+        assert "ecutrho" in warnings[0].message
+        assert warnings[0].severity is not None
+        assert warnings[0].severity.value == 2  # Warning
+
+    def test_ecutrho_too_high_triggers_warning(self, provider: LintProvider) -> None:
+        """ecutrho = 20*ecutwfc is above the 16x maximum."""
+        text = (
+            "&CONTROL\n"
+            "  calculation = 'scf'\n"
+            "/\n"
+            "&SYSTEM\n"
+            "  ibrav = 1\n"
+            "  ecutwfc = 60.0\n"
+            "  ecutrho = 1200.0\n"
+            "  nat = 1\n"
+            "  ntyp = 1\n"
+            "/\n"
+        )
+        diagnostics = provider.lint(text)
+        warnings = [d for d in diagnostics if d.code == RULE_ECUTRHO_INCONSISTENT]
+        assert len(warnings) == 1
+
+    def test_ecutrho_4x_ecutwfc_no_warning(self, provider: LintProvider) -> None:
+        """ecutrho = 4*ecutwfc is the lower bound and should NOT warn."""
+        text = (
+            "&CONTROL\n"
+            "  calculation = 'scf'\n"
+            "/\n"
+            "&SYSTEM\n"
+            "  ibrav = 1\n"
+            "  ecutwfc = 60.0\n"
+            "  ecutrho = 240.0\n"
+            "  nat = 1\n"
+            "  ntyp = 1\n"
+            "/\n"
+        )
+        diagnostics = provider.lint(text)
+        warnings = [d for d in diagnostics if d.code == RULE_ECUTRHO_INCONSISTENT]
+        assert warnings == []
+
+    def test_ecutrho_16x_ecutwfc_no_warning(self, provider: LintProvider) -> None:
+        """ecutrho = 16*ecutwfc is the upper bound and should NOT warn."""
+        text = (
+            "&CONTROL\n"
+            "  calculation = 'scf'\n"
+            "/\n"
+            "&SYSTEM\n"
+            "  ibrav = 1\n"
+            "  ecutwfc = 60.0\n"
+            "  ecutrho = 960.0\n"
+            "  nat = 1\n"
+            "  ntyp = 1\n"
+            "/\n"
+        )
+        diagnostics = provider.lint(text)
+        warnings = [d for d in diagnostics if d.code == RULE_ECUTRHO_INCONSISTENT]
+        assert warnings == []
+
+    def test_ecutrho_8x_ecutwfc_no_warning(self, provider: LintProvider) -> None:
+        """ecutrho = 8*ecutwfc is a typical valid ratio."""
+        text = (
+            "&CONTROL\n"
+            "  calculation = 'scf'\n"
+            "/\n"
+            "&SYSTEM\n"
+            "  ibrav = 1\n"
+            "  ecutwfc = 60.0\n"
+            "  ecutrho = 480.0\n"
+            "  nat = 1\n"
+            "  ntyp = 1\n"
+            "/\n"
+        )
+        diagnostics = provider.lint(text)
+        warnings = [d for d in diagnostics if d.code == RULE_ECUTRHO_INCONSISTENT]
+        assert warnings == []
+
+    def test_no_ecutrho_no_warning(self, provider: LintProvider) -> None:
+        """Missing ecutrho should NOT trigger the check."""
+        text = (
+            "&CONTROL\n"
+            "  calculation = 'scf'\n"
+            "/\n"
+            "&SYSTEM\n"
+            "  ibrav = 1\n"
+            "  ecutwfc = 60.0\n"
+            "  nat = 1\n"
+            "  ntyp = 1\n"
+            "/\n"
+        )
+        diagnostics = provider.lint(text)
+        warnings = [d for d in diagnostics if d.code == RULE_ECUTRHO_INCONSISTENT]
+        assert warnings == []
+
+    def test_no_ecutwfc_no_warning(self, provider: LintProvider) -> None:
+        """Missing ecutwfc should NOT trigger the check."""
+        text = (
+            "&CONTROL\n"
+            "  calculation = 'scf'\n"
+            "/\n"
+            "&SYSTEM\n"
+            "  ibrav = 1\n"
+            "  ecutrho = 480.0\n"
+            "  nat = 1\n"
+            "  ntyp = 1\n"
+            "/\n"
+        )
+        diagnostics = provider.lint(text)
+        warnings = [d for d in diagnostics if d.code == RULE_ECUTRHO_INCONSISTENT]
+        assert warnings == []
+
+    def test_snapshot_includes_ecutrho_warning(self, provider: LintProvider) -> None:
+        text = (
+            "&CONTROL\n"
+            "  calculation = 'scf'\n"
+            "/\n"
+            "&SYSTEM\n"
+            "  ibrav = 1\n"
+            "  ecutwfc = 60.0\n"
+            "  ecutrho = 120.0\n"
+            "  nat = 1\n"
+            "  ntyp = 1\n"
+            "/\n"
+        )
+        items = provider.snapshot(text)
+        warnings = [i for i in items if i["code"] == RULE_ECUTRHO_INCONSISTENT]
+        assert len(warnings) == 1
+        assert warnings[0]["severity"] == "Warning"
 
 
 class TestLintSourceAndCode:

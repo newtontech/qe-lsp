@@ -37,6 +37,7 @@ RULE_ORPHAN_PARAMETER = "QE-W004"
 RULE_MISSING_CONTROL = "QE-E008"
 RULE_BAD_CALCULATION = "QE-E009"
 RULE_CONV_THR_LOOSE = "QE-W010"
+RULE_ECUTRHO_INCONSISTENT = "QE-W011"
 
 # ------------------------------------------------------------------
 # Schema data
@@ -364,6 +365,7 @@ class LintProvider:
         self._check_deprecated_keywords(parsed, diagnostics)
         self._check_inconsistent_settings(parsed, diagnostics)
         self._check_conv_thr_loose(parsed, diagnostics)
+        self._check_ecutrho_inconsistent(parsed, diagnostics)
         self._check_orphan_parameters(parsed, text, diagnostics)
 
         return diagnostics
@@ -676,6 +678,39 @@ class LintProvider:
                     ),
                     severity=DiagnosticSeverity.Warning,
                     code=RULE_CONV_THR_LOOSE,
+                )
+            )
+
+    def _check_ecutrho_inconsistent(
+        self,
+        parsed: Any,
+        diagnostics: list[Diagnostic],
+    ) -> None:
+        """Emit QE-W011 when ecutrho is outside the 4x-16x range of ecutwfc."""
+        system = parsed.namelists.get("&SYSTEM", {})
+        ecutwfc_param = system.get("ecutwfc")
+        ecutrho_param = system.get("ecutrho")
+        if ecutwfc_param is None or ecutrho_param is None:
+            return
+
+        ecutwfc_val = parse_number(ecutwfc_param.value)
+        ecutrho_val = parse_number(ecutrho_param.value)
+        if ecutwfc_val is None or ecutrho_val is None or ecutwfc_val <= 0:
+            return
+
+        ratio = ecutrho_val / ecutwfc_val
+        if ratio < 4 or ratio > 16:
+            diagnostics.append(
+                self._make(
+                    line=ecutrho_param.line,
+                    char=ecutrho_param.character,
+                    length=len("ecutrho"),
+                    message=(
+                        f"ecutrho = {ecutrho_val} is inconsistent with ecutwfc = {ecutwfc_val} "
+                        f"(ratio = {ratio:.1f}x). Expected range: 4x to 16x ecutwfc."
+                    ),
+                    severity=DiagnosticSeverity.Warning,
+                    code=RULE_ECUTRHO_INCONSISTENT,
                 )
             )
 

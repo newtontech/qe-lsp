@@ -1,0 +1,6 @@
+{
+  "rule_id": "qe.cutoff.ecutrho_inconsistent",
+  "diagnostic_code": "QE-W011",
+  "severity": "warning",
+  "message_pattern": "ecutrho"
+}
