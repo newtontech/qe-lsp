@@ -1,0 +1,35 @@
+{
+  "capability_id": "openqc_smoke",
+  "description": "OpenQC integration smoke test verifying LSP integration points.",
+  "probes": [
+    {
+      "name": "missing_control",
+      "expected_code": "QE-E008"
+    },
+    {
+      "name": "bad_calculation",
+      "expected_code": "QE-E009"
+    },
+    {
+      "name": "conv_thr_loose",
+      "expected_code": "QE-W010"
+    },
+    {
+      "name": "ecutrho_inconsistent",
+      "expected_code": "QE-W011"
+    },
+    {
+      "name": "occupations_degauss_mismatch",
+      "expected_code": "QE-W012"
+    },
+    {
+      "name": "invalid_kpoints_card",
+      "expected_code": "QE-E013"
+    }
+  ],
+  "integration_checks": [
+    "rule_manifest_export",
+    "diagnostic_engine",
+    "agent_api"
+  ]
+}

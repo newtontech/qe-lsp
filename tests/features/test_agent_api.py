@@ -5,9 +5,11 @@ from qe_lsp.features.agent_api import (
     AgentAPISnapshot,
     describe_domain_language,
     get_examples,
+    get_rule_manifest,
     lookup_keyword,
     lookup_namelist,
     next_token_suggestions,
+    openqc_smoke,
 )
 
 
@@ -363,3 +365,126 @@ class TestNextTokenSuggestions:
             assert isinstance(s["text"], str)
             assert isinstance(s["type"], str)
             assert isinstance(s["description"], str)
+
+
+# ------------------------------------------------------------------
+# Tests for get_rule_manifest()
+# ------------------------------------------------------------------
+
+
+class TestGetRuleManifest:
+    def test_returns_non_empty_list(self):
+        manifest = get_rule_manifest()
+        assert isinstance(manifest, list)
+        assert len(manifest) > 0
+
+    def test_each_entry_has_required_keys(self):
+        for entry in get_rule_manifest():
+            assert "code" in entry
+            assert "rule_id" in entry
+            assert "severity" in entry
+            assert "description" in entry
+
+    def test_codes_follow_convention(self):
+        """All codes should start with 'QE-' and use E/W/TE/TW prefixes."""
+        for entry in get_rule_manifest():
+            code = entry["code"]
+            assert code.startswith("QE-"), f"Code {code} does not start with QE-"
+
+    def test_severity_is_error_or_warning(self):
+        for entry in get_rule_manifest():
+            assert entry["severity"] in ("error", "warning")
+
+    def test_rule_ids_use_dot_notation(self):
+        for entry in get_rule_manifest():
+            assert "." in entry["rule_id"], f"rule_id {entry['rule_id']} missing dot separator"
+
+    def test_known_rules_present(self):
+        """Verify that key rules we depend on are in the manifest."""
+        codes = {e["code"] for e in get_rule_manifest()}
+        assert "QE-E008" in codes  # missing_control
+        assert "QE-E009" in codes  # bad_calculation
+        assert "QE-W010" in codes  # conv_thr_loose
+        assert "QE-W011" in codes  # ecutrho_inconsistent
+        assert "QE-W012" in codes  # occupations_degauss_mismatch
+        assert "QE-E013" in codes  # invalid_kpoints_card
+
+    def test_returns_fresh_copy(self):
+        a = get_rule_manifest()
+        b = get_rule_manifest()
+        a[0]["code"] = "MUTATED"
+        assert b[0]["code"] != "MUTATED"
+
+    def test_no_duplicate_codes(self):
+        codes = [e["code"] for e in get_rule_manifest()]
+        assert len(codes) == len(set(codes))
+
+    def test_manifest_is_json_serialisable(self):
+        manifest = get_rule_manifest()
+        serialised = json.dumps(manifest)
+        round_tripped = json.loads(serialised)
+        assert round_tripped == manifest
+
+
+# ------------------------------------------------------------------
+# Tests for openqc_smoke()
+# ------------------------------------------------------------------
+
+
+class TestOpenqcSmoke:
+    def test_smoke_passes(self):
+        result = openqc_smoke()
+        assert result["status"] == "pass", f"Smoke failed: {result['errors']}"
+
+    def test_manifest_rule_count_positive(self):
+        result = openqc_smoke()
+        assert result["manifest_rule_count"] > 0
+
+    def test_diagnostic_engine_ok(self):
+        result = openqc_smoke()
+        assert result["diagnostic_engine_ok"] is True
+
+    def test_agent_api_ok(self):
+        result = openqc_smoke()
+        assert result["agent_api_ok"] is True
+
+    def test_probe_results_non_empty(self):
+        result = openqc_smoke()
+        assert len(result["probe_results"]) > 0
+
+    def test_all_probes_pass(self):
+        result = openqc_smoke()
+        for probe in result["probe_results"]:
+            assert probe["status"] == "pass", (
+                f"Probe '{probe['name']}' failed: expected {probe['expected_code']}, "
+                f"got {probe.get('actual_codes', [])}"
+            )
+
+    def test_all_six_probes_present(self):
+        result = openqc_smoke()
+        probe_names = {p["name"] for p in result["probe_results"]}
+        expected = {
+            "missing_control",
+            "bad_calculation",
+            "conv_thr_loose",
+            "ecutrho_inconsistent",
+            "occupations_degauss_mismatch",
+            "invalid_kpoints_card",
+        }
+        assert probe_names == expected
+
+    def test_errors_list_empty_on_pass(self):
+        result = openqc_smoke()
+        assert result["errors"] == []
+
+    def test_result_is_json_serialisable(self):
+        result = openqc_smoke()
+        serialised = json.dumps(result)
+        round_tripped = json.loads(serialised)
+        assert round_tripped["status"] == "pass"
+
+    def test_probe_has_expected_code(self):
+        result = openqc_smoke()
+        for probe in result["probe_results"]:
+            assert "expected_code" in probe
+            assert probe["expected_code"].startswith("QE-")

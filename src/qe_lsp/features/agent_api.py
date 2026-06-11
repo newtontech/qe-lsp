@@ -938,3 +938,336 @@ def next_token_suggestions(context: str, prefix: str = "") -> List[Dict[str, str
         results = [r for r in results if r["text"].startswith(prefix)]
 
     return results
+
+
+# ---------------------------------------------------------------------------
+# Rule manifest – machine-readable catalogue of all diagnostic rules
+# ---------------------------------------------------------------------------
+
+_RULE_DEFINITIONS: List[Dict[str, str]] = [
+    {
+        "code": "QE-E001",
+        "rule_id": "qe.input.missing_required_section",
+        "severity": "error",
+        "description": "Missing required namelist or card section.",
+    },
+    {
+        "code": "QE-E002",
+        "rule_id": "qe.input.unknown_namelist",
+        "severity": "error",
+        "description": "Unknown namelist outside the QE grammar.",
+    },
+    {
+        "code": "QE-W001",
+        "rule_id": "qe.input.unknown_keyword",
+        "severity": "warning",
+        "description": "Unknown keyword not in the known schema for a namelist.",
+    },
+    {
+        "code": "QE-E003",
+        "rule_id": "qe.input.invalid_keyword_value",
+        "severity": "error",
+        "description": "Invalid value for a keyword with constrained enum values.",
+    },
+    {
+        "code": "QE-W002",
+        "rule_id": "qe.input.deprecated_keyword",
+        "severity": "warning",
+        "description": "Deprecated keyword with a recommended replacement.",
+    },
+    {
+        "code": "QE-W003",
+        "rule_id": "qe.input.inconsistent_settings",
+        "severity": "warning",
+        "description": "Semantically inconsistent parameter combination.",
+    },
+    {
+        "code": "QE-E004",
+        "rule_id": "qe.input.missing_control_calculation",
+        "severity": "error",
+        "description": "Missing required parameter 'calculation' in &CONTROL.",
+    },
+    {
+        "code": "QE-E005",
+        "rule_id": "qe.input.missing_system_ecutwfc",
+        "severity": "error",
+        "description": "Missing required parameter 'ecutwfc' in &SYSTEM.",
+    },
+    {
+        "code": "QE-E006",
+        "rule_id": "qe.input.missing_atomic_species",
+        "severity": "error",
+        "description": "Missing required card ATOMIC_SPECIES when nat is set.",
+    },
+    {
+        "code": "QE-E007",
+        "rule_id": "qe.input.missing_atomic_positions",
+        "severity": "error",
+        "description": "Missing required card ATOMIC_POSITIONS when nat is set.",
+    },
+    {
+        "code": "QE-W004",
+        "rule_id": "qe.input.orphan_parameter",
+        "severity": "warning",
+        "description": "Parameter assignment outside any namelist block.",
+    },
+    {
+        "code": "QE-E008",
+        "rule_id": "qe.input.missing_control",
+        "severity": "error",
+        "description": "Missing required namelist &CONTROL.",
+    },
+    {
+        "code": "QE-E009",
+        "rule_id": "qe.input.bad_calculation",
+        "severity": "error",
+        "description": "Invalid value for the 'calculation' keyword.",
+    },
+    {
+        "code": "QE-W010",
+        "rule_id": "qe.scf.conv_thr_loose",
+        "severity": "warning",
+        "description": "conv_thr is too loose (> 1e-4) for reliable SCF convergence.",
+    },
+    {
+        "code": "QE-W011",
+        "rule_id": "qe.cutoff.ecutrho_inconsistent",
+        "severity": "warning",
+        "description": "ecutrho is outside the 4x-16x range of ecutwfc.",
+    },
+    {
+        "code": "QE-W012",
+        "rule_id": "qe.smearing.occupations_degauss_mismatch",
+        "severity": "warning",
+        "description": "occupations='smearing' but degauss is missing or out of range.",
+    },
+    {
+        "code": "QE-E013",
+        "rule_id": "qe.kpoints.invalid_card",
+        "severity": "error",
+        "description": "Invalid K_POINTS card type specifier.",
+    },
+    {
+        "code": "QE-E014",
+        "rule_id": "qe.log.scf_not_converged",
+        "severity": "error",
+        "description": "SCF convergence was not achieved in the QE output log.",
+    },
+    {
+        "code": "QE-E015",
+        "rule_id": "qe.log.error_in_routine",
+        "severity": "error",
+        "description": "Error reported in a QE routine in the output log.",
+    },
+    {
+        "code": "QE-E016",
+        "rule_id": "qe.log.warning",
+        "severity": "error",
+        "description": "Warning-level issue detected in QE output log.",
+    },
+    {
+        "code": "QE-E017",
+        "rule_id": "qe.log.segmentation_fault",
+        "severity": "error",
+        "description": "Segmentation fault detected in QE output.",
+    },
+    {
+        "code": "QE-E018",
+        "rule_id": "qe.log.max_cpu_time",
+        "severity": "error",
+        "description": "Maximum CPU time exceeded in QE output.",
+    },
+    {
+        "code": "QE-E019",
+        "rule_id": "qe.log.band_structure_error",
+        "severity": "error",
+        "description": "Band structure calculation error in QE output.",
+    },
+    {
+        "code": "QE-E020",
+        "rule_id": "qe.log.phonon_error",
+        "severity": "error",
+        "description": "Phonon calculation error in QE output.",
+    },
+    {
+        "code": "QE-TE001",
+        "rule_id": "qe.typecheck.type_mismatch",
+        "severity": "error",
+        "description": "Value type does not match the expected type for the keyword.",
+    },
+    {
+        "code": "QE-TE002",
+        "rule_id": "qe.typecheck.enum_invalid",
+        "severity": "error",
+        "description": "Value is not in the allowed enum set for the keyword.",
+    },
+    {
+        "code": "QE-TE003",
+        "rule_id": "qe.typecheck.unit_unknown",
+        "severity": "warning",
+        "description": "Unknown unit specified for a physical quantity.",
+    },
+    {
+        "code": "QE-TE004",
+        "rule_id": "qe.typecheck.required_section_missing",
+        "severity": "error",
+        "description": "A required section is missing based on the calculation type.",
+    },
+    {
+        "code": "QE-TW001",
+        "rule_id": "qe.typecheck.numeric_range",
+        "severity": "warning",
+        "description": "Numeric value is outside the recommended range.",
+    },
+]
+
+
+def get_rule_manifest() -> List[Dict[str, str]]:
+    """Return a machine-readable catalogue of all diagnostic rules.
+
+    Each entry contains:
+      - code: the stable diagnostic code (e.g. ``"QE-E001"``)
+      - rule_id: a dot-separated human identifier (e.g. ``"qe.input.missing_control"``)
+      - severity: ``"error"`` or ``"warning"``
+      - description: short summary of what the rule detects
+
+    Returns a fresh copy on every call so callers can safely mutate.
+    """
+    return [dict(entry) for entry in _RULE_DEFINITIONS]
+
+
+# ---------------------------------------------------------------------------
+# OpenQC smoke test – integration verification
+# ---------------------------------------------------------------------------
+
+# Minimal test inputs paired with the diagnostic code they must trigger.
+_SMOKE_PROBES: List[Dict[str, str]] = [
+    {
+        "name": "missing_control",
+        "input": "&SYSTEM\n  ibrav = 2\n/\n",
+        "expected_code": "QE-E008",
+    },
+    {
+        "name": "bad_calculation",
+        "input": "&CONTROL\n  calculation = 'invalid'\n/\n",
+        "expected_code": "QE-E009",
+    },
+    {
+        "name": "conv_thr_loose",
+        "input": "&ELECTRONS\n  conv_thr = 1e-3\n/\n",
+        "expected_code": "QE-W010",
+    },
+    {
+        "name": "ecutrho_inconsistent",
+        "input": (
+            "&CONTROL\n  calculation = 'scf'\n/\n"
+            "&SYSTEM\n  ibrav = 1\n  ecutwfc = 60.0\n  ecutrho = 120.0\n"
+            "  nat = 1\n  ntyp = 1\n/\n"
+        ),
+        "expected_code": "QE-W011",
+    },
+    {
+        "name": "occupations_degauss_mismatch",
+        "input": "&SYSTEM\n  occupations = 'smearing'\n/\n",
+        "expected_code": "QE-W012",
+    },
+    {
+        "name": "invalid_kpoints_card",
+        "input": "K_POINTS {bogus}\n4 4 4 0 0 0\n",
+        "expected_code": "QE-E013",
+    },
+]
+
+
+def openqc_smoke() -> Dict[str, Any]:
+    """Run a lightweight integration smoke test for OpenQC consumers.
+
+    Verifies that the following integration points are functional:
+
+    1. **Rule manifest export** -- ``get_rule_manifest()`` returns a non-empty
+       list of rule definitions.
+    2. **Diagnostic engine** -- the lint provider produces diagnostics for
+       malformed inputs.
+    3. **Agent API** -- ``AgentAPIProvider`` can build snapshots from source
+       text.
+    4. **Fixture probes** -- each of the built-in smoke probes triggers the
+       expected diagnostic code, confirming end-to-end rule wiring.
+
+    Returns
+    -------
+    dict
+        A result dict with keys:
+        - ``status``: ``"pass"`` or ``"fail"``
+        - ``manifest_rule_count``: number of rules in the manifest
+        - ``diagnostic_engine_ok``: whether the lint provider runs
+        - ``agent_api_ok``: whether the AgentAPIProvider runs
+        - ``probe_results``: list of per-probe pass/fail dicts
+        - ``errors``: list of error messages (empty on full pass)
+    """
+    from ..features.lint import LintProvider
+
+    errors: List[str] = []
+    result: Dict[str, Any] = {
+        "status": "pass",
+        "manifest_rule_count": 0,
+        "diagnostic_engine_ok": False,
+        "agent_api_ok": False,
+        "probe_results": [],
+        "errors": [],
+    }
+
+    # 1. Rule manifest export
+    manifest = get_rule_manifest()
+    result["manifest_rule_count"] = len(manifest)
+    if len(manifest) == 0:
+        errors.append("Rule manifest is empty.")
+
+    # 2. Diagnostic engine responds to test inputs
+    try:
+        provider = LintProvider()
+        provider.lint("&CONTROL\ncalculation = 'scf'\n/\n")
+        result["diagnostic_engine_ok"] = True
+    except Exception as exc:
+        errors.append(f"Diagnostic engine error: {exc}")
+
+    # 3. Agent API is reachable
+    try:
+        api = AgentAPIProvider()
+        snap = api.get_snapshot("&CONTROL\ncalculation = 'scf'\n/\n")
+        result["agent_api_ok"] = snap.metadata.get("language") == "quantum-espresso"
+        if not result["agent_api_ok"]:
+            errors.append("Agent API metadata language mismatch.")
+    except Exception as exc:
+        errors.append(f"Agent API error: {exc}")
+
+    # 4. Each smoke probe triggers the expected diagnostic code
+    lint_provider = LintProvider()
+    for probe in _SMOKE_PROBES:
+        probe_result: Dict[str, Any] = {
+            "name": probe["name"],
+            "expected_code": probe["expected_code"],
+            "found": False,
+            "status": "fail",
+        }
+        try:
+            diags = lint_provider.lint(probe["input"])
+            codes = [str(d.code) for d in diags if d.code is not None]
+            probe_result["actual_codes"] = codes
+            if probe["expected_code"] in codes:
+                probe_result["found"] = True
+                probe_result["status"] = "pass"
+            else:
+                errors.append(
+                    f"Probe '{probe['name']}': expected code "
+                    f"{probe['expected_code']}, got {codes}"
+                )
+        except Exception as exc:
+            errors.append(f"Probe '{probe['name']}' raised: {exc}")
+            probe_result["error"] = str(exc)
+        result["probe_results"].append(probe_result)
+
+    if errors:
+        result["status"] = "fail"
+    result["errors"] = errors
+
+    return result
