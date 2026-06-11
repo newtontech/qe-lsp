@@ -16,6 +16,7 @@ from lsprotocol.types import (
 from qe_lsp.features.code_actions import CodeActionProvider
 from qe_lsp.features.lint import (
     LintProvider,
+    RULE_BAD_CALCULATION,
     RULE_DEPRECATED_KEYWORD,
     RULE_INCONSISTENT_SETTINGS,
     RULE_INVALID_KEYWORD_VALUE,
@@ -137,7 +138,7 @@ class TestFixInvalidValue:
     def test_suggests_closest_valid_calculation(self, provider: CodeActionProvider) -> None:
         source = "&CONTROL\ncalculation = 'bogus'\n/\n"
         diags = LintProvider().lint(source)
-        invalids = [d for d in diags if d.code == RULE_INVALID_KEYWORD_VALUE]
+        invalids = [d for d in diags if d.code == RULE_BAD_CALCULATION]
         assert len(invalids) >= 1
 
         actions = provider.get_code_actions(source, invalids)

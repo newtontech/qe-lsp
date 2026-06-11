@@ -35,6 +35,7 @@ RULE_MISSING_ATOMIC_SPECIES = "QE-E006"
 RULE_MISSING_ATOMIC_POSITIONS = "QE-E007"
 RULE_ORPHAN_PARAMETER = "QE-W004"
 RULE_MISSING_CONTROL = "QE-E008"
+RULE_BAD_CALCULATION = "QE-E009"
 
 # ------------------------------------------------------------------
 # Schema data
@@ -227,6 +228,8 @@ VALID_CALCULATIONS = frozenset(
         "md",
         "vc-relax",
         "vc-md",
+        "cp",
+        "vc-cp",
     }
 )
 VALID_DIAGALIZATIONS = frozenset(
@@ -306,7 +309,7 @@ VALID_CELL_DOFREE = frozenset(
 
 #: Keyword -> (valid values, rule code for invalid value)
 VALUE_CONSTRAINTS: dict[str, tuple[frozenset[str], str]] = {
-    "calculation": (VALID_CALCULATIONS, RULE_INVALID_KEYWORD_VALUE),
+    "calculation": (VALID_CALCULATIONS, RULE_BAD_CALCULATION),
     "diagonalization": (VALID_DIAGALIZATIONS, RULE_INVALID_KEYWORD_VALUE),
     "mixing_mode": (VALID_MIXING_MODES, RULE_INVALID_KEYWORD_VALUE),
     "smearing": (VALID_SMEARING, RULE_INVALID_KEYWORD_VALUE),

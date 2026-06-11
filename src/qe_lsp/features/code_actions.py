@@ -24,6 +24,7 @@ from ..parser import parse_qe_input
 from ..features.lint import (
     KNOWN_PARAMETERS,
     VALID_NAMELISTS,
+    RULE_BAD_CALCULATION,
     RULE_DEPRECATED_KEYWORD,
     RULE_INCONSISTENT_SETTINGS,
     RULE_INVALID_KEYWORD_VALUE,
@@ -177,7 +178,7 @@ class CodeActionProvider:
             return self._fix_unknown_keyword(source, diagnostic)
 
         # Invalid enum value -> suggest closest valid value
-        if code == RULE_INVALID_KEYWORD_VALUE:
+        if code in (RULE_INVALID_KEYWORD_VALUE, RULE_BAD_CALCULATION):
             return self._fix_invalid_value(source, diagnostic)
 
         # Deprecated keyword -> replace with modern alternative
