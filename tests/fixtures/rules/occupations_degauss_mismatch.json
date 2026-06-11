@@ -1,0 +1,6 @@
+{
+  "rule_id": "qe.smearing.occupations_degauss_mismatch",
+  "diagnostic_code": "QE-W012",
+  "severity": "warning",
+  "message_pattern": "degauss"
+}

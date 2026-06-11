@@ -38,6 +38,7 @@ RULE_MISSING_CONTROL = "QE-E008"
 RULE_BAD_CALCULATION = "QE-E009"
 RULE_CONV_THR_LOOSE = "QE-W010"
 RULE_ECUTRHO_INCONSISTENT = "QE-W011"
+RULE_OCCUPATIONS_DEGAUSS_MISMATCH = "QE-W012"
 
 # ------------------------------------------------------------------
 # Schema data
@@ -366,6 +367,7 @@ class LintProvider:
         self._check_inconsistent_settings(parsed, diagnostics)
         self._check_conv_thr_loose(parsed, diagnostics)
         self._check_ecutrho_inconsistent(parsed, diagnostics)
+        self._check_occupations_degauss_mismatch(parsed, diagnostics)
         self._check_orphan_parameters(parsed, text, diagnostics)
 
         return diagnostics
@@ -711,6 +713,71 @@ class LintProvider:
                     ),
                     severity=DiagnosticSeverity.Warning,
                     code=RULE_ECUTRHO_INCONSISTENT,
+                )
+            )
+
+    def _check_occupations_degauss_mismatch(
+        self,
+        parsed: Any,
+        diagnostics: list[Diagnostic],
+    ) -> None:
+        """Emit QE-W012 when occupations='smearing' but degauss is missing or out of range."""
+        system = parsed.namelists.get("&SYSTEM", {})
+        occ_param = system.get("occupations")
+        if occ_param is None:
+            return
+
+        occ_value = normalize_value(occ_param.value)
+        if occ_value != "smearing":
+            return
+
+        degauss_param = system.get("degauss")
+        if degauss_param is None:
+            diagnostics.append(
+                self._make(
+                    line=occ_param.line,
+                    char=occ_param.character,
+                    length=len("occupations"),
+                    message=(
+                        "occupations = 'smearing' requires degauss in &SYSTEM, "
+                        "but degauss is not set."
+                    ),
+                    severity=DiagnosticSeverity.Warning,
+                    code=RULE_OCCUPATIONS_DEGAUSS_MISMATCH,
+                )
+            )
+            return
+
+        degauss_val = parse_number(degauss_param.value)
+        if degauss_val is None:
+            return
+
+        if degauss_val < 0.001:
+            diagnostics.append(
+                self._make(
+                    line=degauss_param.line,
+                    char=degauss_param.character,
+                    length=len("degauss"),
+                    message=(
+                        f"degauss = {degauss_val} is too small (< 0.001 Ry). "
+                        "Consider using a value >= 0.001 Ry for stable smearing."
+                    ),
+                    severity=DiagnosticSeverity.Warning,
+                    code=RULE_OCCUPATIONS_DEGAUSS_MISMATCH,
+                )
+            )
+        elif degauss_val > 0.1:
+            diagnostics.append(
+                self._make(
+                    line=degauss_param.line,
+                    char=degauss_param.character,
+                    length=len("degauss"),
+                    message=(
+                        f"degauss = {degauss_val} is too large (> 0.1 Ry). "
+                        "Consider using a value <= 0.1 Ry to avoid over-smearing."
+                    ),
+                    severity=DiagnosticSeverity.Warning,
+                    code=RULE_OCCUPATIONS_DEGAUSS_MISMATCH,
                 )
             )
 
