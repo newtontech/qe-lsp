@@ -3,12 +3,21 @@
 import json
 from pathlib import Path
 
+import pytest
+
 from lsprotocol.types import DiagnosticSeverity
 from qe_lsp.features.test_runner import (
+    RULE_BAND_STRUCTURE_ERROR,
+    RULE_ERROR_IN_ROUTINE,
+    RULE_MAX_CPU_TIME,
+    RULE_PHONON_ERROR,
+    RULE_QE_WARNING,
     RULE_SCF_NOT_CONVERGED,
+    RULE_SEGMENTATION_FAULT,
     TestRunnerConfig,
     TestRunnerProvider,
     parse_log,
+    parse_qe_output,
     parse_solver_output,
     solver_output_to_diagnostics,
     SolverOutput,
@@ -190,3 +199,261 @@ class TestParseLogSCFNotConverged:
         assert data["diagnostic_code"] == RULE_SCF_NOT_CONVERGED
         assert data["severity"] == "error"
         assert "SCF convergence" in data["message_pattern"]
+
+
+class TestParseLogErrorInRoutine:
+    """RULE qe.log.error_in_routine (QE-E015): generic QE error in routine."""
+
+    def test_error_in_routine_basic(self) -> None:
+        """Standard 'Error in routine' line."""
+        log = "     Error in routine pwscf (某某): some error description\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_ERROR_IN_ROUTINE]
+        assert len(errors) == 1
+        assert errors[0].severity == DiagnosticSeverity.Error
+        assert errors[0].source == "qe-log-parser"
+        assert "pwscf" in errors[0].message
+
+    def test_error_in_routine_no_parens(self) -> None:
+        """Error in routine without parenthetical detail."""
+        log = "Error in routine c_phagsi: problems computing eigenvectors\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_ERROR_IN_ROUTINE]
+        assert len(errors) == 1
+        assert "c_phagsi" in errors[0].message
+
+    def test_error_in_routine_with_detail(self) -> None:
+        """Error in routine with colon-separated detail."""
+        log = "Error in routine punch_plot (WRITE): error writing to file\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_ERROR_IN_ROUTINE]
+        assert len(errors) == 1
+        assert "punch_plot" in errors[0].message
+
+    def test_no_false_positive(self) -> None:
+        """Normal output should not trigger."""
+        log = "     routine pwscf finished successfully\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_ERROR_IN_ROUTINE]
+        assert errors == []
+
+    def test_line_number_correct(self) -> None:
+        """Error on third line gets line number 2."""
+        log = "line 0\nline 1\nError in routine pwscf: bad\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_ERROR_IN_ROUTINE]
+        assert len(errors) == 1
+        assert errors[0].range.start.line == 2
+
+
+class TestParseLogQEWarning:
+    """RULE qe.log.warning (QE-E016): QE WARNING lines."""
+
+    def test_warning_basic(self) -> None:
+        """Standard WARNING: line."""
+        log = "WARNING: degenerate or nearly degenerate eigenvalues found\n"
+        diags = parse_log(log)
+        warnings = [d for d in diags if d.code == RULE_QE_WARNING]
+        assert len(warnings) == 1
+        assert warnings[0].severity == DiagnosticSeverity.Warning
+        assert warnings[0].source == "qe-log-parser"
+        assert "degenerate" in warnings[0].message
+
+    def test_warning_mixed_case(self) -> None:
+        """Mixed-case warning should still match."""
+        log = "Warning: something went wrong\n"
+        diags = parse_log(log)
+        warnings = [d for d in diags if d.code == RULE_QE_WARNING]
+        assert len(warnings) == 1
+
+    def test_no_false_positive(self) -> None:
+        """Normal output without WARNING: should not trigger."""
+        log = "     calculation finished without issues\n"
+        diags = parse_log(log)
+        warnings = [d for d in diags if d.code == RULE_QE_WARNING]
+        assert warnings == []
+
+    def test_multiple_warnings(self) -> None:
+        """Multiple WARNING lines produce multiple diagnostics."""
+        log = (
+            "WARNING: first warning\n"
+            "some output\n"
+            "WARNING: second warning\n"
+        )
+        diags = parse_log(log)
+        warnings = [d for d in diags if d.code == RULE_QE_WARNING]
+        assert len(warnings) == 2
+        assert warnings[0].range.start.line == 0
+        assert warnings[1].range.start.line == 2
+
+
+class TestParseLogSegfault:
+    """RULE qe.log.seg_fault (QE-E017): Segmentation fault."""
+
+    def test_segfault(self) -> None:
+        log = "Segmentation fault\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_SEGMENTATION_FAULT]
+        assert len(errors) == 1
+        assert errors[0].severity == DiagnosticSeverity.Error
+        assert "Segmentation fault" in errors[0].message
+
+    def test_segfault_in_context(self) -> None:
+        log = (
+            "Program PWSCF v.7.2 starts\n"
+            "some computation\n"
+            "Segmentation fault (core dumped)\n"
+        )
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_SEGMENTATION_FAULT]
+        assert len(errors) == 1
+        assert errors[0].range.start.line == 2
+
+    def test_no_false_positive(self) -> None:
+        log = "     computation completed successfully\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_SEGMENTATION_FAULT]
+        assert errors == []
+
+
+class TestParseLogMaxCPUTime:
+    """RULE qe.log.max_cpu_time (QE-E018): Maximum CPU time exceeded."""
+
+    def test_max_cpu_time(self) -> None:
+        log = "Maximum CPU time exceeded\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_MAX_CPU_TIME]
+        assert len(errors) == 1
+        assert errors[0].severity == DiagnosticSeverity.Error
+
+    def test_max_cpu_time_with_detail(self) -> None:
+        log = (
+            "     WARNING: Maximum CPU time exceeded in scf cycle\n"
+        )
+        diags = parse_log(log)
+        max_cpu = [d for d in diags if d.code == RULE_MAX_CPU_TIME]
+        assert len(max_cpu) == 1
+
+    def test_no_false_positive(self) -> None:
+        log = "     CPU time: 12.5 seconds\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_MAX_CPU_TIME]
+        assert errors == []
+
+
+class TestParseLogBandStructureError:
+    """RULE qe.log.band_structure_error (QE-E019): band structure errors."""
+
+    def test_band_structure_error(self) -> None:
+        log = "band structure calculation error\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_BAND_STRUCTURE_ERROR]
+        assert len(errors) == 1
+        assert errors[0].severity == DiagnosticSeverity.Error
+
+    def test_bands_fail(self) -> None:
+        log = "     bands error during interpolation\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_BAND_STRUCTURE_ERROR]
+        assert len(errors) == 1
+
+    def test_band_structure_fail(self) -> None:
+        log = "band structure calculation fail\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_BAND_STRUCTURE_ERROR]
+        assert len(errors) == 1
+
+    def test_no_false_positive(self) -> None:
+        log = "     band structure computed successfully\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_BAND_STRUCTURE_ERROR]
+        assert errors == []
+
+
+class TestParseLogPhononError:
+    """RULE qe.log.phonon_error (QE-E020): phonon calculation errors."""
+
+    def test_phonon_error(self) -> None:
+        log = "phonon calculation error\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_PHONON_ERROR]
+        assert len(errors) == 1
+        assert errors[0].severity == DiagnosticSeverity.Error
+
+    def test_ph_error(self) -> None:
+        log = "     ph calculation error in q-point\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_PHONON_ERROR]
+        assert len(errors) == 1
+
+    def test_lambda_error(self) -> None:
+        log = "lambda calculation error\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_PHONON_ERROR]
+        assert len(errors) == 1
+
+    def test_phonon_fail(self) -> None:
+        log = "phonon calculation fail\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_PHONON_ERROR]
+        assert len(errors) == 1
+
+    def test_no_false_positive(self) -> None:
+        log = "     phonon frequencies computed successfully\n"
+        diags = parse_log(log)
+        errors = [d for d in diags if d.code == RULE_PHONON_ERROR]
+        assert errors == []
+
+
+class TestParseLogMixed:
+    """Multiple error types in the same log produce multiple diagnostics."""
+
+    def test_mixed_errors(self) -> None:
+        log = (
+            "WARNING: something suspicious\n"
+            "SCF convergence NOT achieved after 100 iterations\n"
+            "Error in routine pwscf: bad input\n"
+            "Segmentation fault\n"
+        )
+        diags = parse_log(log)
+        codes = [d.code for d in diags]
+        assert RULE_QE_WARNING in codes
+        assert RULE_SCF_NOT_CONVERGED in codes
+        assert RULE_ERROR_IN_ROUTINE in codes
+        assert RULE_SEGMENTATION_FAULT in codes
+        assert len(diags) == 4
+
+
+class TestParseQEOutput:
+    """Tests for parse_qe_output file-based function."""
+
+    def test_reads_file_and_parses(self, tmp_path: Path) -> None:
+        """parse_qe_output reads a file and returns diagnostics."""
+        log_file = tmp_path / "pw.out"
+        log_file.write_text("SCF convergence NOT achieved after 50 iterations\n")
+        diags = parse_qe_output(log_file)
+        assert len(diags) == 1
+        assert diags[0].code == RULE_SCF_NOT_CONVERGED
+
+    def test_clean_file_no_diagnostics(self, tmp_path: Path) -> None:
+        """Clean output produces no diagnostics."""
+        log_file = tmp_path / "pw.out"
+        log_file.write_text("     Program PWSCF v.7.2 starts\n     convergence achieved\n")
+        diags = parse_qe_output(log_file)
+        assert diags == []
+
+    def test_file_not_found(self) -> None:
+        """Raises FileNotFoundError for missing file."""
+        with pytest.raises(FileNotFoundError):
+            parse_qe_output(Path("/no/such/file.out"))
+
+    def test_multi_pattern_file(self, tmp_path: Path) -> None:
+        """File with multiple errors produces multiple diagnostics."""
+        log_file = tmp_path / "pw.out"
+        log_file.write_text(
+            "WARNING: something\n"
+            "Error in routine pwscf: bad\n"
+            "Segmentation fault\n"
+        )
+        diags = parse_qe_output(log_file)
+        assert len(diags) == 3
