@@ -56,14 +56,52 @@ _LINE_NUM_RE = re.compile(r"line\s+(\d+)", re.IGNORECASE)
 # ------------------------------------------------------------------
 
 RULE_SCF_NOT_CONVERGED = "QE-E014"
+RULE_ERROR_IN_ROUTINE = "QE-E015"
+RULE_QE_WARNING = "QE-E016"
+RULE_SEGMENTATION_FAULT = "QE-E017"
+RULE_MAX_CPU_TIME = "QE-E018"
+RULE_BAND_STRUCTURE_ERROR = "QE-E019"
+RULE_PHONON_ERROR = "QE-E020"
 
 #: Matches QE runtime log lines indicating SCF convergence failure.
-#: QE outputs forms like:
-#:
-#:   "SCF convergence NOT achieved after N iterations"
-#:   "convergence not achieved"
 _SCF_NOT_CONVERGED_RE = re.compile(
     r"convergence\s+(?:is\s+)?(?:NOT|not)\s+achieved",
+    re.IGNORECASE,
+)
+
+#: Matches QE "Error in routine <name>" lines.
+_ERROR_IN_ROUTINE_RE = re.compile(
+    r"Error in routine\s+(\S+)\s*(?:\(([^)]*)\))?\s*:\s*(.*)",
+    re.IGNORECASE,
+)
+
+#: Matches QE "WARNING:" lines.
+_QE_WARNING_RE = re.compile(
+    r"WARNING:\s*(.+)",
+    re.IGNORECASE,
+)
+
+#: Matches segfault lines.
+_SEGMENTATION_FAULT_RE = re.compile(
+    r"Segmentation\s+fault",
+    re.IGNORECASE,
+)
+
+#: Matches maximum CPU time exceeded.
+_MAX_CPU_TIME_RE = re.compile(
+    r"Maximum\s+CPU\s+time\s+exceeded",
+    re.IGNORECASE,
+)
+
+#: Matches band structure calculation errors.
+_BAND_STRUCTURE_ERROR_RE = re.compile(
+    r"(?:band\s+structure|bands)\s+(?:calculation\s+)?(?:error|fail)",
+    re.IGNORECASE,
+)
+
+#: Matches phonon calculation errors.
+_PHONON_ERROR_RE = re.compile(
+    r"(?:phonon|ph|lambda)\s+(?:calculation\s+)?(?:error|fail)",
     re.IGNORECASE,
 )
 
@@ -123,11 +161,15 @@ def solver_output_to_diagnostics(output: SolverOutput) -> List[Diagnostic]:
 def parse_log(log_text: str) -> List[Diagnostic]:
     """Parse QE runtime log output and return diagnostics for known issues.
 
-    Currently detects:
+    Detects the following patterns:
 
-    - **QE-E014** (``qe.log.scf_not_converged``): SCF convergence failure
-      indicated by lines containing "convergence NOT achieved" or
-      "convergence not achieved".
+    - **QE-E014** (``qe.log.scf_not_converged``): SCF convergence failure.
+    - **QE-E015** (``qe.log.error_in_routine``): Generic QE error in routine.
+    - **QE-E016** (``qe.log.warning``): QE WARNING lines.
+    - **QE-E017** (``qe.log.seg_fault``): Segmentation fault.
+    - **QE-E018** (``qe.log.max_cpu_time``): Maximum CPU time exceeded.
+    - **QE-E019** (``qe.log.band_structure_error``): Band structure errors.
+    - **QE-E020** (``qe.log.phonon_error``): Phonon calculation errors.
 
     Parameters
     ----------
@@ -160,7 +202,142 @@ def parse_log(log_text: str) -> List[Diagnostic]:
                 )
             )
 
+        match = _ERROR_IN_ROUTINE_RE.search(line)
+        if match:
+            routine = match.group(1)
+            detail = match.group(3) or match.group(2) or ""
+            diagnostics.append(
+                Diagnostic(
+                    range=Range(
+                        start=Position(line=line_number, character=0),
+                        end=Position(line=line_number, character=len(line)),
+                    ),
+                    message=(
+                        f"Error in routine '{routine}': {detail.strip()}. "
+                        f"Line: {line.strip()}"
+                    ),
+                    severity=DiagnosticSeverity.Error,
+                    source="qe-log-parser",
+                    code=RULE_ERROR_IN_ROUTINE,
+                )
+            )
+
+        match = _QE_WARNING_RE.search(line)
+        if match:
+            warning_text = match.group(1).strip()
+            diagnostics.append(
+                Diagnostic(
+                    range=Range(
+                        start=Position(line=line_number, character=0),
+                        end=Position(line=line_number, character=len(line)),
+                    ),
+                    message=f"QE WARNING: {warning_text}. Line: {line.strip()}",
+                    severity=DiagnosticSeverity.Warning,
+                    source="qe-log-parser",
+                    code=RULE_QE_WARNING,
+                )
+            )
+
+        if _SEGMENTATION_FAULT_RE.search(line):
+            diagnostics.append(
+                Diagnostic(
+                    range=Range(
+                        start=Position(line=line_number, character=0),
+                        end=Position(line=line_number, character=len(line)),
+                    ),
+                    message=(
+                        "Segmentation fault detected. "
+                        "Check memory allocation, input parameters, and compiler settings. "
+                        f"Line: {line.strip()}"
+                    ),
+                    severity=DiagnosticSeverity.Error,
+                    source="qe-log-parser",
+                    code=RULE_SEGMENTATION_FAULT,
+                )
+            )
+
+        if _MAX_CPU_TIME_RE.search(line):
+            diagnostics.append(
+                Diagnostic(
+                    range=Range(
+                        start=Position(line=line_number, character=0),
+                        end=Position(line=line_number, character=len(line)),
+                    ),
+                    message=(
+                        "Maximum CPU time exceeded. "
+                        "Consider reducing system size, using fewer k-points, "
+                        "or adjusting calculation parameters. "
+                        f"Line: {line.strip()}"
+                    ),
+                    severity=DiagnosticSeverity.Error,
+                    source="qe-log-parser",
+                    code=RULE_MAX_CPU_TIME,
+                )
+            )
+
+        if _BAND_STRUCTURE_ERROR_RE.search(line):
+            diagnostics.append(
+                Diagnostic(
+                    range=Range(
+                        start=Position(line=line_number, character=0),
+                        end=Position(line=line_number, character=len(line)),
+                    ),
+                    message=(
+                        "Band structure calculation error. "
+                        "Check k-point path, occupations, and symmetry settings. "
+                        f"Line: {line.strip()}"
+                    ),
+                    severity=DiagnosticSeverity.Error,
+                    source="qe-log-parser",
+                    code=RULE_BAND_STRUCTURE_ERROR,
+                )
+            )
+
+        if _PHONON_ERROR_RE.search(line):
+            diagnostics.append(
+                Diagnostic(
+                    range=Range(
+                        start=Position(line=line_number, character=0),
+                        end=Position(line=line_number, character=len(line)),
+                    ),
+                    message=(
+                        "Phonon calculation error. "
+                        "Check q-point grid, dynamical matrix, and force convergence. "
+                        f"Line: {line.strip()}"
+                    ),
+                    severity=DiagnosticSeverity.Error,
+                    source="qe-log-parser",
+                    code=RULE_PHONON_ERROR,
+                )
+            )
+
     return diagnostics
+
+
+def parse_qe_output(path: Path) -> List[Diagnostic]:
+    """Read a QE output/log file from disk and return diagnostics.
+
+    This is a convenience wrapper around :func:`parse_log` intended for
+    CLI and agent consumers that have a file path rather than in-memory
+    text.
+
+    Parameters
+    ----------
+    path:
+        Path to a QE output or log file (e.g. ``pw.out``, ``ph.out``).
+
+    Returns
+    -------
+    list[Diagnostic]
+        LSP diagnostics for every detected issue in the file.
+
+    Raises
+    ------
+    FileNotFoundError
+        If *path* does not exist.
+    """
+    text = path.read_text(encoding="utf-8", errors="replace")
+    return parse_log(text)
 
 
 class TestRunnerProvider:
