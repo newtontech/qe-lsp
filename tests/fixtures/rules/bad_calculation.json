@@ -1,0 +1,6 @@
+{
+  "rule_id": "qe.input.bad_calculation",
+  "diagnostic_code": "QE-E009",
+  "severity": "error",
+  "message_pattern": "calculation"
+}

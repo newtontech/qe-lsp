@@ -6,6 +6,7 @@ import pytest
 
 from qe_lsp.features.lint import (
     LintProvider,
+    RULE_BAD_CALCULATION,
     RULE_DEPRECATED_KEYWORD,
     RULE_INCONSISTENT_SETTINGS,
     RULE_INVALID_KEYWORD_VALUE,
@@ -156,9 +157,27 @@ class TestLintErrors:
     def test_invalid_calculation_value(self, provider: LintProvider) -> None:
         text = "&CONTROL\ncalculation = 'bogus'\n/\n"
         diagnostics = provider.lint(text)
-        invalids = [d for d in diagnostics if d.code == RULE_INVALID_KEYWORD_VALUE]
-        assert len(invalids) == 1
-        assert "bogus" in invalids[0].message
+        bad_calc = [d for d in diagnostics if d.code == RULE_BAD_CALCULATION]
+        assert len(bad_calc) == 1
+        assert "bogus" in bad_calc[0].message
+        assert bad_calc[0].severity is not None
+        assert bad_calc[0].severity.value == 1  # Error
+
+    def test_valid_calculation_values_no_error(self, provider: LintProvider) -> None:
+        """All known valid calculation values should NOT trigger RULE_BAD_CALCULATION."""
+        for calc in ("scf", "nscf", "bands", "relax", "md", "vc-relax", "vc-md", "cp", "vc-cp"):
+            text = f"&CONTROL\ncalculation = '{calc}'\n/\n"
+            diagnostics = provider.lint(text)
+            bad_calc = [d for d in diagnostics if d.code == RULE_BAD_CALCULATION]
+            assert bad_calc == [], f"calculation='{calc}' should be valid"
+
+    def test_missing_calculation_no_bad_calculation_error(self, provider: LintProvider) -> None:
+        """Missing 'calculation' keyword is covered by RULE_MISSING_CONTROL_CALC,
+        not by RULE_BAD_CALCULATION."""
+        text = "&CONTROL\noutdir = './tmp'\n/\n"
+        diagnostics = provider.lint(text)
+        bad_calc = [d for d in diagnostics if d.code == RULE_BAD_CALCULATION]
+        assert bad_calc == []
 
     def test_invalid_diagonalization_value(self, provider: LintProvider) -> None:
         text = "&ELECTRONS\ndiagonalization = 'invalid_method'\n/\n"
