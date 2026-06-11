@@ -108,9 +108,7 @@ def test_diagnostic_reports_pseudopotential_element_mismatch():
 def test_diagnostic_reports_atomic_positions_without_species():
     """All positioned atoms need a matching ATOMIC_SPECIES entry."""
     diagnostics = diagnostic(
-        Params(
-            "ATOMIC_SPECIES\nO 15.999 O.pbe.UPF\n" "ATOMIC_POSITIONS {crystal}\nSi 0.0 0.0 0.0\n"
-        )
+        Params("ATOMIC_SPECIES\nO 15.999 O.pbe.UPF\nATOMIC_POSITIONS {crystal}\nSi 0.0 0.0 0.0\n")
     )
 
     assert len(diagnostics) == 1

@@ -161,9 +161,9 @@ class TestDiagnosticStability:
         lint = LintProvider()
         diagnostics = lint.lint(text)
         errors = [d for d in diagnostics if d.severity is not None and d.severity.value == 1]
-        assert (
-            errors == []
-        ), f"Unexpected lint errors in {fixture_name}: {[d.message for d in errors]}"
+        assert errors == [], (
+            f"Unexpected lint errors in {fixture_name}: {[d.message for d in errors]}"
+        )
 
     @pytest.mark.parametrize("fixture_name", VALID_FIXTURES, ids=VALID_FIXTURES)
     def test_typecheck_no_errors(self, fixture_name: str) -> None:
@@ -171,9 +171,9 @@ class TestDiagnosticStability:
         tc = TypecheckProvider()
         diagnostics = tc.typecheck(text)
         errors = [d for d in diagnostics if d.severity is not None and d.severity.value == 1]
-        assert (
-            errors == []
-        ), f"Unexpected typecheck errors in {fixture_name}: {[d.message for d in errors]}"
+        assert errors == [], (
+            f"Unexpected typecheck errors in {fixture_name}: {[d.message for d in errors]}"
+        )
 
     def test_diagnostic_snapshot_deterministic(self) -> None:
         """Two diagnostic runs must produce identical results."""
@@ -433,7 +433,7 @@ class TestCommonInvalidCases:
 
     def test_missing_ecutwfc_without_nat(self) -> None:
         """When both ecutwfc and nat are missing from &SYSTEM, report ecutwfc."""
-        text = "&CONTROL\ncalculation = 'scf'\n/\n" "&SYSTEM\nibrav = 1\n/\n"
+        text = "&CONTROL\ncalculation = 'scf'\n/\n&SYSTEM\nibrav = 1\n/\n"
         diags = LintProvider().lint(text)
         assert any("ecutwfc" in d.message for d in diags)
 
@@ -468,16 +468,12 @@ class TestCommonInvalidCases:
     # --- Atomic positions errors ---
 
     def test_atom_not_in_species(self) -> None:
-        text = (
-            "ATOMIC_SPECIES\nSi 28.086 Si.pbe.UPF\n" "ATOMIC_POSITIONS {crystal}\nO 0.0 0.0 0.0\n"
-        )
+        text = "ATOMIC_SPECIES\nSi 28.086 Si.pbe.UPF\nATOMIC_POSITIONS {crystal}\nO 0.0 0.0 0.0\n"
         diags = validate_qe_input(text)
         assert any("missing from ATOMIC_SPECIES" in d.message for d in diags)
 
     def test_crystal_coords_out_of_bounds(self) -> None:
-        text = (
-            "ATOMIC_SPECIES\nSi 28.086 Si.pbe.UPF\n" "ATOMIC_POSITIONS {crystal}\nSi 1.5 0.0 0.0\n"
-        )
+        text = "ATOMIC_SPECIES\nSi 28.086 Si.pbe.UPF\nATOMIC_POSITIONS {crystal}\nSi 1.5 0.0 0.0\n"
         diags = validate_qe_input(text)
         assert any("between 0 and 1" in d.message for d in diags)
 
@@ -501,7 +497,7 @@ class TestCommonInvalidCases:
         assert any("at least 4x ecutwfc" in d.message for d in diags)
 
     def test_ecutrho_too_low_paw(self) -> None:
-        text = "&SYSTEM\necutwfc = 60\necutrho = 300\n/\n" "ATOMIC_SPECIES\nO 15.999 O.paw.UPF\n"
+        text = "&SYSTEM\necutwfc = 60\necutrho = 300\n/\nATOMIC_SPECIES\nO 15.999 O.paw.UPF\n"
         diags = validate_qe_input(text)
         assert any("at least 8x ecutwfc" in d.message for d in diags)
 
@@ -539,9 +535,7 @@ class TestCommonInvalidCases:
     # --- nspin without magnetization ---
 
     def test_nspin_without_magnetization(self) -> None:
-        text = (
-            "&CONTROL\ncalculation = 'scf'\n/\n" "&SYSTEM\nibrav = 1\nnspin = 2\necutwfc = 60\n/\n"
-        )
+        text = "&CONTROL\ncalculation = 'scf'\n/\n&SYSTEM\nibrav = 1\nnspin = 2\necutwfc = 60\n/\n"
         diags = LintProvider().lint(text)
         assert any("nspin > 1" in d.message for d in diags)
 

@@ -117,7 +117,7 @@ class TestSnapshot:
 
     def test_snapshot_deterministic_ordering(self, provider: DiagnosticProvider) -> None:
         """Two calls with the same text must produce the same output."""
-        text = "&SYSTEM\n" "ibrav = 0\n" "/\n" "&CONTROL\n" "calculation = 'scf'\n"
+        text = "&SYSTEM\nibrav = 0\n/\n&CONTROL\ncalculation = 'scf'\n"
         first = provider.snapshot(text)
         second = provider.snapshot(text)
         assert first == second

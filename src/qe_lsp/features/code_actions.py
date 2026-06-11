@@ -29,6 +29,7 @@ from ..features.lint import (
     RULE_INVALID_KEYWORD_VALUE,
     RULE_MISSING_ATOMIC_POSITIONS,
     RULE_MISSING_ATOMIC_SPECIES,
+    RULE_MISSING_CONTROL,
     RULE_MISSING_CONTROL_CALC,
     RULE_MISSING_REQUIRED_SECTION,
     RULE_MISSING_SYSTEM_ECUTWFC,
@@ -202,6 +203,7 @@ class CodeActionProvider:
         # Missing required sections -> add skeleton
         if code in (
             RULE_MISSING_REQUIRED_SECTION,
+            RULE_MISSING_CONTROL,
             RULE_MISSING_CONTROL_CALC,
             RULE_MISSING_SYSTEM_ECUTWFC,
             RULE_MISSING_ATOMIC_SPECIES,
@@ -584,6 +586,13 @@ class CodeActionProvider:
                     "Add &SYSTEM namelist skeleton",
                 )
             return None
+
+        if code == RULE_MISSING_CONTROL:
+            return self._add_skeleton(
+                diagnostic,
+                "&CONTROL\n  calculation = 'scf'\n/\n\n",
+                "Add &CONTROL namelist skeleton",
+            )
 
         if code == RULE_MISSING_CONTROL_CALC:
             return self._add_after_namelist(

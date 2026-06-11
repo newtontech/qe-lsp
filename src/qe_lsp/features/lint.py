@@ -34,6 +34,7 @@ RULE_MISSING_SYSTEM_ECUTWFC = "QE-E005"
 RULE_MISSING_ATOMIC_SPECIES = "QE-E006"
 RULE_MISSING_ATOMIC_POSITIONS = "QE-E007"
 RULE_ORPHAN_PARAMETER = "QE-W004"
+RULE_MISSING_CONTROL = "QE-E008"
 
 # ------------------------------------------------------------------
 # Schema data
@@ -351,6 +352,7 @@ class LintProvider:
         parsed = parse_qe_input(text)
         diagnostics: list[Diagnostic] = []
 
+        self._check_missing_control(parsed, diagnostics)
         self._check_required_sections(parsed, text, diagnostics)
         self._check_unknown_namelists(parsed, diagnostics)
         self._check_unknown_keywords(parsed, diagnostics)
@@ -376,6 +378,26 @@ class LintProvider:
     # Individual checks
     # ------------------------------------------------------------------
 
+    def _check_missing_control(
+        self,
+        parsed: Any,
+        diagnostics: list[Diagnostic],
+    ) -> None:
+        """Emit QE-E008 when &CONTROL namelist is absent."""
+        if not parsed.namelists:
+            return
+        if "&CONTROL" not in parsed.namelists:
+            diagnostics.append(
+                self._make(
+                    line=0,
+                    char=0,
+                    length=0,
+                    message="Missing required namelist &CONTROL.",
+                    severity=DiagnosticSeverity.Error,
+                    code=RULE_MISSING_CONTROL,
+                )
+            )
+
     def _check_required_sections(
         self,
         parsed: Any,
@@ -389,18 +411,7 @@ class LintProvider:
             return
 
         control = namelists.get("&CONTROL", {})
-        if not control:
-            diagnostics.append(
-                self._make(
-                    line=0,
-                    char=0,
-                    length=0,
-                    message="Missing required namelist &CONTROL.",
-                    severity=DiagnosticSeverity.Error,
-                    code=RULE_MISSING_REQUIRED_SECTION,
-                )
-            )
-        elif "calculation" not in control:
+        if control and "calculation" not in control:
             diagnostics.append(
                 self._make(
                     line=0,
@@ -520,9 +531,7 @@ class LintProvider:
                 if raw_value not in valid_values:
                     raw_display = _strip_quotes(param.value)
                     valid_str = ", ".join(sorted(valid_values))
-                    msg = (
-                        f"Invalid value '{raw_display}' for '{param_name}'. " f"Valid: {valid_str}."
-                    )
+                    msg = f"Invalid value '{raw_display}' for '{param_name}'. Valid: {valid_str}."
                     diagnostics.append(
                         self._make(
                             line=param.line,
@@ -632,7 +641,7 @@ class LintProvider:
                         char=0,
                         length=0,
                         message=(
-                            f"calculation='{calc}' usually requires explicit " "nbnd in &SYSTEM."
+                            f"calculation='{calc}' usually requires explicit nbnd in &SYSTEM."
                         ),
                         severity=DiagnosticSeverity.Warning,
                         code=RULE_INCONSISTENT_SETTINGS,

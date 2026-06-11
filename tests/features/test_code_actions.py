@@ -21,6 +21,7 @@ from qe_lsp.features.lint import (
     RULE_INVALID_KEYWORD_VALUE,
     RULE_MISSING_ATOMIC_POSITIONS,
     RULE_MISSING_ATOMIC_SPECIES,
+    RULE_MISSING_CONTROL,
     RULE_MISSING_CONTROL_CALC,
     RULE_MISSING_REQUIRED_SECTION,
     RULE_MISSING_SYSTEM_ECUTWFC,
@@ -216,7 +217,7 @@ class TestFixMixingBeta:
 
 class TestFixEcutrhoRatio:
     def test_adjusts_ecutrho_to_ratio(self, provider: CodeActionProvider) -> None:
-        source = "&SYSTEM\n" "ibrav = 1\n" "ecutwfc = 60.0\n" "ecutrho = 100.0\n" "/\n"
+        source = "&SYSTEM\nibrav = 1\necutwfc = 60.0\necutrho = 100.0\n/\n"
         diags = validate_qe_input(source)
         ratio_warnings = [d for d in diags if "ecutrho should normally" in d.message]
         assert len(ratio_warnings) >= 1
@@ -261,10 +262,9 @@ class TestFixMissingSections:
     def test_adds_control_skeleton(self, provider: CodeActionProvider) -> None:
         source = "&SYSTEM\nibrav = 1\n/\n"
         diags = LintProvider().lint(source)
-        missing = [d for d in diags if d.code == RULE_MISSING_REQUIRED_SECTION]
-        assert any("&CONTROL" in d.message for d in missing)
+        control_diags = [d for d in diags if d.code == RULE_MISSING_CONTROL]
+        assert len(control_diags) >= 1
 
-        control_diags = [d for d in missing if "&CONTROL" in d.message]
         actions = provider.get_code_actions(source, control_diags)
         assert len(actions) >= 1
         assert any("&CONTROL" in a.title for a in actions)
