@@ -1,0 +1,6 @@
+{
+  "rule_id": "qe.scf.conv_thr_loose",
+  "diagnostic_code": "QE-W010",
+  "severity": "warning",
+  "message_pattern": "conv_thr"
+}
