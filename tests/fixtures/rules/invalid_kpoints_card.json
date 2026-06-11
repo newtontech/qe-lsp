@@ -1,0 +1,6 @@
+{
+  "rule_id": "qe.kpoints.invalid_card",
+  "diagnostic_code": "QE-E013",
+  "severity": "error",
+  "message_pattern": "Invalid K_POINTS card type"
+}
