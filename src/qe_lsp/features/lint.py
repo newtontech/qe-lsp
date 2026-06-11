@@ -36,6 +36,7 @@ RULE_MISSING_ATOMIC_POSITIONS = "QE-E007"
 RULE_ORPHAN_PARAMETER = "QE-W004"
 RULE_MISSING_CONTROL = "QE-E008"
 RULE_BAD_CALCULATION = "QE-E009"
+RULE_CONV_THR_LOOSE = "QE-W010"
 
 # ------------------------------------------------------------------
 # Schema data
@@ -362,6 +363,7 @@ class LintProvider:
         self._check_invalid_values(parsed, diagnostics)
         self._check_deprecated_keywords(parsed, diagnostics)
         self._check_inconsistent_settings(parsed, diagnostics)
+        self._check_conv_thr_loose(parsed, diagnostics)
         self._check_orphan_parameters(parsed, text, diagnostics)
 
         return diagnostics
@@ -650,6 +652,32 @@ class LintProvider:
                         code=RULE_INCONSISTENT_SETTINGS,
                     )
                 )
+
+    def _check_conv_thr_loose(
+        self,
+        parsed: Any,
+        diagnostics: list[Diagnostic],
+    ) -> None:
+        """Emit QE-W010 when conv_thr in &ELECTRONS is set above 1e-4."""
+        electrons = parsed.namelists.get("&ELECTRONS", {})
+        param = electrons.get("conv_thr")
+        if param is None:
+            return
+        value = parse_number(param.value)
+        if value is not None and value > 1e-4:
+            diagnostics.append(
+                self._make(
+                    line=param.line,
+                    char=param.character,
+                    length=len("conv_thr"),
+                    message=(
+                        f"conv_thr = {value} is too loose. "
+                        "Consider tightening to <= 1e-4 for reliable SCF convergence."
+                    ),
+                    severity=DiagnosticSeverity.Warning,
+                    code=RULE_CONV_THR_LOOSE,
+                )
+            )
 
     def _check_orphan_parameters(
         self,

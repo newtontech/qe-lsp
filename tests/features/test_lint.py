@@ -7,6 +7,7 @@ import pytest
 from qe_lsp.features.lint import (
     LintProvider,
     RULE_BAD_CALCULATION,
+    RULE_CONV_THR_LOOSE,
     RULE_DEPRECATED_KEYWORD,
     RULE_INCONSISTENT_SETTINGS,
     RULE_INVALID_KEYWORD_VALUE,
@@ -250,6 +251,53 @@ class TestLintErrors:
         diagnostics = provider.lint(text)
         codes = [d.code for d in diagnostics]
         assert RULE_MISSING_ATOMIC_POSITIONS in codes
+
+
+class TestConvThrLoose:
+    """RULE qe.scf.conv_thr_loose (QE-W010): warn when conv_thr > 1e-4."""
+
+    def test_loose_conv_thr_triggers_warning(self, provider: LintProvider) -> None:
+        text = "&ELECTRONS\n  conv_thr = 1e-3\n/\n"
+        diagnostics = provider.lint(text)
+        loose = [d for d in diagnostics if d.code == RULE_CONV_THR_LOOSE]
+        assert len(loose) == 1
+        assert "conv_thr" in loose[0].message
+        assert loose[0].severity is not None
+        assert loose[0].severity.value == 2  # Warning
+
+    def test_tight_conv_thr_no_warning(self, provider: LintProvider) -> None:
+        text = "&ELECTRONS\n  conv_thr = 1e-8\n/\n"
+        diagnostics = provider.lint(text)
+        loose = [d for d in diagnostics if d.code == RULE_CONV_THR_LOOSE]
+        assert loose == []
+
+    def test_exact_threshold_no_warning(self, provider: LintProvider) -> None:
+        """conv_thr = 1e-4 exactly should NOT trigger the warning."""
+        text = "&ELECTRONS\n  conv_thr = 1e-4\n/\n"
+        diagnostics = provider.lint(text)
+        loose = [d for d in diagnostics if d.code == RULE_CONV_THR_LOOSE]
+        assert loose == []
+
+    def test_no_conv_thr_no_warning(self, provider: LintProvider) -> None:
+        text = "&ELECTRONS\n  mixing_beta = 0.7\n/\n"
+        diagnostics = provider.lint(text)
+        loose = [d for d in diagnostics if d.code == RULE_CONV_THR_LOOSE]
+        assert loose == []
+
+    def test_very_loose_conv_thr(self, provider: LintProvider) -> None:
+        """conv_thr = 0.1 is clearly too loose."""
+        text = "&ELECTRONS\n  conv_thr = 0.1\n/\n"
+        diagnostics = provider.lint(text)
+        loose = [d for d in diagnostics if d.code == RULE_CONV_THR_LOOSE]
+        assert len(loose) == 1
+        assert "0.1" in loose[0].message
+
+    def test_snapshot_includes_conv_thr_warning(self, provider: LintProvider) -> None:
+        text = "&ELECTRONS\n  conv_thr = 1e-3\n/\n"
+        items = provider.snapshot(text)
+        loose_items = [i for i in items if i["code"] == RULE_CONV_THR_LOOSE]
+        assert len(loose_items) == 1
+        assert loose_items[0]["severity"] == "Warning"
 
 
 class TestLintSourceAndCode:
