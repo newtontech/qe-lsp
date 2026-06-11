@@ -4,8 +4,10 @@ from qe_lsp.features.agent_api import (
     AgentAPIProvider,
     AgentAPISnapshot,
     describe_domain_language,
+    get_examples,
     lookup_keyword,
     lookup_namelist,
+    next_token_suggestions,
 )
 
 
@@ -199,3 +201,165 @@ class TestLookupKeyword:
         assert result is not None
         assert "description" in result
         assert "cutoff" in result["description"].lower()
+
+
+# ------------------------------------------------------------------
+# Tests for get_examples()
+# ------------------------------------------------------------------
+
+_ALL_CALC_TYPES = ["scf", "nscf", "relax", "vc-relax", "md", "phonon", "bands", "dos"]
+
+
+class TestGetExamples:
+    def test_returns_all_examples_when_no_type_given(self):
+        examples = get_examples()
+        assert len(examples) == 8
+
+    def test_all_calculation_types_present(self):
+        examples = get_examples()
+        types = {ex["calculation_type"] for ex in examples}
+        for ct in _ALL_CALC_TYPES:
+            assert ct in types, f"Missing calculation type: {ct}"
+
+    def test_each_example_has_required_keys(self):
+        for ex in get_examples():
+            assert "name" in ex
+            assert "description" in ex
+            assert "calculation_type" in ex
+            assert "input_text" in ex
+
+    def test_each_example_has_nonempty_input_text(self):
+        for ex in get_examples():
+            assert len(ex["input_text"].strip()) > 0
+
+    def test_filter_by_scf(self):
+        examples = get_examples("scf")
+        assert len(examples) == 1
+        assert examples[0]["calculation_type"] == "scf"
+
+    def test_filter_by_vc_relax(self):
+        examples = get_examples("vc-relax")
+        assert len(examples) == 1
+        assert examples[0]["calculation_type"] == "vc-relax"
+        assert "CELL" in examples[0]["input_text"]
+
+    def test_filter_by_phonon(self):
+        examples = get_examples("phonon")
+        assert len(examples) == 1
+        assert "INPUTPH" in examples[0]["input_text"]
+
+    def test_filter_by_dos(self):
+        examples = get_examples("dos")
+        assert len(examples) == 1
+        assert "DOS" in examples[0]["input_text"]
+
+    def test_filter_by_bands(self):
+        examples = get_examples("bands")
+        assert len(examples) == 1
+        assert "K_POINTS crystal" in examples[0]["input_text"]
+
+    def test_unknown_type_returns_empty(self):
+        assert get_examples("bogus") == []
+
+    def test_examples_are_fresh_copies(self):
+        a = get_examples("scf")
+        b = get_examples("scf")
+        a[0]["input_text"] = "mutated"
+        assert b[0]["input_text"] != "mutated"
+
+
+# ------------------------------------------------------------------
+# Tests for next_token_suggestions()
+# ------------------------------------------------------------------
+
+
+class TestNextTokenSuggestions:
+    def test_empty_context_returns_namelist_suggestions(self):
+        suggestions = next_token_suggestions("")
+        assert len(suggestions) >= 1
+        texts = [s["text"] for s in suggestions]
+        assert any("&CONTROL" in t for t in texts)
+
+    def test_control_namelist_suggests_keywords(self):
+        suggestions = next_token_suggestions("&CONTROL\n")
+        texts = [s["text"] for s in suggestions]
+        assert any("calculation" in t for t in texts)
+        assert any("prefix" in t for t in texts)
+        assert any("pseudo_dir" in t for t in texts)
+
+    def test_system_namelist_suggests_keywords(self):
+        suggestions = next_token_suggestions("&SYSTEM\n")
+        texts = [s["text"] for s in suggestions]
+        assert any("nat" in t for t in texts)
+        assert any("ecutwfc" in t for t in texts)
+
+    def test_electrons_namelist_suggests_keywords(self):
+        suggestions = next_token_suggestions("&ELECTRONS\n")
+        texts = [s["text"] for s in suggestions]
+        assert any("conv_thr" in t for t in texts)
+
+    def test_ions_namelist_suggests_keywords(self):
+        suggestions = next_token_suggestions("&IONS\n")
+        texts = [s["text"] for s in suggestions]
+        assert any("ion_dynamics" in t for t in texts)
+
+    def test_cell_namelist_suggests_keywords(self):
+        suggestions = next_token_suggestions("&CELL\n")
+        texts = [s["text"] for s in suggestions]
+        assert any("press" in t for t in texts)
+
+    def test_after_namelist_end_suggests_cards(self):
+        ctx = "&CONTROL\n  calculation = 'scf'\n/\n"
+        suggestions = next_token_suggestions(ctx)
+        texts = [s["text"] for s in suggestions]
+        assert any("ATOMIC_SPECIES" in t for t in texts)
+        assert any("K_POINTS" in t for t in texts)
+
+    def test_after_atomic_species_suggests_placeholder(self):
+        suggestions = next_token_suggestions("ATOMIC_SPECIES\n")
+        assert len(suggestions) >= 1
+        assert any("label" in s["text"] for s in suggestions)
+
+    def test_after_atomic_positions_suggests_placeholder(self):
+        suggestions = next_token_suggestions("ATOMIC_POSITIONS crystal\n")
+        assert len(suggestions) >= 1
+        assert any("label" in s["text"] for s in suggestions)
+
+    def test_after_k_points_suggests_placeholder(self):
+        suggestions = next_token_suggestions("K_POINTS automatic\n")
+        assert len(suggestions) >= 1
+        assert any("nk1" in s["text"] for s in suggestions)
+
+    def test_calculation_assignment_suggests_values(self):
+        ctx = "&CONTROL\n  calculation = '"
+        suggestions = next_token_suggestions(ctx)
+        texts = [s["text"] for s in suggestions]
+        assert any("scf" in t for t in texts)
+        assert any("vc-relax" in t for t in texts)
+        assert any("md" in t for t in texts)
+
+    def test_unrecognized_line_suggests_namelist_end(self):
+        suggestions = next_token_suggestions("  some_random_text = 1\n")
+        texts = [s["text"] for s in suggestions]
+        assert any("/" in t for t in texts)
+
+    def test_prefix_filter(self):
+        suggestions = next_token_suggestions("&CONTROL\n", prefix="calc")
+        assert len(suggestions) >= 1
+        assert all(s["text"].startswith("calc") for s in suggestions)
+
+    def test_prefix_filter_returns_empty_when_no_match(self):
+        suggestions = next_token_suggestions("&CONTROL\n", prefix="zzz")
+        assert suggestions == []
+
+    def test_suggestions_have_required_keys(self):
+        for s in next_token_suggestions("&CONTROL\n"):
+            assert "text" in s
+            assert "type" in s
+            assert "description" in s
+
+    def test_suggestion_types_are_strings(self):
+        for s in next_token_suggestions("&SYSTEM\n"):
+            assert isinstance(s["text"], str)
+            assert isinstance(s["type"], str)
+            assert isinstance(s["description"], str)

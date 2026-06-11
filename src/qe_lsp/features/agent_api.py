@@ -429,3 +429,512 @@ class AgentAPIProvider:
     def get_outline_json(self, source: str, uri: str = "") -> str:
         snap = self.get_snapshot(source, uri)
         return json.dumps({"uri": snap.uri, "outline": snap.outline}, indent=2)
+
+
+# ---------------------------------------------------------------------------
+# Minimal examples and next-token guidance for AI-assisted authoring
+# ---------------------------------------------------------------------------
+
+_EXAMPLES: List[Dict[str, str]] = [
+    {
+        "name": "scf",
+        "description": "Self-consistent field calculation for total energy.",
+        "calculation_type": "scf",
+        "input_text": (
+            "&CONTROL\n"
+            "  calculation = 'scf'\n"
+            "  prefix = 'si'\n"
+            "  outdir = './out'\n"
+            "  pseudo_dir = './pseudo'\n"
+            "/\n"
+            "&SYSTEM\n"
+            "  ibrav = 2\n"
+            "  celldm(1) = 10.2\n"
+            "  nat = 2\n"
+            "  ntyp = 1\n"
+            "  ecutwfc = 30.0\n"
+            "/\n"
+            "&ELECTRONS\n"
+            "  conv_thr = 1.0d-8\n"
+            "/\n"
+            "ATOMIC_SPECIES\n"
+            "  Si 28.086 Si.pbe-n-rrkjus_psl.1.0.0.UPF\n"
+            "ATOMIC_POSITIONS crystal\n"
+            "  Si 0.00 0.00 0.00\n"
+            "  Si 0.25 0.25 0.25\n"
+            "K_POINTS automatic\n"
+            "  8 8 8 0 0 0\n"
+        ),
+    },
+    {
+        "name": "nscf",
+        "description": "Non-self-consistent field calculation for band structure or DOS.",
+        "calculation_type": "nscf",
+        "input_text": (
+            "&CONTROL\n"
+            "  calculation = 'nscf'\n"
+            "  prefix = 'si'\n"
+            "  outdir = './out'\n"
+            "  pseudo_dir = './pseudo'\n"
+            "/\n"
+            "&SYSTEM\n"
+            "  ibrav = 2\n"
+            "  celldm(1) = 10.2\n"
+            "  nat = 2\n"
+            "  ntyp = 1\n"
+            "  ecutwfc = 30.0\n"
+            "  nbnd = 12\n"
+            "/\n"
+            "&ELECTRONS\n"
+            "  conv_thr = 1.0d-8\n"
+            "/\n"
+            "ATOMIC_SPECIES\n"
+            "  Si 28.086 Si.pbe-n-rrkjus_psl.1.0.0.UPF\n"
+            "ATOMIC_POSITIONS crystal\n"
+            "  Si 0.00 0.00 0.00\n"
+            "  Si 0.25 0.25 0.25\n"
+            "K_POINTS automatic\n"
+            "  12 12 12 0 0 0\n"
+        ),
+    },
+    {
+        "name": "relax",
+        "description": "Structural relaxation with fixed cell.",
+        "calculation_type": "relax",
+        "input_text": (
+            "&CONTROL\n"
+            "  calculation = 'relax'\n"
+            "  prefix = 'si'\n"
+            "  outdir = './out'\n"
+            "  pseudo_dir = './pseudo'\n"
+            "/\n"
+            "&SYSTEM\n"
+            "  ibrav = 2\n"
+            "  celldm(1) = 10.2\n"
+            "  nat = 2\n"
+            "  ntyp = 1\n"
+            "  ecutwfc = 30.0\n"
+            "/\n"
+            "&ELECTRONS\n"
+            "  conv_thr = 1.0d-8\n"
+            "/\n"
+            "&IONS\n"
+            "  ion_dynamics = 'bfgs'\n"
+            "/\n"
+            "ATOMIC_SPECIES\n"
+            "  Si 28.086 Si.pbe-n-rrkjus_psl.1.0.0.UPF\n"
+            "ATOMIC_POSITIONS crystal\n"
+            "  Si 0.00 0.00 0.00\n"
+            "  Si 0.25 0.25 0.25\n"
+            "K_POINTS automatic\n"
+            "  8 8 8 0 0 0\n"
+        ),
+    },
+    {
+        "name": "vc-relax",
+        "description": "Variable-cell relaxation: optimise both ionic positions and cell shape.",
+        "calculation_type": "vc-relax",
+        "input_text": (
+            "&CONTROL\n"
+            "  calculation = 'vc-relax'\n"
+            "  prefix = 'si'\n"
+            "  outdir = './out'\n"
+            "  pseudo_dir = './pseudo'\n"
+            "/\n"
+            "&SYSTEM\n"
+            "  ibrav = 2\n"
+            "  celldm(1) = 10.2\n"
+            "  nat = 2\n"
+            "  ntyp = 1\n"
+            "  ecutwfc = 30.0\n"
+            "/\n"
+            "&ELECTRONS\n"
+            "  conv_thr = 1.0d-8\n"
+            "/\n"
+            "&IONS\n"
+            "  ion_dynamics = 'bfgs'\n"
+            "/\n"
+            "&CELL\n"
+            "  cell_dynamics = 'bfgs'\n"
+            "  press = 0.0\n"
+            "  press_conv_thr = 0.1\n"
+            "/\n"
+            "ATOMIC_SPECIES\n"
+            "  Si 28.086 Si.pbe-n-rrkjus_psl.1.0.0.UPF\n"
+            "ATOMIC_POSITIONS crystal\n"
+            "  Si 0.00 0.00 0.00\n"
+            "  Si 0.25 0.25 0.25\n"
+            "K_POINTS automatic\n"
+            "  8 8 8 0 0 0\n"
+        ),
+    },
+    {
+        "name": "md",
+        "description": "Molecular dynamics simulation.",
+        "calculation_type": "md",
+        "input_text": (
+            "&CONTROL\n"
+            "  calculation = 'md'\n"
+            "  prefix = 'si'\n"
+            "  outdir = './out'\n"
+            "  pseudo_dir = './pseudo'\n"
+            "  dt = 20.0\n"
+            "/\n"
+            "&SYSTEM\n"
+            "  ibrav = 2\n"
+            "  celldm(1) = 10.2\n"
+            "  nat = 2\n"
+            "  ntyp = 1\n"
+            "  ecutwfc = 30.0\n"
+            "/\n"
+            "&ELECTRONS\n"
+            "  conv_thr = 1.0d-8\n"
+            "/\n"
+            "&IONS\n"
+            "  ion_dynamics = 'verlet'\n"
+            "/\n"
+            "ATOMIC_SPECIES\n"
+            "  Si 28.086 Si.pbe-n-rrkjus_psl.1.0.0.UPF\n"
+            "ATOMIC_POSITIONS crystal\n"
+            "  Si 0.00 0.00 0.00\n"
+            "  Si 0.25 0.25 0.25\n"
+            "K_POINTS automatic\n"
+            "  4 4 4 0 0 0\n"
+        ),
+    },
+    {
+        "name": "phonon",
+        "description": "Phonon calculation using ph.x (requires prior scf run).",
+        "calculation_type": "phonon",
+        "input_text": (
+            "phonon of Si\n"
+            "&INPUTPH\n"
+            "  prefix = 'si'\n"
+            "  outdir = './out'\n"
+            "  fildyn = 'si.dyn'\n"
+            "  tr2_ph = 1.0d-14\n"
+            "  amass(1) = 28.086\n"
+            "/\n"
+            "0.0 0.0 0.0\n"
+        ),
+    },
+    {
+        "name": "bands",
+        "description": "Band-structure calculation (nscf on a path, then bands.x post-processing).",
+        "calculation_type": "bands",
+        "input_text": (
+            "&CONTROL\n"
+            "  calculation = 'bands'\n"
+            "  prefix = 'si'\n"
+            "  outdir = './out'\n"
+            "  pseudo_dir = './pseudo'\n"
+            "/\n"
+            "&SYSTEM\n"
+            "  ibrav = 2\n"
+            "  celldm(1) = 10.2\n"
+            "  nat = 2\n"
+            "  ntyp = 1\n"
+            "  ecutwfc = 30.0\n"
+            "  nbnd = 12\n"
+            "/\n"
+            "&ELECTRONS\n"
+            "  conv_thr = 1.0d-8\n"
+            "/\n"
+            "ATOMIC_SPECIES\n"
+            "  Si 28.086 Si.pbe-n-rrkjus_psl.1.0.0.UPF\n"
+            "ATOMIC_POSITIONS crystal\n"
+            "  Si 0.00 0.00 0.00\n"
+            "  Si 0.25 0.25 0.25\n"
+            "K_POINTS crystal\n"
+            "5\n"
+            "  0.500  0.500  0.500  20  L\n"
+            "  0.000  0.000  0.000  20  Gamma\n"
+            "  0.500  0.000  0.500  20  X\n"
+            "  0.375  0.375  0.750  20  U\n"
+            "  0.000  0.000  0.000   1  Gamma\n"
+        ),
+    },
+    {
+        "name": "dos",
+        "description": "Density of states using dos.x (requires prior nscf run).",
+        "calculation_type": "dos",
+        "input_text": (
+            "&DOS\n"
+            "  prefix = 'si'\n"
+            "  outdir = './out'\n"
+            "  fildos = 'si.dos'\n"
+            "  Emin = -10.0\n"
+            "  Emax = 20.0\n"
+            "  DeltaE = 0.01\n"
+            "/\n"
+        ),
+    },
+]
+
+_EXAMPLES_INDEX: Dict[str, Dict[str, str]] = {ex["calculation_type"]: ex for ex in _EXAMPLES}
+
+# Token-suggestion rules: each rule has a regex pattern and a list of
+# suggestion dicts.  The last line of the context is matched against each
+# pattern; matching rules contribute their suggestions.
+_TOKEN_RULES: List[Dict[str, Any]] = [
+    {
+        "trigger": "namelist_start",
+        "pattern": r"&(?:CONTROL|SYSTEM|ELECTRONS|IONS|CELL|INPUTPH|DOS)\s*$",
+        "suggestions": [
+            {
+                "text": "\n  ",
+                "type": "indent",
+                "description": "Indented newline for keyword assignment",
+            },
+        ],
+    },
+    {
+        "trigger": "after_control_calculation",
+        "pattern": r"calculation\s*=\s*['\"]",
+        "suggestions": [
+            {"text": "scf'  ", "type": "value", "description": "Self-consistent field calculation"},
+            {"text": "nscf'  ", "type": "value", "description": "Non-self-consistent field calculation"},
+            {"text": "relax'  ", "type": "value", "description": "Ionic relaxation (fixed cell)"},
+            {"text": "vc-relax'  ", "type": "value", "description": "Variable-cell relaxation"},
+            {"text": "md'  ", "type": "value", "description": "Molecular dynamics"},
+            {"text": "bands'  ", "type": "value", "description": "Band-structure calculation"},
+        ],
+    },
+    {
+        "trigger": "namelist_end",
+        "pattern": r"/\s*$",
+        "suggestions": [
+            {
+                "text": "ATOMIC_SPECIES\n",
+                "type": "card",
+                "description": "Define atom types and pseudopotentials",
+            },
+            {
+                "text": "ATOMIC_POSITIONS crystal\n",
+                "type": "card",
+                "description": "Atomic coordinates in crystal units",
+            },
+            {
+                "text": "K_POINTS automatic\n",
+                "type": "card",
+                "description": "Automatic uniform k-point grid",
+            },
+            {
+                "text": "CELL_PARAMETERS\n",
+                "type": "card",
+                "description": "Lattice vectors (when ibrav=0)",
+            },
+            {
+                "text": "ATOMIC_FORCES\n",
+                "type": "card",
+                "description": "External forces on atoms",
+            },
+        ],
+    },
+    {
+        "trigger": "atomic_species_header",
+        "pattern": r"ATOMIC_SPECIES\s*$",
+        "suggestions": [
+            {
+                "text": "  <label> <mass> <pseudo_file>\n",
+                "type": "placeholder",
+                "description": "One line per atom type: label, mass, pseudopotential file",
+            },
+        ],
+    },
+    {
+        "trigger": "atomic_positions_header",
+        "pattern": r"ATOMIC_POSITIONS\s+(?:alat|bohr|crystal|angstrom|crystal_sg)\s*$",
+        "suggestions": [
+            {
+                "text": "  <label> <x> <y> <z>\n",
+                "type": "placeholder",
+                "description": "One line per atom: label and three coordinates",
+            },
+        ],
+    },
+    {
+        "trigger": "k_points_automatic",
+        "pattern": r"K_POINTS\s+(?:automatic|tpiba|crystal|gamma)\s*$",
+        "suggestions": [
+            {
+                "text": "  <nk1> <nk2> <nk3> <dk1> <dk2> <dk3>\n",
+                "type": "placeholder",
+                "description": "Grid dimensions and offsets for k-point sampling",
+            },
+        ],
+    },
+    {
+        "trigger": "control_keywords",
+        "pattern": r"&CONTROL\s*",
+        "suggestions": [
+            {"text": "calculation = ", "type": "keyword", "description": "Type of calculation to perform"},
+            {"text": "prefix = ", "type": "keyword", "description": "Prefix for output file names"},
+            {"text": "outdir = ", "type": "keyword", "description": "Directory for temporary and output files"},
+            {
+                "text": "pseudo_dir = ",
+                "type": "keyword",
+                "description": "Directory containing pseudopotential files",
+            },
+            {"text": "ibrav = ", "type": "keyword", "description": "Bravais-lattice index (0 = free)"},
+            {"text": "tprnfor = ", "type": "keyword", "description": "Calculate forces"},
+            {"text": "tstress = ", "type": "keyword", "description": "Calculate stress tensor"},
+            {"text": "dt = ", "type": "keyword", "description": "Time step for MD (Ry*au)"},
+        ],
+    },
+    {
+        "trigger": "system_keywords",
+        "pattern": r"&SYSTEM\s*",
+        "suggestions": [
+            {"text": "nat = ", "type": "keyword", "description": "Number of atoms in the unit cell"},
+            {"text": "ntyp = ", "type": "keyword", "description": "Number of atom types"},
+            {
+                "text": "ecutwfc = ",
+                "type": "keyword",
+                "description": "Kinetic-energy cutoff for wavefunctions (Ry)",
+            },
+            {
+                "text": "ecutrho = ",
+                "type": "keyword",
+                "description": "Kinetic-energy cutoff for charge density (Ry)",
+            },
+            {"text": "ibrav = ", "type": "keyword", "description": "Bravais-lattice index"},
+            {"text": "occupations = ", "type": "keyword", "description": "Occupation method"},
+        ],
+    },
+    {
+        "trigger": "electrons_keywords",
+        "pattern": r"&ELECTRONS\s*",
+        "suggestions": [
+            {"text": "conv_thr = ", "type": "keyword", "description": "Convergence threshold for SCF (Ry)"},
+            {
+                "text": "electron_maxstep = ",
+                "type": "keyword",
+                "description": "Maximum number of SCF iterations",
+            },
+            {
+                "text": "mixing_beta = ",
+                "type": "keyword",
+                "description": "Mixing factor for self-consistency",
+            },
+            {"text": "diagonalization = ", "type": "keyword", "description": "Eigenvalue solver"},
+        ],
+    },
+    {
+        "trigger": "ions_keywords",
+        "pattern": r"&IONS\s*",
+        "suggestions": [
+            {"text": "ion_dynamics = ", "type": "keyword", "description": "Ionic dynamics algorithm"},
+            {
+                "text": "ion_positions = ",
+                "type": "keyword",
+                "description": "Source of initial ionic positions",
+            },
+        ],
+    },
+    {
+        "trigger": "cell_keywords",
+        "pattern": r"&CELL\s*",
+        "suggestions": [
+            {"text": "cell_dynamics = ", "type": "keyword", "description": "Cell dynamics algorithm"},
+            {"text": "press = ", "type": "keyword", "description": "Target pressure (kbar)"},
+            {
+                "text": "press_conv_thr = ",
+                "type": "keyword",
+                "description": "Convergence threshold on pressure (kbar)",
+            },
+        ],
+    },
+]
+
+
+def get_examples(calculation_type: str = "") -> List[Dict[str, str]]:
+    """Return minimal example QE input snippets for common calculation types.
+
+    Parameters
+    ----------
+    calculation_type:
+        If provided, return only the example matching this calculation type
+        (e.g. ``"scf"``, ``"vc-relax"``).  If empty, return all examples.
+
+    Returns
+    -------
+    list of dict
+        Each dict has keys ``name``, ``description``, ``calculation_type``,
+        and ``input_text``.
+    """
+    if calculation_type:
+        match = _EXAMPLES_INDEX.get(calculation_type)
+        if match is None:
+            return []
+        return [dict(match)]
+    return [dict(ex) for ex in _EXAMPLES]
+
+
+def next_token_suggestions(context: str, prefix: str = "") -> List[Dict[str, str]]:
+    """Suggest next tokens based on partial QE input context.
+
+    The function examines the tail of *context* and, optionally, a *prefix*
+    string that the user has already started typing.  It returns a list of
+    suggestion dicts, each with ``text``, ``type``, and ``description``.
+
+    Parameters
+    ----------
+    context:
+        The full QE input text typed so far.
+    prefix:
+        Additional characters the cursor is positioned after (for inline
+        completion).
+
+    Returns
+    -------
+    list of dict
+        Suggested tokens.  Each entry contains ``text``, ``type``, and
+        ``description``.
+    """
+    import re
+
+    if not context and not prefix:
+        return [
+            {"text": "&CONTROL\n", "type": "namelist", "description": "Start a CONTROL namelist block"},
+            {"text": "&INPUTPH\n", "type": "namelist", "description": "Start a ph.x phonon input"},
+            {"text": "&DOS\n", "type": "namelist", "description": "Start a dos.x input"},
+        ]
+
+    lines = context.rstrip().splitlines()
+    if not lines:
+        return [
+            {"text": "&CONTROL\n", "type": "namelist", "description": "Start a CONTROL namelist block"},
+        ]
+
+    last_line = lines[-1].rstrip()
+
+    # Check rules from most specific to least specific.
+    results: List[Dict[str, str]] = []
+
+    for rule in _TOKEN_RULES:
+        if re.search(rule["pattern"], last_line):
+            for suggestion in rule["suggestions"]:
+                results.append(
+                    {
+                        "text": suggestion["text"],
+                        "type": suggestion["type"],
+                        "description": suggestion["description"],
+                    }
+                )
+
+    # If no rule matched, offer a generic suggestion to close the current namelist.
+    if not results:
+        results.append(
+            {
+                "text": "/\n",
+                "type": "namelist_end",
+                "description": "Close the current namelist",
+            }
+        )
+
+    # Filter by prefix if provided.
+    if prefix:
+        results = [r for r in results if r["text"].startswith(prefix)]
+
+    return results
