@@ -1,0 +1,35 @@
+{
+  "capability_id": "qe.agent.schema_lookup",
+  "functions": [
+    {
+      "name": "lookup_namelist",
+      "description": "Return schema for a QE namelist by name",
+      "parameters": {
+        "name": "Namelist name (case-insensitive)"
+      },
+      "returns": "dict with name, description, keywords or None"
+    },
+    {
+      "name": "lookup_keyword",
+      "description": "Return schema for a specific keyword within a namelist",
+      "parameters": {
+        "namelist": "Parent namelist name (case-insensitive)",
+        "keyword": "Keyword name within the namelist"
+      },
+      "returns": "dict with namelist, name, type, description, default_value, valid_values, required or None"
+    }
+  ],
+  "sample_lookups": [
+    {
+      "namelist": "CONTROL",
+      "keyword": "calculation",
+      "expected_type": "string",
+      "expected_valid_values": ["scf", "nscf", "bands", "relax", "md", "vc-relax", "vc-md"]
+    },
+    {
+      "namelist": "SYSTEM",
+      "keyword": "ecutwfc",
+      "expected_type": "float"
+    }
+  ]
+}
