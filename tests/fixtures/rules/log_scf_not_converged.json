@@ -1,0 +1,6 @@
+{
+  "rule_id": "qe.log.scf_not_converged",
+  "diagnostic_code": "QE-E014",
+  "severity": "error",
+  "message_pattern": "SCF convergence"
+}

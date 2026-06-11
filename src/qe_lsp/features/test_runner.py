@@ -51,6 +51,22 @@ _ERROR_PATTERNS = [
 
 _LINE_NUM_RE = re.compile(r"line\s+(\d+)", re.IGNORECASE)
 
+# ------------------------------------------------------------------
+# Rule codes for log-level diagnostics
+# ------------------------------------------------------------------
+
+RULE_SCF_NOT_CONVERGED = "QE-E014"
+
+#: Matches QE runtime log lines indicating SCF convergence failure.
+#: QE outputs forms like:
+#:
+#:   "SCF convergence NOT achieved after N iterations"
+#:   "convergence not achieved"
+_SCF_NOT_CONVERGED_RE = re.compile(
+    r"convergence\s+(?:is\s+)?(?:NOT|not)\s+achieved",
+    re.IGNORECASE,
+)
+
 
 def parse_solver_output(raw: str) -> SolverOutput:
     errors: List[Dict[str, Any]] = []
@@ -101,6 +117,49 @@ def solver_output_to_diagnostics(output: SolverOutput) -> List[Diagnostic]:
                 code="QE9002",
             )
         )
+    return diagnostics
+
+
+def parse_log(log_text: str) -> List[Diagnostic]:
+    """Parse QE runtime log output and return diagnostics for known issues.
+
+    Currently detects:
+
+    - **QE-E014** (``qe.log.scf_not_converged``): SCF convergence failure
+      indicated by lines containing "convergence NOT achieved" or
+      "convergence not achieved".
+
+    Parameters
+    ----------
+    log_text:
+        The full stdout/stderr output from a QE run.
+
+    Returns
+    -------
+    list[Diagnostic]
+        LSP diagnostics, one per detected issue.
+    """
+    diagnostics: List[Diagnostic] = []
+
+    for line_number, line in enumerate(log_text.splitlines()):
+        if _SCF_NOT_CONVERGED_RE.search(line):
+            diagnostics.append(
+                Diagnostic(
+                    range=Range(
+                        start=Position(line=line_number, character=0),
+                        end=Position(line=line_number, character=len(line)),
+                    ),
+                    message=(
+                        f"SCF convergence NOT achieved. "
+                        f"Consider increasing electron_maxstep, adjusting mixing_beta, "
+                        f"or tightening conv_thr. Line: {line.strip()}"
+                    ),
+                    severity=DiagnosticSeverity.Error,
+                    source="qe-log-parser",
+                    code=RULE_SCF_NOT_CONVERGED,
+                )
+            )
+
     return diagnostics
 
 
