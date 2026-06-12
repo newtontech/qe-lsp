@@ -62,11 +62,30 @@ log.md        # Change log
 - [SCF Convergence](wiki/concepts/scf-convergence.md) - Self-consistent field
 - [Bravais Lattice](wiki/concepts/bravais-lattice.md) - Crystal structures
 - [Parameter Assignment](wiki/entities/parameter-assignment.md) - Value syntax
+- [QE Output Parsing](wiki/concepts/qe-output-parsing.md) - Output format and parsing
+- [Phonon Calculation Workflow](wiki/concepts/phonon-calculation.md) - DFPT phonon workflow
+- [Band Structure and DOS Workflow](wiki/concepts/band-structure-dos-workflow.md) - Post-SCF analysis
+
+### 程序参考 / Programs
+
+- [ph.x Phonon Input](wiki/entities/ph-x-phonon.md) - Phonon calculation program
+- [Post-Processing Programs](wiki/entities/post-processing-programs.md) - pp.x, dos.x, bands.x, projwfc.x
 
 ### 综合参考 / Synthesis
 
 - [Input File Format](wiki/synthesis/input-file-format.md) - File structure guide
 - [Quick Reference](wiki/synthesis/quick-reference.md) - Common parameters
+- [Programs Reference](wiki/synthesis/programs-reference.md) - All QE programs
+- [Pseudopotential Reference](wiki/synthesis/pseudopotential-reference.md) - PP types, libraries, formats
+- [Examples Reference](wiki/synthesis/examples-reference.md) - Input file examples for all calculation types
+
+### 原始文档 / Raw Documentation
+
+- [pw.x Input Reference](raw/assets/qe-pw-input-reference.md) - Complete pw.x parameter reference
+- [Programs Reference](raw/assets/qe-programs-reference.md) - All QE program input formats
+- [Example Inputs](raw/assets/qe-examples.md) - Annotated examples (SCF, NSCF, bands, relax, MD, phonon)
+- [Output Format](raw/assets/qe-output-format.md) - QE output file format and parsing
+- [Pseudopotentials](raw/assets/qe-pseudopotentials.md) - PP formats, libraries, and usage
 
 ## Domain Coverage / 领域覆盖
 
@@ -80,6 +99,10 @@ This wiki covers:
 - **8 Calculation types** - scf, nscf, bands, relax, md, vc-relax, vc-md, ph
 - **30+ Parameters** - Key QE input parameters with validation rules
 - **LSP Architecture** - Server design, diagnostic engine, agent CLI
+- **Program Documentation** - pw.x, cp.x, ph.x, pp.x, dos.x, bands.x, projwfc.x, matdyn.x, q2r.x
+- **Output Format** - stdout parsing, data files, XML format
+- **Pseudopotentials** - NC, US, PAW types; UPF format; SSSP, PSlibrary, GBRV libraries
+- **Workflows** - Band structure, DOS, phonon, relaxation, MD
 
 ## Maintenance / 维护
 
