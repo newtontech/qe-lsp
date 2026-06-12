@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PYTHON_BIN="${PYTHON:-python3}"
-
 ran=0
 
 has_npm_script() {
@@ -22,7 +20,7 @@ if [ -f Cargo.toml ]; then
 fi
 
 if ([ -d tests ] || [ -d test ] || [ -f pytest.ini ]) && ([ -f pyproject.toml ] || [ -f setup.py ] || [ -f pytest.ini ]); then
-  "$PYTHON_BIN" -m pytest
+  python -m pytest
   ran=1
 fi
 
