@@ -33,7 +33,15 @@ def _capabilities_payload() -> dict[str, Any]:
             "openqc-context",
         ],
         "agentCli": {
-            "operations": ["capabilities", "check", "context", "complete", "hover", "symbols", "fix"],
+            "operations": [
+                "capabilities",
+                "check",
+                "context",
+                "complete",
+                "hover",
+                "symbols",
+                "fix",
+            ],
             "jsonFormat": True,
             "failOnBlocking": True,
         },
