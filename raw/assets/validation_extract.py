@@ -1,15 +1,10 @@
 """Quantum ESPRESSO validation checks that produce LSP diagnostics."""
 
-from typing import List
 
 from lsprotocol import types
 
 from .parser import (
     Parameter,
-    declared_species,
-    normalize_value,
-    parse_number,
-    parse_qe_input,
 )
 
 
