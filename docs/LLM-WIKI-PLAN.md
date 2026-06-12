@@ -183,7 +183,17 @@ The wiki covers:
 4. ✅ Create concept pages (5)
 5. ✅ Create synthesis pages (7)
 6. ✅ Create index.md and log.md
-7. ⏭️ Git commit and PR
+7. ✅ Git commit and PR
+8. ✅ Closeout pass (issue #87): upstream manifest, example input, LSP provenance, wiki lint
+
+## Closeout Status (issue #87)
+
+- [x] Upstream QE documentation link manifest (`raw/assets/upstream-qe-reference.md`)
+- [x] Official test-suite example input (`raw/assets/example-carbonyl-relax.in`)
+- [x] Cross-references in `index.md` (OpenQC agent context, upstream manifest)
+- [x] Lightweight wiki lint (`scripts/wiki-lint.sh`)
+- [x] LSP source provenance in `lsp-capabilities.json` (expanded 1→6 entries)
+- [x] OpenQC agent context grounding (`wiki/synthesis/openqc-agent-context.md`)
 
 ## Git Workflow / Git 工作流
 

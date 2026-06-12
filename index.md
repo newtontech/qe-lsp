@@ -78,12 +78,15 @@ log.md        # Change log
 - [Programs Reference](wiki/synthesis/programs-reference.md) - All QE programs
 - [Pseudopotential Reference](wiki/synthesis/pseudopotential-reference.md) - PP types, libraries, formats
 - [Examples Reference](wiki/synthesis/examples-reference.md) - Input file examples for all calculation types
+- [OpenQC Agent Context](wiki/synthesis/openqc-agent-context.md) - LSP capability and evidence mapping
 
 ### 原始文档 / Raw Documentation
 
+- [Upstream QE Reference](raw/assets/upstream-qe-reference.md) - Official documentation link manifest
 - [pw.x Input Reference](raw/assets/qe-pw-input-reference.md) - Complete pw.x parameter reference
 - [Programs Reference](raw/assets/qe-programs-reference.md) - All QE program input formats
 - [Example Inputs](raw/assets/qe-examples.md) - Annotated examples (SCF, NSCF, bands, relax, MD, phonon)
+- [CO Relax Example](raw/assets/example-carbonyl-relax.in) - Official test-suite relax input
 - [Output Format](raw/assets/qe-output-format.md) - QE output file format and parsing
 - [Pseudopotentials](raw/assets/qe-pseudopotentials.md) - PP formats, libraries, and usage
 

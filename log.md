@@ -6,6 +6,30 @@ This log tracks all changes to the QE-LSP LLM Wiki.
 
 ## 2026-06-13 / 2026年6月13日
 
+### Closeout Pass (issue #87) / 收尾工作
+
+Completed remaining upstream documentation coverage, example inputs, cross-references, and LSP-facing updates.
+
+#### Raw Documentation (2 new files) / 原始文档（2 个新文件）
+
+1. [upstream-qe-reference.md](raw/assets/upstream-qe-reference.md) - Official QE documentation link manifest
+2. [example-carbonyl-relax.in](raw/assets/example-carbonyl-relax.in) - CO relax input from official QE test suite
+
+#### LSP Surface Updates / LSP 表面更新
+
+3. [lsp-capabilities.json](lsp-capabilities.json) - sourceProvenance expanded 1→6 entries
+4. [openqc-agent-context.md](wiki/synthesis/openqc-agent-context.md) - Capability-to-evidence table and example references
+
+#### Navigation and Tooling / 导航与工具
+
+5. [index.md](index.md) - Added upstream manifest, OpenQC agent context, CO relax example
+6. [scripts/wiki-lint.sh](scripts/wiki-lint.sh) - Lightweight orphan/broken-link check
+7. [docs/LLM-WIKI-PLAN.md](docs/LLM-WIKI-PLAN.md) - Closeout checklist recorded
+
+---
+
+## 2026-06-13 / 2026年6月13日
+
 ### Documentation Collection Expansion / 文档收集扩展
 
 Expanded the wiki with comprehensive upstream Quantum ESPRESSO documentation collected from official sources.
