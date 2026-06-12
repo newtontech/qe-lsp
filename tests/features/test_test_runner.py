@@ -275,7 +275,7 @@ class TestParseLogQEWarning:
 
     def test_multiple_warnings(self) -> None:
         """Multiple WARNING lines produce multiple diagnostics."""
-        log = "WARNING: first warning\n" "some output\n" "WARNING: second warning\n"
+        log = "WARNING: first warning\nsome output\nWARNING: second warning\n"
         diags = parse_log(log)
         warnings = [d for d in diags if d.code == RULE_QE_WARNING]
         assert len(warnings) == 2
@@ -295,9 +295,7 @@ class TestParseLogSegfault:
         assert "Segmentation fault" in errors[0].message
 
     def test_segfault_in_context(self) -> None:
-        log = (
-            "Program PWSCF v.7.2 starts\n" "some computation\n" "Segmentation fault (core dumped)\n"
-        )
+        log = "Program PWSCF v.7.2 starts\nsome computation\nSegmentation fault (core dumped)\n"
         diags = parse_log(log)
         errors = [d for d in diags if d.code == RULE_SEGMENTATION_FAULT]
         assert len(errors) == 1
@@ -442,8 +440,6 @@ class TestParseQEOutput:
     def test_multi_pattern_file(self, tmp_path: Path) -> None:
         """File with multiple errors produces multiple diagnostics."""
         log_file = tmp_path / "pw.out"
-        log_file.write_text(
-            "WARNING: something\n" "Error in routine pwscf: bad\n" "Segmentation fault\n"
-        )
+        log_file.write_text("WARNING: something\nError in routine pwscf: bad\nSegmentation fault\n")
         diags = parse_qe_output(log_file)
         assert len(diags) == 3

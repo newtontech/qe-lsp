@@ -1298,8 +1298,7 @@ def openqc_smoke() -> Dict[str, Any]:
                 probe_result["status"] = "pass"
             else:
                 errors.append(
-                    f"Probe '{probe['name']}': expected code "
-                    f"{probe['expected_code']}, got {codes}"
+                    f"Probe '{probe['name']}': expected code {probe['expected_code']}, got {codes}"
                 )
         except Exception as exc:
             errors.append(f"Probe '{probe['name']}' raised: {exc}")
