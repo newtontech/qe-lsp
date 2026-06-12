@@ -93,6 +93,31 @@
       "kind": "official_docs",
       "label": "Quantum ESPRESSO input descriptions",
       "url": "https://www.quantum-espresso.org/documentation/input-data-description/"
+    },
+    {
+      "kind": "official_spec",
+      "label": "pw.x input reference",
+      "url": "https://www.quantum-espresso.org/Doc/INPUT_PW.html"
+    },
+    {
+      "kind": "official_spec",
+      "label": "ph.x input reference",
+      "url": "https://www.quantum-espresso.org/Doc/INPUT_PH.html"
+    },
+    {
+      "kind": "official_tutorial",
+      "label": "QE hands-on DOS tutorial",
+      "url": "https://pranabdas.github.io/espresso/hands-on/dos/"
+    },
+    {
+      "kind": "official_docs",
+      "label": "QE pseudopotential libraries",
+      "url": "https://www.quantum-espresso.org/pseudopotentials/"
+    },
+    {
+      "kind": "upstream_manifest",
+      "label": "Upstream QE reference links",
+      "path": "raw/assets/upstream-qe-reference.md"
     }
   ]
 }

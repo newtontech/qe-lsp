@@ -1,0 +1,27 @@
+! CO relaxation example from the official QE test suite.
+! Upstream: https://github.com/QEF/q-e/blob/0f3d9044f2e553b900550e8f0f18b3cb416f13b6/test-suite/pw_relax/relax.in
+! See also: raw/assets/qe-examples.md, wiki/synthesis/examples-reference.md
+
+&CONTROL
+  calculation  = "relax"
+/
+&SYSTEM
+  ibrav     = 1,
+  celldm(1) =12.0,
+  nat       = 2,
+  ntyp      = 2,
+  ecutwfc   = 24.D0,
+  ecutrho   = 144.D0,
+/
+&ELECTRONS
+  conv_thr  = 1.0e-7
+/
+&IONS
+/
+ATOMIC_SPECIES
+O  1.00  O.pz-rrkjus.UPF
+C  1.00  C.pz-rrkjus.UPF
+ATOMIC_POSITIONS {bohr}
+C  2.256  0.0  0.0
+O  0.000  0.0  0.0  0 0 0
+K_POINTS {Gamma}
