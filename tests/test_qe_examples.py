@@ -161,9 +161,9 @@ class TestDiagnosticStability:
         lint = LintProvider()
         diagnostics = lint.lint(text)
         errors = [d for d in diagnostics if d.severity is not None and d.severity.value == 1]
-        assert errors == [], (
-            f"Unexpected lint errors in {fixture_name}: {[d.message for d in errors]}"
-        )
+        assert (
+            errors == []
+        ), f"Unexpected lint errors in {fixture_name}: {[d.message for d in errors]}"
 
     @pytest.mark.parametrize("fixture_name", VALID_FIXTURES, ids=VALID_FIXTURES)
     def test_typecheck_no_errors(self, fixture_name: str) -> None:
@@ -171,9 +171,9 @@ class TestDiagnosticStability:
         tc = TypecheckProvider()
         diagnostics = tc.typecheck(text)
         errors = [d for d in diagnostics if d.severity is not None and d.severity.value == 1]
-        assert errors == [], (
-            f"Unexpected typecheck errors in {fixture_name}: {[d.message for d in errors]}"
-        )
+        assert (
+            errors == []
+        ), f"Unexpected typecheck errors in {fixture_name}: {[d.message for d in errors]}"
 
     def test_diagnostic_snapshot_deterministic(self) -> None:
         """Two diagnostic runs must produce identical results."""

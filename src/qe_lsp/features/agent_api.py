@@ -693,7 +693,11 @@ _TOKEN_RULES: List[Dict[str, Any]] = [
         "pattern": r"calculation\s*=\s*['\"]",
         "suggestions": [
             {"text": "scf'  ", "type": "value", "description": "Self-consistent field calculation"},
-            {"text": "nscf'  ", "type": "value", "description": "Non-self-consistent field calculation"},
+            {
+                "text": "nscf'  ",
+                "type": "value",
+                "description": "Non-self-consistent field calculation",
+            },
             {"text": "relax'  ", "type": "value", "description": "Ionic relaxation (fixed cell)"},
             {"text": "vc-relax'  ", "type": "value", "description": "Variable-cell relaxation"},
             {"text": "md'  ", "type": "value", "description": "Molecular dynamics"},
@@ -768,15 +772,27 @@ _TOKEN_RULES: List[Dict[str, Any]] = [
         "trigger": "control_keywords",
         "pattern": r"&CONTROL\s*",
         "suggestions": [
-            {"text": "calculation = ", "type": "keyword", "description": "Type of calculation to perform"},
+            {
+                "text": "calculation = ",
+                "type": "keyword",
+                "description": "Type of calculation to perform",
+            },
             {"text": "prefix = ", "type": "keyword", "description": "Prefix for output file names"},
-            {"text": "outdir = ", "type": "keyword", "description": "Directory for temporary and output files"},
+            {
+                "text": "outdir = ",
+                "type": "keyword",
+                "description": "Directory for temporary and output files",
+            },
             {
                 "text": "pseudo_dir = ",
                 "type": "keyword",
                 "description": "Directory containing pseudopotential files",
             },
-            {"text": "ibrav = ", "type": "keyword", "description": "Bravais-lattice index (0 = free)"},
+            {
+                "text": "ibrav = ",
+                "type": "keyword",
+                "description": "Bravais-lattice index (0 = free)",
+            },
             {"text": "tprnfor = ", "type": "keyword", "description": "Calculate forces"},
             {"text": "tstress = ", "type": "keyword", "description": "Calculate stress tensor"},
             {"text": "dt = ", "type": "keyword", "description": "Time step for MD (Ry*au)"},
@@ -786,7 +802,11 @@ _TOKEN_RULES: List[Dict[str, Any]] = [
         "trigger": "system_keywords",
         "pattern": r"&SYSTEM\s*",
         "suggestions": [
-            {"text": "nat = ", "type": "keyword", "description": "Number of atoms in the unit cell"},
+            {
+                "text": "nat = ",
+                "type": "keyword",
+                "description": "Number of atoms in the unit cell",
+            },
             {"text": "ntyp = ", "type": "keyword", "description": "Number of atom types"},
             {
                 "text": "ecutwfc = ",
@@ -806,7 +826,11 @@ _TOKEN_RULES: List[Dict[str, Any]] = [
         "trigger": "electrons_keywords",
         "pattern": r"&ELECTRONS\s*",
         "suggestions": [
-            {"text": "conv_thr = ", "type": "keyword", "description": "Convergence threshold for SCF (Ry)"},
+            {
+                "text": "conv_thr = ",
+                "type": "keyword",
+                "description": "Convergence threshold for SCF (Ry)",
+            },
             {
                 "text": "electron_maxstep = ",
                 "type": "keyword",
@@ -824,7 +848,11 @@ _TOKEN_RULES: List[Dict[str, Any]] = [
         "trigger": "ions_keywords",
         "pattern": r"&IONS\s*",
         "suggestions": [
-            {"text": "ion_dynamics = ", "type": "keyword", "description": "Ionic dynamics algorithm"},
+            {
+                "text": "ion_dynamics = ",
+                "type": "keyword",
+                "description": "Ionic dynamics algorithm",
+            },
             {
                 "text": "ion_positions = ",
                 "type": "keyword",
@@ -836,7 +864,11 @@ _TOKEN_RULES: List[Dict[str, Any]] = [
         "trigger": "cell_keywords",
         "pattern": r"&CELL\s*",
         "suggestions": [
-            {"text": "cell_dynamics = ", "type": "keyword", "description": "Cell dynamics algorithm"},
+            {
+                "text": "cell_dynamics = ",
+                "type": "keyword",
+                "description": "Cell dynamics algorithm",
+            },
             {"text": "press = ", "type": "keyword", "description": "Target pressure (kbar)"},
             {
                 "text": "press_conv_thr = ",
@@ -896,7 +928,11 @@ def next_token_suggestions(context: str, prefix: str = "") -> List[Dict[str, str
 
     if not context and not prefix:
         return [
-            {"text": "&CONTROL\n", "type": "namelist", "description": "Start a CONTROL namelist block"},
+            {
+                "text": "&CONTROL\n",
+                "type": "namelist",
+                "description": "Start a CONTROL namelist block",
+            },
             {"text": "&INPUTPH\n", "type": "namelist", "description": "Start a ph.x phonon input"},
             {"text": "&DOS\n", "type": "namelist", "description": "Start a dos.x input"},
         ]
@@ -904,7 +940,11 @@ def next_token_suggestions(context: str, prefix: str = "") -> List[Dict[str, str
     lines = context.rstrip().splitlines()
     if not lines:
         return [
-            {"text": "&CONTROL\n", "type": "namelist", "description": "Start a CONTROL namelist block"},
+            {
+                "text": "&CONTROL\n",
+                "type": "namelist",
+                "description": "Start a CONTROL namelist block",
+            },
         ]
 
     last_line = lines[-1].rstrip()
