@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PYTHON_BIN="${PYTHON:-python3}"
-
 ran=0
 
 has_npm_script() {
@@ -41,9 +39,9 @@ if [ -f Cargo.toml ]; then
 fi
 
 if [ -f pyproject.toml ] || [ -f setup.py ]; then
-  if "$PYTHON_BIN" -m ruff --version >/dev/null 2>&1; then
+  if python -m ruff --version >/dev/null 2>&1; then
     py_targets="$(python_lint_targets)"
-    "$PYTHON_BIN" -m ruff check $py_targets
+    python -m ruff check $py_targets
     ran=1
   fi
 fi
