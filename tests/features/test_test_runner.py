@@ -275,11 +275,7 @@ class TestParseLogQEWarning:
 
     def test_multiple_warnings(self) -> None:
         """Multiple WARNING lines produce multiple diagnostics."""
-        log = (
-            "WARNING: first warning\n"
-            "some output\n"
-            "WARNING: second warning\n"
-        )
+        log = "WARNING: first warning\n" "some output\n" "WARNING: second warning\n"
         diags = parse_log(log)
         warnings = [d for d in diags if d.code == RULE_QE_WARNING]
         assert len(warnings) == 2
@@ -300,9 +296,7 @@ class TestParseLogSegfault:
 
     def test_segfault_in_context(self) -> None:
         log = (
-            "Program PWSCF v.7.2 starts\n"
-            "some computation\n"
-            "Segmentation fault (core dumped)\n"
+            "Program PWSCF v.7.2 starts\n" "some computation\n" "Segmentation fault (core dumped)\n"
         )
         diags = parse_log(log)
         errors = [d for d in diags if d.code == RULE_SEGMENTATION_FAULT]
@@ -327,9 +321,7 @@ class TestParseLogMaxCPUTime:
         assert errors[0].severity == DiagnosticSeverity.Error
 
     def test_max_cpu_time_with_detail(self) -> None:
-        log = (
-            "     WARNING: Maximum CPU time exceeded in scf cycle\n"
-        )
+        log = "     WARNING: Maximum CPU time exceeded in scf cycle\n"
         diags = parse_log(log)
         max_cpu = [d for d in diags if d.code == RULE_MAX_CPU_TIME]
         assert len(max_cpu) == 1
@@ -451,9 +443,7 @@ class TestParseQEOutput:
         """File with multiple errors produces multiple diagnostics."""
         log_file = tmp_path / "pw.out"
         log_file.write_text(
-            "WARNING: something\n"
-            "Error in routine pwscf: bad\n"
-            "Segmentation fault\n"
+            "WARNING: something\n" "Error in routine pwscf: bad\n" "Segmentation fault\n"
         )
         diags = parse_qe_output(log_file)
         assert len(diags) == 3

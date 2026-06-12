@@ -92,11 +92,13 @@ class TestDescribeDomainLanguage:
 
     def test_return_value_is_fresh_copy(self):
         a = describe_domain_language()
-        b = describe_domain_language()
         a["namelists"]["CONTROL"]["keywords"]["calculation"]["enum"].append("bogus")
-        assert "bogus" not in describe_domain_language()["namelists"]["CONTROL"][
-            "keywords"
-        ]["calculation"]["enum"]
+        assert (
+            "bogus"
+            not in describe_domain_language()["namelists"]["CONTROL"]["keywords"]["calculation"][
+                "enum"
+            ]
+        )
 
 
 class TestLookupNamelist:

@@ -561,11 +561,7 @@ class TestOccupationsDegaussMismatch:
     occupations='smearing' but degauss is missing or out of range."""
 
     def test_missing_degauss_triggers_warning(self, provider: LintProvider) -> None:
-        text = (
-            "&SYSTEM\n"
-            "  occupations = 'smearing'\n"
-            "/\n"
-        )
+        text = "&SYSTEM\n" "  occupations = 'smearing'\n" "/\n"
         diagnostics = provider.lint(text)
         warnings = [d for d in diagnostics if d.code == RULE_OCCUPATIONS_DEGAUSS_MISMATCH]
         assert len(warnings) == 1
@@ -574,92 +570,55 @@ class TestOccupationsDegaussMismatch:
         assert warnings[0].severity.value == 2  # Warning
 
     def test_degauss_too_small_triggers_warning(self, provider: LintProvider) -> None:
-        text = (
-            "&SYSTEM\n"
-            "  occupations = 'smearing'\n"
-            "  degauss = 0.0001\n"
-            "/\n"
-        )
+        text = "&SYSTEM\n" "  occupations = 'smearing'\n" "  degauss = 0.0001\n" "/\n"
         diagnostics = provider.lint(text)
         warnings = [d for d in diagnostics if d.code == RULE_OCCUPATIONS_DEGAUSS_MISMATCH]
         assert len(warnings) == 1
         assert "too small" in warnings[0].message
 
     def test_degauss_too_large_triggers_warning(self, provider: LintProvider) -> None:
-        text = (
-            "&SYSTEM\n"
-            "  occupations = 'smearing'\n"
-            "  degauss = 0.2\n"
-            "/\n"
-        )
+        text = "&SYSTEM\n" "  occupations = 'smearing'\n" "  degauss = 0.2\n" "/\n"
         diagnostics = provider.lint(text)
         warnings = [d for d in diagnostics if d.code == RULE_OCCUPATIONS_DEGAUSS_MISMATCH]
         assert len(warnings) == 1
         assert "too large" in warnings[0].message
 
     def test_valid_degauss_no_warning(self, provider: LintProvider) -> None:
-        text = (
-            "&SYSTEM\n"
-            "  occupations = 'smearing'\n"
-            "  degauss = 0.01\n"
-            "/\n"
-        )
+        text = "&SYSTEM\n" "  occupations = 'smearing'\n" "  degauss = 0.01\n" "/\n"
         diagnostics = provider.lint(text)
         warnings = [d for d in diagnostics if d.code == RULE_OCCUPATIONS_DEGAUSS_MISMATCH]
         assert warnings == []
 
     def test_degauss_at_lower_bound_no_warning(self, provider: LintProvider) -> None:
         """degauss = 0.001 exactly should NOT trigger the warning."""
-        text = (
-            "&SYSTEM\n"
-            "  occupations = 'smearing'\n"
-            "  degauss = 0.001\n"
-            "/\n"
-        )
+        text = "&SYSTEM\n" "  occupations = 'smearing'\n" "  degauss = 0.001\n" "/\n"
         diagnostics = provider.lint(text)
         warnings = [d for d in diagnostics if d.code == RULE_OCCUPATIONS_DEGAUSS_MISMATCH]
         assert warnings == []
 
     def test_degauss_at_upper_bound_no_warning(self, provider: LintProvider) -> None:
         """degauss = 0.1 exactly should NOT trigger the warning."""
-        text = (
-            "&SYSTEM\n"
-            "  occupations = 'smearing'\n"
-            "  degauss = 0.1\n"
-            "/\n"
-        )
+        text = "&SYSTEM\n" "  occupations = 'smearing'\n" "  degauss = 0.1\n" "/\n"
         diagnostics = provider.lint(text)
         warnings = [d for d in diagnostics if d.code == RULE_OCCUPATIONS_DEGAUSS_MISMATCH]
         assert warnings == []
 
     def test_fixed_occupations_no_warning(self, provider: LintProvider) -> None:
         """occupations = 'fixed' should not trigger degauss checks."""
-        text = (
-            "&SYSTEM\n"
-            "  occupations = 'fixed'\n"
-            "/\n"
-        )
+        text = "&SYSTEM\n" "  occupations = 'fixed'\n" "/\n"
         diagnostics = provider.lint(text)
         warnings = [d for d in diagnostics if d.code == RULE_OCCUPATIONS_DEGAUSS_MISMATCH]
         assert warnings == []
 
     def test_no_occupations_no_warning(self, provider: LintProvider) -> None:
         """No occupations keyword at all should not trigger the check."""
-        text = (
-            "&SYSTEM\n"
-            "  ibrav = 1\n"
-            "/\n"
-        )
+        text = "&SYSTEM\n" "  ibrav = 1\n" "/\n"
         diagnostics = provider.lint(text)
         warnings = [d for d in diagnostics if d.code == RULE_OCCUPATIONS_DEGAUSS_MISMATCH]
         assert warnings == []
 
     def test_snapshot_includes_degauss_warning(self, provider: LintProvider) -> None:
-        text = (
-            "&SYSTEM\n"
-            "  occupations = 'smearing'\n"
-            "/\n"
-        )
+        text = "&SYSTEM\n" "  occupations = 'smearing'\n" "/\n"
         items = provider.snapshot(text)
         degauss_items = [i for i in items if i["code"] == RULE_OCCUPATIONS_DEGAUSS_MISMATCH]
         assert len(degauss_items) == 1
@@ -735,8 +694,16 @@ class TestInvalidKpointsCard:
 
     def test_all_valid_types_no_error(self, provider: LintProvider) -> None:
         """Every recognised K_POINTS type should be accepted."""
-        for ktype in ("tpiba", "automatic", "crystal", "gamma",
-                      "tpiba_b", "crystal_b", "tpiba_c", "crystal_c"):
+        for ktype in (
+            "tpiba",
+            "automatic",
+            "crystal",
+            "gamma",
+            "tpiba_b",
+            "crystal_b",
+            "tpiba_c",
+            "crystal_c",
+        ):
             text = f"K_POINTS {{{ktype}}}\n"
             diagnostics = provider.lint(text)
             errors = [d for d in diagnostics if d.code == RULE_INVALID_KPOINTS_CARD]
@@ -751,11 +718,7 @@ class TestInvalidKpointsCard:
 
     def test_no_kpoints_card_no_error(self, provider: LintProvider) -> None:
         """Input without K_POINTS should not trigger the check."""
-        text = (
-            "&CONTROL\n"
-            "  calculation = 'scf'\n"
-            "/\n"
-        )
+        text = "&CONTROL\n" "  calculation = 'scf'\n" "/\n"
         diagnostics = provider.lint(text)
         errors = [d for d in diagnostics if d.code == RULE_INVALID_KPOINTS_CARD]
         assert errors == []

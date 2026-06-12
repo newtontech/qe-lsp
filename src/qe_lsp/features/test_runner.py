@@ -213,8 +213,7 @@ def parse_log(log_text: str) -> List[Diagnostic]:
                         end=Position(line=line_number, character=len(line)),
                     ),
                     message=(
-                        f"Error in routine '{routine}': {detail.strip()}. "
-                        f"Line: {line.strip()}"
+                        f"Error in routine '{routine}': {detail.strip()}. " f"Line: {line.strip()}"
                     ),
                     severity=DiagnosticSeverity.Error,
                     source="qe-log-parser",
