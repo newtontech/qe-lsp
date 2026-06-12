@@ -42,4 +42,3 @@ def _parameter_diagnostic(
         severity,
         len(parameter.name),
     )
-

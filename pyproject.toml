@@ -38,7 +38,7 @@ target-version = ['py39']
 [tool.ruff]
 line-length = 100
 target-version = "py39"
-exclude = ["raw/assets/*"]
+exclude = ["raw/"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
