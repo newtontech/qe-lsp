@@ -1,0 +1,4 @@
+<UPF version="2.0.1">
+Stub pseudopotential for the qe-lsp preflight regression fixture.
+<PP_INFO generated="qe-lsp-preflight-fixture" />
+</UPF>

@@ -1,0 +1,52 @@
+{
+  "fixtures": [
+    {
+      "name": "valid_pw",
+      "path": "tests/fixtures/preflight/valid_pw",
+      "expect_ok": true,
+      "expect_codes": []
+    },
+    {
+      "name": "ntyp_mismatch",
+      "path": "tests/fixtures/preflight/ntyp_mismatch",
+      "expect_ok": false,
+      "expect_codes": ["QE604"]
+    },
+    {
+      "name": "missing_cell_parameters",
+      "path": "tests/fixtures/preflight/missing_cell_parameters",
+      "expect_ok": false,
+      "expect_codes": ["QE603"]
+    },
+    {
+      "name": "missing_pseudos",
+      "path": "tests/fixtures/preflight/missing_pseudos",
+      "expect_ok": false,
+      "expect_codes": ["QE606"]
+    },
+    {
+      "name": "low_ecutwfc",
+      "path": "tests/fixtures/preflight/low_ecutwfc",
+      "expect_ok": true,
+      "expect_codes": ["QE607"]
+    },
+    {
+      "name": "suspicious_kpoints",
+      "path": "tests/fixtures/preflight/suspicious_kpoints",
+      "expect_ok": true,
+      "expect_codes": ["QE608"]
+    },
+    {
+      "name": "missing_kpoints",
+      "path": "tests/fixtures/preflight/missing_kpoints",
+      "expect_ok": true,
+      "expect_codes": ["QE608"]
+    },
+    {
+      "name": "keyword_version_mismatch",
+      "path": "tests/fixtures/preflight/keyword_version_mismatch",
+      "expect_ok": false,
+      "expect_codes": ["QE610"]
+    }
+  ]
+}
