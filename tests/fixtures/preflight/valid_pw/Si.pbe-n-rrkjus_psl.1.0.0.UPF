@@ -1,0 +1,8 @@
+<UPF version="2.0.1">
+A minimal stub pseudopotential file for the qe-lsp preflight regression
+fixture. It exists only so the cross-artifact graph can mark the referenced
+pseudopotential as resolved; it is NOT a real, usable pseudopotential.
+<PP_INFO>
+generated="qe-lsp-preflight-fixture"
+</PP_INFO>
+</UPF>
