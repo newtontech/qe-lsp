@@ -1,0 +1,56 @@
+Program pw.x v.7.2 starts on 15Jun2026 at 10:00:00
+
+     Program PATH: /usr/local/bin/pw.x
+     Hostname: localhost
+
+     Current dimensions of program pw:
+     natx    =      1000
+     ntypx   =        10
+     npwx    =      1000
+     nbnd    =        20
+     npol    =         1
+     npsa    =         1
+
+     bravais-lattice index =    2
+     lattice parameter (alat)  =  10.2600  a.u.
+     unit-cell volume          = 543.0936 (a.u.)^3
+
+     number of atoms/cell =    2
+     number of atomic types    =    1
+     number of Kohn-Sham states =    10
+
+     kinetic-energy cutoff     =   30.0000  Ry
+     charge density cutoff     =  240.0000  Ry
+     convergence threshold     =   1.0E-08
+
+     Electron dynamics: steepest-descent
+
+     Writing output data to ./tmp/
+
+     init_run     :      0.07s CPU      0.08s WALL
+
+     total   pseudopotential    local   ultrasoft(paw)      beta
+     Rcut(pseudopotential) =    2.30  2.30  2.30  2.30  2.30 a.u.
+     Rcut(ultrasoft)       =    2.30  2.30  2.30  2.30  2.30 a.u.
+
+     Ewald energy           =       0.00000000 Ry
+     Hartree energy         =       0.00000000 Ry
+     XC energy              =       0.00000000 Ry
+     local contribution     =       0.00000000 Ry
+     non-local contribution =       0.00000000 Ry
+     total energy           =       0.00000000 Ry
+
+     SCF iterations:   50
+     total time          =      1.00s CPU      1.20s WALL
+
+     WARNING: SCF did not converge after 50 iterations
+     WARNING: Total energy error: 1.2345E-04 Ry
+
+     Writing wavefunctions to ./tmp/
+
+     init_run     :      0.07s CPU      0.08s WALL
+     electrons    :      1.00s CPU      1.20s WALL
+
+     PWSCF        :      1.07s CPU      1.28s WALL
+
+     This run was terminated on: 10:00:02  15Jun2026

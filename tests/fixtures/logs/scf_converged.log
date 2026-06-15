@@ -1,0 +1,75 @@
+Program pw.x v.7.2 starts on 15Jun2026 at 10:00:00
+
+     Program PATH: /usr/local/bin/pw.x
+     Hostname: localhost
+
+     Current dimensions of program pw:
+     natx    =      1000
+     ntypx   =        10
+     npwx    =      1000
+     nbnd    =        20
+     npol    =         1
+     npsa    =         1
+
+     gamma-only: only 1 k-point
+
+     bravais-lattice index =    2
+     lattice parameter (alat)  =  10.2600  a.u.
+     unit-cell volume          = 543.0936 (a.u.)^3
+
+     number of atoms/cell =    2
+     number of atomic types    =    1
+     number of Kohn-Sham states =    10
+
+     kinetic-energy cutoff     =   30.0000  Ry
+     charge density cutoff     =  240.0000  Ry
+     convergence threshold     =   1.0E-08
+
+     Electron dynamics: steepest-descent
+
+     Methyl group rotation: not used
+
+     Writing output data to ./tmp/
+
+     init_run     :      0.07s CPU      0.08s WALL
+
+     total   pseudopotential    local   ultrasoft(paw)      beta
+     Rcut(pseudopotential) =    2.30  2.30  2.30  2.30  2.30 a.u.
+     Rcut(ultrasoft)       =    2.30  2.30  2.30  2.30  2.30 a.u.
+     Rho(n)=1.00 Rcut =    2.30 a.u.
+
+     Parallel ground-state structure factors:
+     number of processors       =      1
+     number of FFTs (combined)  =      1
+
+     Task   0 of    1 is assigned to   0 of    1 processors
+
+     k-point   1:  0.0000 0.0000 0.0000
+
+     G-space vectors for FFT:
+     estimated  FFT memory size for G-space:       0.01 MB
+     estimated  FFT memory size for R-space:       0.01 MB
+     total      FFT memory size:                   0.02 MB
+
+     Ewald energy           =       0.00000000 Ry
+     Hartree energy         =       0.00000000 Ry
+     XC energy              =       0.00000000 Ry
+     local contribution     =       0.00000000 Ry
+     non-local contribution =       0.00000000 Ry
+     total energy           =       0.00000000 Ry
+
+     convergence thresholds:
+     energy error            =   0.0000E+00 Ry
+     scf error               =   0.0000E+00 Ry
+
+     SCF iterations:    1
+     total time          =      0.10s CPU      0.12s WALL
+
+     Writing wavefunctions to ./tmp/
+
+     init_run     :      0.07s CPU      0.08s WALL
+     electrons    :      0.10s CPU      0.12s WALL
+
+     PWSCF        :      0.17s CPU      0.20s WALL
+
+     This run was terminated on: 10:00:01  15Jun2026
