@@ -2,7 +2,7 @@
 
 All notable changes to qe-lsp will be documented in this file.
 
-## [0.1.0] - 2025-01-XX
+## [0.1.0] - 2026-06-15
 
 ### Added
 - Initial LSP server implementation for Quantum ESPRESSO

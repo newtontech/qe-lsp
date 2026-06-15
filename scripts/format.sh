@@ -3,6 +3,10 @@ set -euo pipefail
 
 ran=0
 
+python_format_targets() {
+  find src tests -name '*.py' -type f
+}
+
 has_npm_script() {
   local script="$1"
   [ -f package.json ] || return 1
