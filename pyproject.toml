@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "qe-lsp"
-version = "0.1.0"
+version = "0.1.1rc1"
 description = "Language Server Protocol for Quantum ESPRESSO input files"
 readme = "README.md"
 license = {text = "MIT"}
@@ -27,6 +27,10 @@ dev = [
 [project.scripts]
 qe-lsp = "qe_lsp.server:main"
 qe-lsp-tool = "qe_lsp.tool:main"
+
+
+[tool.hatch.build.force-include]
+"skill" = "skill"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/qe_lsp"]
