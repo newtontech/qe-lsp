@@ -1,4 +1,8 @@
-"""qe Language Server Protocol server wiring."""
+"""
+qe Language Server Protocol server wiring.
+
+See also: wiki/concepts/lsp-server-architecture.md, wiki/synthesis/openqc-agent-context.md
+"""
 
 from importlib import import_module
 from typing import Any, Type, cast

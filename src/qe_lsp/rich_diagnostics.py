@@ -1,5 +1,7 @@
 """Diagnostic Engine v1 serialization helpers.
 
+See also: wiki/concepts/diagnostic-engine.md, wiki/concepts/diagnostic-engine-v1.md
+
 The module keeps existing LSP/provider diagnostics untouched and provides a
 python-lsp-server-style provider boundary for agent-facing JSON consumers.
 """

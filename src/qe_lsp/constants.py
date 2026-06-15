@@ -1,4 +1,8 @@
-"""Shared constants for qe-lsp."""
+"""
+Shared constants for qe-lsp.
+
+See also: wiki/entities/quantum-espresso-namelist.md, wiki/entities/card.md, wiki/synthesis/control-namelist-reference.md
+"""
 
 SERVER_NAME = "qe-lsp"
 

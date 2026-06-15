@@ -17,5 +17,8 @@ test:
 
 check: lint typecheck test
 
+traceability:
+	python3 scripts/generate-traceability-report.py
+
 cleanup-merged:
 	bash scripts/cleanup_merged_worktrees.sh

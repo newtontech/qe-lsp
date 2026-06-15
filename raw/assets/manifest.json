@@ -1,0 +1,157 @@
+{
+  "entries": [
+    {
+      "path": "CHANGELOG.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/CHANGELOG.md",
+      "stable_id": "raw-assets-CHANGELOG-md"
+    },
+    {
+      "path": "DIAGNOSTIC_ENGINE_V1.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/DIAGNOSTIC_ENGINE_V1.md",
+      "stable_id": "raw-assets-DIAGNOSTIC_ENGINE_V1-md"
+    },
+    {
+      "path": "OPENQC_ALIGNMENT.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/OPENQC_ALIGNMENT.md",
+      "stable_id": "raw-assets-OPENQC_ALIGNMENT-md"
+    },
+    {
+      "path": "README.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/README.md",
+      "stable_id": "raw-assets-README-md"
+    },
+    {
+      "path": "agent-verification-loop.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/agent-verification-loop.md",
+      "stable_id": "raw-assets-agent-verification-loop-md"
+    },
+    {
+      "path": "aluminum_relax.in",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/aluminum_relax.in",
+      "stable_id": "raw-assets-aluminum_relax-in"
+    },
+    {
+      "path": "constants.py",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/constants.py",
+      "stable_id": "raw-assets-constants-py"
+    },
+    {
+      "path": "constants_extract.py",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/constants_extract.py",
+      "stable_id": "raw-assets-constants_extract-py"
+    },
+    {
+      "path": "docs.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/docs.md",
+      "stable_id": "raw-assets-docs-md"
+    },
+    {
+      "path": "example-carbonyl-relax.in",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/example-carbonyl-relax.in",
+      "stable_id": "raw-assets-example-carbonyl-relax-in"
+    },
+    {
+      "path": "fe_spin.in",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/fe_spin.in",
+      "stable_id": "raw-assets-fe_spin-in"
+    },
+    {
+      "path": "parser.py",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/parser.py",
+      "stable_id": "raw-assets-parser-py"
+    },
+    {
+      "path": "parser_extract.py",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/parser_extract.py",
+      "stable_id": "raw-assets-parser_extract-py"
+    },
+    {
+      "path": "pr-review-workflow.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/pr-review-workflow.md",
+      "stable_id": "raw-assets-pr-review-workflow-md"
+    },
+    {
+      "path": "qe-examples.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/qe-examples.md",
+      "stable_id": "raw-assets-qe-examples-md"
+    },
+    {
+      "path": "qe-output-format.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/qe-output-format.md",
+      "stable_id": "raw-assets-qe-output-format-md"
+    },
+    {
+      "path": "qe-programs-reference.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/qe-programs-reference.md",
+      "stable_id": "raw-assets-qe-programs-reference-md"
+    },
+    {
+      "path": "qe-pseudopotentials.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/qe-pseudopotentials.md",
+      "stable_id": "raw-assets-qe-pseudopotentials-md"
+    },
+    {
+      "path": "qe-pw-input-reference.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/qe-pw-input-reference.md",
+      "stable_id": "raw-assets-qe-pw-input-reference-md"
+    },
+    {
+      "path": "silicon_bands.in",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/silicon_bands.in",
+      "stable_id": "raw-assets-silicon_bands-in"
+    },
+    {
+      "path": "silicon_scf.in",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/silicon_scf.in",
+      "stable_id": "raw-assets-silicon_scf-in"
+    },
+    {
+      "path": "sio2_vc_relax.in",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/sio2_vc_relax.in",
+      "stable_id": "raw-assets-sio2_vc_relax-in"
+    },
+    {
+      "path": "upstream-qe-reference.md",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/upstream-qe-reference.md",
+      "stable_id": "raw-assets-upstream-qe-reference-md"
+    },
+    {
+      "path": "validation.py",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/validation.py",
+      "stable_id": "raw-assets-validation-py"
+    },
+    {
+      "path": "validation_extract.py",
+      "source_type": "raw_asset",
+      "source_url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/validation_extract.py",
+      "stable_id": "raw-assets-validation_extract-py"
+    }
+  ],
+  "manifest_version": "1.0.0",
+  "repository": "newtontech/qe-lsp",
+  "schema_version": "provenance-manifest-v1"
+}
