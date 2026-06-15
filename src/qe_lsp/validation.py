@@ -1,4 +1,8 @@
-"""Quantum ESPRESSO validation checks that produce LSP diagnostics."""
+"""
+Quantum ESPRESSO validation checks that produce LSP diagnostics.
+
+See also: wiki/concepts/diagnostic-engine.md, wiki/concepts/diagnostic-severity.md, wiki/entities/pseudopotential.md
+"""
 
 from typing import List
 

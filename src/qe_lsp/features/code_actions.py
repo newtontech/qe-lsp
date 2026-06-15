@@ -1,5 +1,7 @@
 """Code actions provider for Quantum ESPRESSO input files.
 
+See also: wiki/entities/card.md, wiki/entities/atomic-positions-card.md
+
 Provides quick fixes for common QE input errors: unclosed namelists, unknown
 keywords (with typo correction), invalid enum values, casing fixes, missing
 required namelists, and deprecated keyword replacements.  Each code action

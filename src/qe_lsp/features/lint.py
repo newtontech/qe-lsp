@@ -1,5 +1,7 @@
 """Schema-aware static lint rules for Quantum ESPRESSO input files.
 
+See also: wiki/synthesis/control-namelist-reference.md, wiki/synthesis/system-namelist-reference.md, wiki/synthesis/electrons-namelist-reference.md, wiki/entities/ecutwfc-ecutrho.md
+
 Produces LSP diagnostics with stable rule codes so that automated coding
 agents and CI pipelines can filter and act on specific categories of
 findings.  All checks are deterministic, offline, and based on the

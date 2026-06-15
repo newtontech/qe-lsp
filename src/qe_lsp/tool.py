@@ -1,4 +1,8 @@
-"""Agent-facing CLI for Diagnostic Engine v1 operations."""
+"""
+Agent-facing CLI for Diagnostic Engine v1 operations.
+
+See also: wiki/synthesis/openqc-agent-context.md, wiki/concepts/lsp-server-architecture.md
+"""
 
 from __future__ import annotations
 

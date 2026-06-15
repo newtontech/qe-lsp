@@ -1,0 +1,864 @@
+{
+  "docstrings": [
+    {
+      "path": "src/qe_lsp/constants.py",
+      "symbol": "constants",
+      "wikiPath": "wiki/entities/quantum-espresso-namelist.md"
+    },
+    {
+      "path": "src/qe_lsp/constants.py",
+      "symbol": "constants",
+      "wikiPath": "wiki/entities/card.md"
+    },
+    {
+      "path": "src/qe_lsp/constants.py",
+      "symbol": "constants",
+      "wikiPath": "wiki/synthesis/control-namelist-reference.md"
+    },
+    {
+      "path": "src/qe_lsp/features/code_actions.py",
+      "symbol": "CodeActionProvider",
+      "wikiPath": "wiki/entities/card.md"
+    },
+    {
+      "path": "src/qe_lsp/features/code_actions.py",
+      "symbol": "CodeActionProvider",
+      "wikiPath": "wiki/entities/atomic-positions-card.md"
+    },
+    {
+      "path": "src/qe_lsp/features/lint.py",
+      "symbol": "LintProvider",
+      "wikiPath": "wiki/synthesis/control-namelist-reference.md"
+    },
+    {
+      "path": "src/qe_lsp/features/lint.py",
+      "symbol": "LintProvider",
+      "wikiPath": "wiki/synthesis/system-namelist-reference.md"
+    },
+    {
+      "path": "src/qe_lsp/features/lint.py",
+      "symbol": "LintProvider",
+      "wikiPath": "wiki/synthesis/electrons-namelist-reference.md"
+    },
+    {
+      "path": "src/qe_lsp/features/lint.py",
+      "symbol": "LintProvider",
+      "wikiPath": "wiki/entities/ecutwfc-ecutrho.md"
+    },
+    {
+      "path": "src/qe_lsp/parser.py",
+      "symbol": "Parameter",
+      "wikiPath": "wiki/entities/quantum-espresso-namelist.md"
+    },
+    {
+      "path": "src/qe_lsp/parser.py",
+      "symbol": "Parameter",
+      "wikiPath": "wiki/entities/card.md"
+    },
+    {
+      "path": "src/qe_lsp/parser.py",
+      "symbol": "Parameter",
+      "wikiPath": "wiki/entities/parameter-assignment.md"
+    },
+    {
+      "path": "src/qe_lsp/rich_diagnostics.py",
+      "symbol": "severity_label",
+      "wikiPath": "wiki/concepts/diagnostic-engine.md"
+    },
+    {
+      "path": "src/qe_lsp/rich_diagnostics.py",
+      "symbol": "severity_label",
+      "wikiPath": "wiki/concepts/diagnostic-engine-v1.md"
+    },
+    {
+      "path": "src/qe_lsp/server.py",
+      "symbol": "_load_language_server",
+      "wikiPath": "wiki/concepts/lsp-server-architecture.md"
+    },
+    {
+      "path": "src/qe_lsp/server.py",
+      "symbol": "_load_language_server",
+      "wikiPath": "wiki/synthesis/openqc-agent-context.md"
+    },
+    {
+      "path": "src/qe_lsp/tool.py",
+      "symbol": "_capabilities_payload",
+      "wikiPath": "wiki/synthesis/openqc-agent-context.md"
+    },
+    {
+      "path": "src/qe_lsp/tool.py",
+      "symbol": "_capabilities_payload",
+      "wikiPath": "wiki/concepts/lsp-server-architecture.md"
+    },
+    {
+      "path": "src/qe_lsp/validation.py",
+      "symbol": "_range_for",
+      "wikiPath": "wiki/concepts/diagnostic-engine.md"
+    },
+    {
+      "path": "src/qe_lsp/validation.py",
+      "symbol": "_range_for",
+      "wikiPath": "wiki/concepts/diagnostic-severity.md"
+    },
+    {
+      "path": "src/qe_lsp/validation.py",
+      "symbol": "_range_for",
+      "wikiPath": "wiki/entities/pseudopotential.md"
+    }
+  ],
+  "generatedAt": "2026-06-15T20:22:19.226273+00:00",
+  "languageId": "qe",
+  "rawManifest": {
+    "ok": true,
+    "path": "raw/assets/manifest.json"
+  },
+  "repository": "https://github.com/newtontech/qe-lsp.git",
+  "ruleIds": [
+    {
+      "code": "QE-INPUT-ERROR-001",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-002",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-003",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-004",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-005",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-006",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-007",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-008",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-009",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-013",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-014",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-015",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-016",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-017",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-018",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-019",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-020",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-WARNING-001",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-WARNING-002",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-WARNING-003",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-WARNING-004",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-WARNING-010",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-WARNING-011",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-WARNING-012",
+      "sourcePath": "src/qe_lsp/features/agent_api.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-001",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-002",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-003",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-004",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-005",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-006",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-007",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-008",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-009",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-013",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-WARNING-001",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-WARNING-002",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-WARNING-003",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-WARNING-004",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-WARNING-010",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-WARNING-011",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-WARNING-012",
+      "sourcePath": "src/qe_lsp/features/lint.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-014",
+      "sourcePath": "src/qe_lsp/features/test_runner.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-015",
+      "sourcePath": "src/qe_lsp/features/test_runner.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-016",
+      "sourcePath": "src/qe_lsp/features/test_runner.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-017",
+      "sourcePath": "src/qe_lsp/features/test_runner.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-018",
+      "sourcePath": "src/qe_lsp/features/test_runner.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-019",
+      "sourcePath": "src/qe_lsp/features/test_runner.py"
+    },
+    {
+      "code": "QE-INPUT-ERROR-020",
+      "sourcePath": "src/qe_lsp/features/test_runner.py"
+    }
+  ],
+  "schemaVersion": "openqc.lsp.traceability.v1",
+  "serverId": "qe-lsp",
+  "sourceUrls": [
+    {
+      "rawPath": "lsp-capabilities.json",
+      "url": "https://www.quantum-espresso.org/documentation/input-data-description/"
+    },
+    {
+      "rawPath": "lsp-capabilities.json",
+      "url": "https://www.quantum-espresso.org/Doc/INPUT_PW.html"
+    },
+    {
+      "rawPath": "lsp-capabilities.json",
+      "url": "https://www.quantum-espresso.org/Doc/INPUT_PH.html"
+    },
+    {
+      "rawPath": "lsp-capabilities.json",
+      "url": "https://pranabdas.github.io/espresso/hands-on/dos/"
+    },
+    {
+      "rawPath": "lsp-capabilities.json",
+      "url": "https://www.quantum-espresso.org/pseudopotentials/"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://blog.levilentz.com/parse-quantum-espresso-output-file/"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://github.com/QEF/q-e"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://github.com/QEF/q-e/tree/develop/test-suite"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://pranabdas.github.io/espresso/hands-on/dos/"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://wiki.max-centre.eu/index.php/Non_self-consistent_calculations"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://www.materialscloud.org/discover/sssp"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://www.quantum-espresso.org/Doc/INPUT_CP.html"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://www.quantum-espresso.org/Doc/INPUT_PH.html"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://www.quantum-espresso.org/Doc/INPUT_PP.html"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://www.quantum-espresso.org/Doc/INPUT_PROJWFC.html"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://www.quantum-espresso.org/Doc/INPUT_PW.html"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://www.quantum-espresso.org/documentation/"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://www.quantum-espresso.org/documentation/input-data-description/"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://www.quantum-espresso.org/download/"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://www.quantum-espresso.org/pseudopotentials/"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://www.quantum-espresso.org/pseudopotentials/ps-library"
+    },
+    {
+      "rawPath": "raw/assets/CHANGELOG.md",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/CHANGELOG.md"
+    },
+    {
+      "rawPath": "raw/assets/DIAGNOSTIC_ENGINE_V1.md",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/DIAGNOSTIC_ENGINE_V1.md"
+    },
+    {
+      "rawPath": "raw/assets/OPENQC_ALIGNMENT.md",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/OPENQC_ALIGNMENT.md"
+    },
+    {
+      "rawPath": "raw/assets/README.md",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/README.md"
+    },
+    {
+      "rawPath": "raw/assets/agent-verification-loop.md",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/agent-verification-loop.md"
+    },
+    {
+      "rawPath": "raw/assets/aluminum_relax.in",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/aluminum_relax.in"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/constants.py"
+    },
+    {
+      "rawPath": "raw/assets/constants_extract.py",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/constants_extract.py"
+    },
+    {
+      "rawPath": "raw/assets/docs.md",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/docs.md"
+    },
+    {
+      "rawPath": "raw/assets/example-carbonyl-relax.in",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/example-carbonyl-relax.in"
+    },
+    {
+      "rawPath": "raw/assets/fe_spin.in",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/fe_spin.in"
+    },
+    {
+      "rawPath": "raw/assets/manifest.json",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/manifest.json"
+    },
+    {
+      "rawPath": "raw/assets/parser.py",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/parser.py"
+    },
+    {
+      "rawPath": "raw/assets/parser_extract.py",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/parser_extract.py"
+    },
+    {
+      "rawPath": "raw/assets/pr-review-workflow.md",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/pr-review-workflow.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-examples.md",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/qe-examples.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-output-format.md",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/qe-output-format.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-programs-reference.md",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/qe-programs-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-pseudopotentials.md",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/qe-pseudopotentials.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-pw-input-reference.md",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/qe-pw-input-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/silicon_bands.in",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/silicon_bands.in"
+    },
+    {
+      "rawPath": "raw/assets/silicon_scf.in",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/silicon_scf.in"
+    },
+    {
+      "rawPath": "raw/assets/sio2_vc_relax.in",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/sio2_vc_relax.in"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/upstream-qe-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/validation.py",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/validation.py"
+    },
+    {
+      "rawPath": "raw/assets/validation_extract.py",
+      "url": "https://github.com/newtontech/qe-lsp/blob/main/raw/assets/validation_extract.py"
+    }
+  ],
+  "summary": {
+    "brokenWikiLinks": 0,
+    "docstringsLinked": 21,
+    "docstringsTotal": 21,
+    "rawManifestFailures": 0,
+    "ruleIdsTotal": 48,
+    "sourceUrlsTotal": 47,
+    "wikiSourcesTotal": 70,
+    "wikiSourcesWithoutRaw": 0
+  },
+  "wikiSources": [
+    {
+      "rawPath": "raw/assets/qe-examples.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/concepts/band-structure-dos-workflow.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-programs-reference.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/concepts/band-structure-dos-workflow.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/concepts/bravais-lattice.md"
+    },
+    {
+      "rawPath": "raw/assets/validation.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/concepts/bravais-lattice.md"
+    },
+    {
+      "rawPath": "raw/assets/DIAGNOSTIC_ENGINE_V1.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/concepts/diagnostic-engine.md"
+    },
+    {
+      "rawPath": "raw/assets/validation.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/concepts/diagnostic-engine.md"
+    },
+    {
+      "rawPath": "raw/assets/DIAGNOSTIC_ENGINE_V1.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/concepts/diagnostic-severity.md"
+    },
+    {
+      "rawPath": "raw/assets/validation.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/concepts/diagnostic-severity.md"
+    },
+    {
+      "rawPath": "raw/assets/README.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/concepts/lsp-server-architecture.md"
+    },
+    {
+      "rawPath": "raw/assets/docs.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/concepts/lsp-server-architecture.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-examples.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/concepts/phonon-calculation.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-programs-reference.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/concepts/phonon-calculation.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-output-format.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/concepts/qe-output-parsing.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/concepts/scf-convergence.md"
+    },
+    {
+      "rawPath": "raw/assets/validation.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/concepts/scf-convergence.md"
+    },
+    {
+      "rawPath": "raw/assets/silicon_scf.in",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/atomic-positions-card.md"
+    },
+    {
+      "rawPath": "raw/assets/validation.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/atomic-positions-card.md"
+    },
+    {
+      "rawPath": "raw/assets/parser.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/atomic-species-card.md"
+    },
+    {
+      "rawPath": "raw/assets/validation.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/atomic-species-card.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/calculation-type.md"
+    },
+    {
+      "rawPath": "raw/assets/silicon_scf.in",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/calculation-type.md"
+    },
+    {
+      "rawPath": "raw/assets/sio2_vc_relax.in",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/calculation-type.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/card.md"
+    },
+    {
+      "rawPath": "raw/assets/parser.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/card.md"
+    },
+    {
+      "rawPath": "raw/assets/sio2_vc_relax.in",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/cell-parameters-card.md"
+    },
+    {
+      "rawPath": "raw/assets/validation.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/cell-parameters-card.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/celldm-parameter.md"
+    },
+    {
+      "rawPath": "raw/assets/silicon_scf.in",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/celldm-parameter.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/ecutwfc-ecutrho.md"
+    },
+    {
+      "rawPath": "raw/assets/validation.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/ecutwfc-ecutrho.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/ibrav-parameter.md"
+    },
+    {
+      "rawPath": "raw/assets/validation.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/ibrav-parameter.md"
+    },
+    {
+      "rawPath": "raw/assets/silicon_scf.in",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/k-points.md"
+    },
+    {
+      "rawPath": "raw/assets/validation.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/k-points.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/mixing-beta.md"
+    },
+    {
+      "rawPath": "raw/assets/validation.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/mixing-beta.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/parameter-assignment.md"
+    },
+    {
+      "rawPath": "raw/assets/parser.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/parameter-assignment.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-examples.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/ph-x-phonon.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-programs-reference.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/ph-x-phonon.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-examples.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/post-processing-programs.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-programs-reference.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/post-processing-programs.md"
+    },
+    {
+      "rawPath": "raw/assets/parser.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/pseudopotential.md"
+    },
+    {
+      "rawPath": "raw/assets/validation.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/pseudopotential.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/quantum-espresso-namelist.md"
+    },
+    {
+      "rawPath": "raw/assets/parser.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/entities/quantum-espresso-namelist.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/cell-namelist-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/control-namelist-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/electrons-namelist-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/aluminum_relax.in",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/examples-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/fe_spin.in",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/examples-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-examples.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/examples-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/silicon_bands.in",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/examples-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/silicon_scf.in",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/examples-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/sio2_vc_relax.in",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/examples-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/parser.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/input-file-format.md"
+    },
+    {
+      "rawPath": "raw/assets/silicon_scf.in",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/input-file-format.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/ions-namelist-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/DIAGNOSTIC_ENGINE_V1.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/openqc-agent-context.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/openqc-agent-context.md"
+    },
+    {
+      "rawPath": "raw/assets/example-carbonyl-relax.in",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/openqc-agent-context.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-examples.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/openqc-agent-context.md"
+    },
+    {
+      "rawPath": "raw/assets/silicon_scf.in",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/openqc-agent-context.md"
+    },
+    {
+      "rawPath": "raw/assets/upstream-qe-reference.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/openqc-agent-context.md"
+    },
+    {
+      "rawPath": "raw/assets/validation.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/openqc-agent-context.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-programs-reference.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/programs-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/qe-pseudopotentials.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/pseudopotential-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/README.md",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/quick-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/quick-reference.md"
+    },
+    {
+      "rawPath": "raw/assets/constants.py",
+      "sourceUrl": "",
+      "wikiPath": "wiki/synthesis/system-namelist-reference.md"
+    }
+  ]
+}

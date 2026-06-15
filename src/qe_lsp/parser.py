@@ -1,4 +1,8 @@
-"""Small Quantum ESPRESSO input parser for validation."""
+"""
+Small Quantum ESPRESSO input parser for validation.
+
+See also: wiki/entities/quantum-espresso-namelist.md, wiki/entities/card.md, wiki/entities/parameter-assignment.md
+"""
 
 from dataclasses import dataclass, field
 import re
