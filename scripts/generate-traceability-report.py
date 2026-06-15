@@ -209,7 +209,8 @@ def collect_wiki_sources() -> list[dict[str, str]]:
                 {
                     "wikiPath": repo_relative(mdfile),
                     "rawPath": raw_path,
-                    "sourceUrl": source_url or "",
+                    "sourceUrl": source_url
+                    or f"https://github.com/{REPOSITORY}/blob/main/{raw_path}",
                 }
             )
     return entries
