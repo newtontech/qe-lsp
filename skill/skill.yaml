@@ -10,15 +10,15 @@ entrypoints:
   server: qe-lsp
   tool: qe-lsp-tool
 file_patterns:
-  - *.in
-  - *.pw.in
-  - *.relax.in
-  - *.vc-relax.in
-  - *.scf.in
-  - *.nscf.in
-  - *.bands.in
-  - *.ph.in
-  - *.dos.in
+  - "*.in"
+  - "*.pw.in"
+  - "*.relax.in"
+  - "*.vc-relax.in"
+  - "*.scf.in"
+  - "*.nscf.in"
+  - "*.bands.in"
+  - "*.ph.in"
+  - "*.dos.in"
 operations:
   - capabilities
   - check
