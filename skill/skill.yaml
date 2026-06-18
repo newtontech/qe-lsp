@@ -1,0 +1,38 @@
+schema: scientific-lsp-skill/v1
+name: qe
+software: qe
+display_name: Quantum ESPRESSO
+description: Quantum ESPRESSO input preflight for pw.x and related input files.
+package:
+  name: qe-lsp
+  install: pip install qe-lsp
+entrypoints:
+  server: qe-lsp
+  tool: qe-lsp-tool
+file_patterns:
+  - "*.in"
+  - "*.pw.in"
+  - "*.relax.in"
+  - "*.vc-relax.in"
+  - "*.scf.in"
+  - "*.nscf.in"
+  - "*.bands.in"
+  - "*.ph.in"
+  - "*.dos.in"
+operations:
+  - capabilities
+  - check
+  - context
+  - complete
+  - hover
+  - symbols
+  - fix
+diagnostic_contract: DiagnosticEnvelope/v1
+blocking_policy:
+  mode: warning-only
+  description: Use --fail-on-blocking when generated inputs must be launch-ready.
+source_provenance:
+  -
+    kind: official_docs
+    label: Quantum ESPRESSO input descriptions
+    url: https://www.quantum-espresso.org/documentation/input-data-description/
