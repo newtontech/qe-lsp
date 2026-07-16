@@ -76,6 +76,25 @@ suite without modifying the project environment:
 uv run --with pytest --with pytest-cov python -m pytest
 ```
 
+### Release verification
+
+Releases are published from `v*` tag pushes by `.github/workflows/release.yml`.
+The workflow checks that the tag, Python package, `VERSION`, and OpenQC
+capability manifest agree, then builds the distributions and installs the wheel
+into a new virtual environment. The isolated smoke verifies `qe-lsp --help`,
+installed version metadata, the agent JSON CLI, and valid, invalid, and
+runtime-log fixtures before the OIDC-enabled `pypi` environment can publish.
+No long-lived PyPI token is used.
+
+Maintainers can exercise the same artifact smoke before creating a tag:
+
+```bash
+python -m pip install build
+python -m build
+python scripts/verify_release.py --tag v0.1.1
+python scripts/smoke_test_wheel.py --wheel dist/qe_lsp-0.1.1-py3-none-any.whl
+```
+
 ### Code Quality
 
 ```bash

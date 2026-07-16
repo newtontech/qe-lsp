@@ -3,6 +3,12 @@ set -euo pipefail
 
 ran=0
 
+if command -v python >/dev/null 2>&1; then
+  python_bin=python
+else
+  python_bin=python3
+fi
+
 python_format_targets() {
   find src tests -name '*.py' -type f
 }
@@ -28,11 +34,11 @@ fi
 
 if [ -f pyproject.toml ] || [ -f setup.py ]; then
   py_targets="$(python_format_targets)"
-  if python -m black --version >/dev/null 2>&1; then
-    python -m black $py_targets
+  if "$python_bin" -m black --version >/dev/null 2>&1; then
+    "$python_bin" -m black $py_targets
     ran=1
-  elif python -m ruff --version >/dev/null 2>&1; then
-    python -m ruff format $py_targets
+  elif "$python_bin" -m ruff --version >/dev/null 2>&1; then
+    "$python_bin" -m ruff format $py_targets
     ran=1
   fi
 fi
