@@ -4,8 +4,10 @@ qe Language Server Protocol server wiring.
 See also: wiki/concepts/lsp-server-architecture.md, wiki/synthesis/openqc-agent-context.md
 """
 
+import argparse
+import sys
 from importlib import import_module
-from typing import Any, Type, cast
+from typing import Any, List, Optional, Type, cast
 
 from lsprotocol.types import (
     TEXT_DOCUMENT_DID_CHANGE,
@@ -114,9 +116,17 @@ def _register(server: Any, feature_name: str) -> Any:
 server = create_server()
 
 
-def main() -> None:
+def main(argv: Optional[List[str]] = None) -> None:
+    parser = argparse.ArgumentParser(prog="qe-lsp", description="Quantum ESPRESSO language server")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+    parser.parse_args([] if argv is None else argv)
     server.start_io()
 
 
+def cli() -> None:
+    """Run the installed command-line entry point."""
+    main(sys.argv[1:])
+
+
 if __name__ == "__main__":
-    main()
+    cli()

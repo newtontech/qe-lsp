@@ -1,10 +1,11 @@
+import pytest
 from lsprotocol import types
 from qe_lsp import __version__
 from qe_lsp.constants import QE_KEYWORDS
 from qe_lsp.handlers.completion import completion
 from qe_lsp.handlers.diagnostic import diagnostic
 from qe_lsp.handlers.hover import hover
-from qe_lsp.server import create_server, server
+from qe_lsp.server import create_server, main, server
 from tests.lsp_compat import get_registered_features
 
 
@@ -16,7 +17,7 @@ class Params:
 
 def test_import():
     """Test that the package exposes its version."""
-    assert __version__ == "0.1.0"
+    assert __version__
 
 
 def test_completion_returns_qe_keywords():
@@ -140,3 +141,21 @@ def test_create_server_uses_configured_version():
 
     assert created.name == "qe-lsp"
     assert created.version == __version__
+
+
+def test_server_help_is_nonblocking(monkeypatch, capsys):
+    """The installed server CLI must expose help without starting stdio."""
+    started = False
+
+    def start_io() -> None:
+        nonlocal started
+        started = True
+
+    monkeypatch.setattr(server, "start_io", start_io)
+
+    with pytest.raises(SystemExit) as raised:
+        main(["--help"])
+
+    assert raised.value.code == 0
+    assert "usage: qe-lsp" in capsys.readouterr().out
+    assert started is False

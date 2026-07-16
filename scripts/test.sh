@@ -2,6 +2,7 @@
 set -euo pipefail
 
 ran=0
+repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 
 has_npm_script() {
   local script="$1"
@@ -21,9 +22,9 @@ fi
 
 if ([ -d tests ] || [ -d test ] || [ -f pytest.ini ]) && ([ -f pyproject.toml ] || [ -f setup.py ] || [ -f pytest.ini ]); then
   if command -v python >/dev/null 2>&1; then
-    python -m pytest
+    PYTHONPATH="$repo_root/src${PYTHONPATH:+:$PYTHONPATH}" python -m pytest
   else
-    python3 -m pytest
+    PYTHONPATH="$repo_root/src${PYTHONPATH:+:$PYTHONPATH}" python3 -m pytest
   fi
   ran=1
 fi

@@ -3,6 +3,12 @@ set -euo pipefail
 
 ran=0
 
+if command -v python >/dev/null 2>&1; then
+  python_bin=python
+else
+  python_bin=python3
+fi
+
 has_npm_script() {
   local script="$1"
   [ -f package.json ] || return 1
@@ -39,9 +45,9 @@ if [ -f Cargo.toml ]; then
 fi
 
 if [ -f pyproject.toml ] || [ -f setup.py ]; then
-  if python -m ruff --version >/dev/null 2>&1; then
+  if "$python_bin" -m ruff --version >/dev/null 2>&1; then
     py_targets="$(python_lint_targets)"
-    python -m ruff check $py_targets
+    "$python_bin" -m ruff check $py_targets
     ran=1
   fi
 fi
